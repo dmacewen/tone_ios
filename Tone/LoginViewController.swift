@@ -36,9 +36,10 @@ class LoginViewController: UIViewController {
         
         emailText.delegate = self as UITextFieldDelegate
         passwordText.delegate = self as UITextFieldDelegate
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(notification:)), name: UIResponder.keyboardWillShowNotification, object: nil)
+
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(notification:)), name: UIResponder.keyboardWillHideNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(notification:)), name: UIResponder.keyboardWillShowNotification, object: nil)
+        
         
         self.contentView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(setIsFocusTextView(gesture:))))
  
@@ -89,13 +90,31 @@ extension LoginViewController: UITextFieldDelegate {
     }
     
     func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
-        activeField?.resignFirstResponder()
-        activeField = nil
+        textField.resignFirstResponder()
+        if activeField == textField {
+            activeField = nil
+        }
+        adjustHeightOffset()
         return true
     }
 }
 
 extension LoginViewController {
+    func adjustHeightOffset() {
+        if activeField != nil {
+            let distanceToBottom = self.scrollView.frame.size.height - (activeField?.frame.origin.y)! - (activeField?.frame.size.height)!
+            let collapseSpace = currentKeyboardHeight - distanceToBottom
+            
+            if collapseSpace < 0 {
+                return
+            }
+            
+            UIView.animate(withDuration: 0.3, animations: {
+                self.scrollView.contentOffset = CGPoint(x: self.lastOffset.x, y: collapseSpace + 10)
+            })
+        }
+    }
+    
     @objc func keyboardWillShow(notification: NSNotification) {
         
         if currentKeyboardHeight != nil {
@@ -108,18 +127,9 @@ extension LoginViewController {
             UIView.animate(withDuration: 0.3, animations: {
                 self.constraintContentHeight.constant += self.currentKeyboardHeight
             })
-            
-            let distanceToBottom = self.scrollView.frame.size.height - (activeField?.frame.origin.y)! - (activeField?.frame.size.height)!
-            let collapseSpace = currentKeyboardHeight - distanceToBottom
-            
-            if collapseSpace < 0 {
-                return
-            }
-            
-            UIView.animate(withDuration: 0.3, animations: {
-                self.scrollView.contentOffset = CGPoint(x: self.lastOffset.x, y: collapseSpace + 10)
-            })
         }
+        
+        adjustHeightOffset()
     }
     
     @objc func keyboardWillHide(notification: NSNotification) {
