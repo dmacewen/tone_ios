@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14313.18" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
-    <device id="ipad12_9" orientation="portrait">
+    <device id="retina5_9" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
@@ -17,11 +17,11 @@
                         <viewControllerLayoutGuide type="bottom" id="5ak-0s-78d"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="1366"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" text="TONE" textAlignment="center" minimumFontSize="60" translatesAutoresizingMaskIntoConstraints="NO" id="4nh-UP-Ycd">
-                                <rect key="frame" x="430" y="647" width="164" height="72"/>
+                                <rect key="frame" x="105.66666666666669" y="192.33333333333334" width="164" height="72.000000000000028"/>
                                 <nil key="textColor"/>
                                 <fontDescription key="fontDescription" type="system" weight="heavy" pointSize="60"/>
                                 <textInputTraits key="textInputTraits"/>
@@ -29,7 +29,7 @@
                         </subviews>
                         <color key="backgroundColor" red="0.29333442100812346" green="0.74110265979205125" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                         <constraints>
-                            <constraint firstItem="4nh-UP-Ycd" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="U7n-sd-hDz"/>
+                            <constraint firstItem="4nh-UP-Ycd" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" multiplier="9:16" id="U7n-sd-hDz"/>
                             <constraint firstItem="4nh-UP-Ycd" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="nH2-na-J6n"/>
                         </constraints>
                     </view>

@@ -7,7 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		86213F9B2187F56600A622FB /* keyboardHeightObservable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86213F9A2187F56600A622FB /* keyboardHeightObservable.swift */; };
+		864A580C2187C8EB006FFC1D /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 864A580B2187C8EB006FFC1D /* Globals.swift */; };
+		8651B60C2187D6FA00FB7A3A /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8651B60B2187D6FA00FB7A3A /* LoginViewModel.swift */; };
+		8651B60E2187D72200FB7A3A /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8651B60D2187D72200FB7A3A /* LoginViewController.swift */; };
 		8694A07D21878A1B00615BE3 /* Alamofire.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 86F138DB21877F89004C6092 /* Alamofire.framework */; };
+		8694A07F2187BF1A00615BE3 /* RootNavigationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8694A07E2187BF1A00615BE3 /* RootNavigationViewModel.swift */; };
+		8694A0812187BF4300615BE3 /* RootNavigationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8694A0802187BF4300615BE3 /* RootNavigationViewController.swift */; };
 		86D5C7442187897000D5E15E /* Alamofire.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 86F138DB21877F89004C6092 /* Alamofire.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		86F138AA218768C2004C6092 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F138A9218768C2004C6092 /* AppDelegate.swift */; };
 		86F138AC218768C2004C6092 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F138AB218768C2004C6092 /* ViewController.swift */; };
@@ -62,6 +68,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		86213F9A2187F56600A622FB /* keyboardHeightObservable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = keyboardHeightObservable.swift; sourceTree = "<group>"; };
+		864A580B2187C8EB006FFC1D /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
+		8651B60B2187D6FA00FB7A3A /* LoginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
+		8651B60D2187D72200FB7A3A /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
+		8694A07E2187BF1A00615BE3 /* RootNavigationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootNavigationViewModel.swift; sourceTree = "<group>"; };
+		8694A0802187BF4300615BE3 /* RootNavigationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootNavigationViewController.swift; sourceTree = "<group>"; };
 		86D5C7452187898000D5E15E /* RxTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxTest.framework; path = Carthage/Build/iOS/RxTest.framework; sourceTree = "<group>"; };
 		86F138A6218768C2004C6092 /* Tone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		86F138A9218768C2004C6092 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -141,9 +153,15 @@
 				86F138A9218768C2004C6092 /* AppDelegate.swift */,
 				86F138AB218768C2004C6092 /* ViewController.swift */,
 				86F138AD218768C2004C6092 /* Main.storyboard */,
+				8651B60B2187D6FA00FB7A3A /* LoginViewModel.swift */,
+				8651B60D2187D72200FB7A3A /* LoginViewController.swift */,
+				86213F9A2187F56600A622FB /* keyboardHeightObservable.swift */,
+				864A580B2187C8EB006FFC1D /* Globals.swift */,
 				86F138B0218768C4004C6092 /* Assets.xcassets */,
 				86F138B2218768C4004C6092 /* LaunchScreen.storyboard */,
 				86F138B5218768C4004C6092 /* Info.plist */,
+				8694A07E2187BF1A00615BE3 /* RootNavigationViewModel.swift */,
+				8694A0802187BF4300615BE3 /* RootNavigationViewController.swift */,
 			);
 			path = Tone;
 			sourceTree = "<group>";
@@ -312,7 +330,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				86213F9B2187F56600A622FB /* keyboardHeightObservable.swift in Sources */,
+				8651B60E2187D72200FB7A3A /* LoginViewController.swift in Sources */,
+				864A580C2187C8EB006FFC1D /* Globals.swift in Sources */,
 				86F138AC218768C2004C6092 /* ViewController.swift in Sources */,
+				8651B60C2187D6FA00FB7A3A /* LoginViewModel.swift in Sources */,
+				8694A07F2187BF1A00615BE3 /* RootNavigationViewModel.swift in Sources */,
+				8694A0812187BF4300615BE3 /* RootNavigationViewController.swift in Sources */,
 				86F138AA218768C2004C6092 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
