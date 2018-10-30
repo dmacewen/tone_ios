@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		86213F9B2187F56600A622FB /* keyboardHeightObservable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86213F9A2187F56600A622FB /* keyboardHeightObservable.swift */; };
+		86213F9B2187F56600A622FB /* KeyboardHeightObservable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86213F9A2187F56600A622FB /* KeyboardHeightObservable.swift */; };
 		864A580C2187C8EB006FFC1D /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 864A580B2187C8EB006FFC1D /* Globals.swift */; };
 		8651B60C2187D6FA00FB7A3A /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8651B60B2187D6FA00FB7A3A /* LoginViewModel.swift */; };
 		8651B60E2187D72200FB7A3A /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8651B60D2187D72200FB7A3A /* LoginViewController.swift */; };
@@ -68,7 +68,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		86213F9A2187F56600A622FB /* keyboardHeightObservable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = keyboardHeightObservable.swift; sourceTree = "<group>"; };
+		86213F9A2187F56600A622FB /* KeyboardHeightObservable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardHeightObservable.swift; sourceTree = "<group>"; };
 		864A580B2187C8EB006FFC1D /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
 		8651B60B2187D6FA00FB7A3A /* LoginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
 		8651B60D2187D72200FB7A3A /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
@@ -155,7 +155,7 @@
 				86F138AD218768C2004C6092 /* Main.storyboard */,
 				8651B60B2187D6FA00FB7A3A /* LoginViewModel.swift */,
 				8651B60D2187D72200FB7A3A /* LoginViewController.swift */,
-				86213F9A2187F56600A622FB /* keyboardHeightObservable.swift */,
+				86213F9A2187F56600A622FB /* KeyboardHeightObservable.swift */,
 				864A580B2187C8EB006FFC1D /* Globals.swift */,
 				86F138B0218768C4004C6092 /* Assets.xcassets */,
 				86F138B2218768C4004C6092 /* LaunchScreen.storyboard */,
@@ -330,7 +330,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				86213F9B2187F56600A622FB /* keyboardHeightObservable.swift in Sources */,
+				86213F9B2187F56600A622FB /* KeyboardHeightObservable.swift in Sources */,
 				8651B60E2187D72200FB7A3A /* LoginViewController.swift in Sources */,
 				864A580C2187C8EB006FFC1D /* Globals.swift in Sources */,
 				86F138AC218768C2004C6092 /* ViewController.swift in Sources */,
