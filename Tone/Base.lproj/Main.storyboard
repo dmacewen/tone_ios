@@ -39,7 +39,7 @@
                             <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="tcJ-G5-PLA">
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="GKL-IK-8Rq">
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="Vj4-rL-45t">
                                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="5gD-SV-cZX" userLabel="Content View">
@@ -52,22 +52,22 @@
                                                         <textInputTraits key="textInputTraits"/>
                                                     </textField>
                                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="VrN-rq-nYA">
-                                                        <rect key="frame" x="62.666666666666657" y="550.66666666666663" width="249.99999999999997" height="162"/>
+                                                        <rect key="frame" x="62.666666666666657" y="558.66666666666663" width="249.99999999999997" height="146"/>
                                                         <subviews>
                                                             <textField opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="251" verticalCompressionResistancePriority="751" contentHorizontalAlignment="center" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Email" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="18Z-SD-snV">
-                                                                <rect key="frame" x="8" y="8" width="234" height="42"/>
+                                                                <rect key="frame" x="0.0" y="0.0" width="250" height="42"/>
                                                                 <nil key="textColor"/>
                                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="emailAddress" smartDashesType="no"/>
                                                             </textField>
                                                             <textField opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="251" contentHorizontalAlignment="center" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Password" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="VrZ-kI-W4T">
-                                                                <rect key="frame" x="8" y="60" width="234" height="42"/>
+                                                                <rect key="frame" x="0.0" y="52" width="250" height="42"/>
                                                                 <nil key="textColor"/>
                                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" returnKeyType="next" secureTextEntry="YES" smartDashesType="no"/>
                                                             </textField>
                                                             <button opaque="NO" contentMode="scaleToFill" verticalCompressionResistancePriority="749" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vRz-cj-nbz">
-                                                                <rect key="frame" x="8" y="112" width="234" height="42"/>
+                                                                <rect key="frame" x="0.0" y="104" width="250" height="42"/>
                                                                 <fontDescription key="fontDescription" type="system" weight="heavy" pointSize="25"/>
                                                                 <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <state key="normal" title="LOGIN"/>
@@ -82,7 +82,6 @@
                                                             <constraint firstItem="vRz-cj-nbz" firstAttribute="width" secondItem="18Z-SD-snV" secondAttribute="width" id="j24-GH-twM"/>
                                                             <constraint firstItem="VrZ-kI-W4T" firstAttribute="width" secondItem="18Z-SD-snV" secondAttribute="width" id="jFV-gO-XaM"/>
                                                         </constraints>
-                                                        <edgeInsets key="layoutMargins" top="8" left="8" bottom="8" right="8"/>
                                                     </stackView>
                                                 </subviews>
                                                 <color key="backgroundColor" red="0.29333442100000001" green="0.74110265980000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
@@ -93,37 +92,23 @@
                                                     <constraint firstItem="MeD-w3-gVx" firstAttribute="centerX" secondItem="5gD-SV-cZX" secondAttribute="centerX" id="fYA-bk-9nz"/>
                                                 </constraints>
                                             </view>
-                                            <view opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="kJ0-cx-i3h" userLabel="Keyboard Offset">
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6rL-ma-lUb" userLabel="Keyboard Offset">
                                                 <rect key="frame" x="0.0" y="812" width="375" height="0.0"/>
                                                 <color key="backgroundColor" red="0.29333442100000001" green="0.74110265980000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="height" id="d4J-HA-yAK"/>
+                                                    <constraint firstAttribute="height" id="OcQ-Qm-cmN"/>
                                                 </constraints>
                                             </view>
                                         </subviews>
-                                        <constraints>
-                                            <constraint firstItem="kJ0-cx-i3h" firstAttribute="bottom" secondItem="GKL-IK-8Rq" secondAttribute="bottom" id="8eZ-Vv-5LF"/>
-                                            <constraint firstItem="5gD-SV-cZX" firstAttribute="centerY" secondItem="GKL-IK-8Rq" secondAttribute="centerY" id="EEt-kY-Ohd"/>
-                                            <constraint firstItem="5gD-SV-cZX" firstAttribute="centerX" secondItem="GKL-IK-8Rq" secondAttribute="centerX" id="L0k-Cz-8S0"/>
-                                            <constraint firstItem="5gD-SV-cZX" firstAttribute="leading" secondItem="GKL-IK-8Rq" secondAttribute="leading" id="RBW-fR-qto"/>
-                                            <constraint firstItem="kJ0-cx-i3h" firstAttribute="trailing" secondItem="GKL-IK-8Rq" secondAttribute="trailing" id="VgY-r5-vnY"/>
-                                            <constraint firstItem="5gD-SV-cZX" firstAttribute="height" secondItem="GKL-IK-8Rq" secondAttribute="height" id="iw9-bu-ZMF"/>
-                                            <constraint firstItem="5gD-SV-cZX" firstAttribute="bottom" secondItem="GKL-IK-8Rq" secondAttribute="bottom" id="kKP-hQ-fnM"/>
-                                            <constraint firstItem="kJ0-cx-i3h" firstAttribute="leading" secondItem="GKL-IK-8Rq" secondAttribute="leading" id="lCp-9h-CQ2"/>
-                                            <constraint firstItem="5gD-SV-cZX" firstAttribute="top" secondItem="GKL-IK-8Rq" secondAttribute="top" id="m85-On-SeC"/>
-                                            <constraint firstItem="5gD-SV-cZX" firstAttribute="trailing" secondItem="GKL-IK-8Rq" secondAttribute="trailing" id="qTu-72-nRW"/>
-                                        </constraints>
                                     </stackView>
                                 </subviews>
                                 <constraints>
-                                    <constraint firstItem="GKL-IK-8Rq" firstAttribute="bottom" secondItem="tcJ-G5-PLA" secondAttribute="bottom" id="7hv-Xu-fbI"/>
-                                    <constraint firstItem="GKL-IK-8Rq" firstAttribute="top" secondItem="tcJ-G5-PLA" secondAttribute="top" id="K6q-3t-PjL"/>
-                                    <constraint firstItem="GKL-IK-8Rq" firstAttribute="width" secondItem="tcJ-G5-PLA" secondAttribute="width" id="Msb-hv-1OR"/>
-                                    <constraint firstItem="GKL-IK-8Rq" firstAttribute="height" secondItem="tcJ-G5-PLA" secondAttribute="height" id="W5K-yZ-2dg"/>
-                                    <constraint firstItem="GKL-IK-8Rq" firstAttribute="trailing" secondItem="tcJ-G5-PLA" secondAttribute="trailing" id="d9J-7n-8U6"/>
-                                    <constraint firstItem="GKL-IK-8Rq" firstAttribute="centerX" secondItem="tcJ-G5-PLA" secondAttribute="centerX" id="ijx-Gw-fic"/>
-                                    <constraint firstItem="GKL-IK-8Rq" firstAttribute="centerY" secondItem="tcJ-G5-PLA" secondAttribute="centerY" id="n4e-8F-fNb"/>
-                                    <constraint firstItem="GKL-IK-8Rq" firstAttribute="leading" secondItem="tcJ-G5-PLA" secondAttribute="leading" id="tBk-0B-Yk0"/>
+                                    <constraint firstAttribute="trailing" secondItem="Vj4-rL-45t" secondAttribute="trailing" id="9YM-zh-Cyz"/>
+                                    <constraint firstAttribute="bottom" secondItem="Vj4-rL-45t" secondAttribute="bottom" id="EFl-dq-rPO"/>
+                                    <constraint firstItem="Vj4-rL-45t" firstAttribute="top" secondItem="tcJ-G5-PLA" secondAttribute="top" id="JG8-xs-cHe"/>
+                                    <constraint firstItem="Vj4-rL-45t" firstAttribute="leading" secondItem="tcJ-G5-PLA" secondAttribute="leading" id="XSh-BI-fPs"/>
+                                    <constraint firstItem="Vj4-rL-45t" firstAttribute="width" secondItem="tcJ-G5-PLA" secondAttribute="width" id="gWJ-Dt-jRs"/>
+                                    <constraint firstItem="Vj4-rL-45t" firstAttribute="height" secondItem="tcJ-G5-PLA" secondAttribute="height" id="kwd-UU-DJN"/>
                                 </constraints>
                             </scrollView>
                         </subviews>
@@ -139,7 +124,7 @@
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="constraintContentHeight" destination="d4J-HA-yAK" id="kpN-zG-yXR"/>
+                        <outlet property="constraintContentHeight" destination="OcQ-Qm-cmN" id="GSw-Sl-P1Y"/>
                         <outlet property="contentView" destination="5gD-SV-cZX" id="FjT-nI-g2U"/>
                         <outlet property="emailText" destination="18Z-SD-snV" id="epf-Ev-Otq"/>
                         <outlet property="loginButton" destination="vRz-cj-nbz" id="XGl-h7-4qf"/>
