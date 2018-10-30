@@ -60,7 +60,7 @@
                                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="emailAddress" smartDashesType="no"/>
                                                             </textField>
-                                                            <textField opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="251" contentHorizontalAlignment="center" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Password" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="VrZ-kI-W4T">
+                                                            <textField opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="251" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Password (Currently Disabled)" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="VrZ-kI-W4T">
                                                                 <rect key="frame" x="0.0" y="52" width="250" height="42"/>
                                                                 <nil key="textColor"/>
                                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
@@ -128,6 +128,7 @@
                         <outlet property="contentView" destination="5gD-SV-cZX" id="FjT-nI-g2U"/>
                         <outlet property="emailText" destination="18Z-SD-snV" id="epf-Ev-Otq"/>
                         <outlet property="loginButton" destination="vRz-cj-nbz" id="XGl-h7-4qf"/>
+                        <outlet property="loginFields" destination="VrN-rq-nYA" id="2cS-91-Vzb"/>
                         <outlet property="passwordText" destination="VrZ-kI-W4T" id="lkQ-bn-nyq"/>
                         <outlet property="scrollView" destination="tcJ-G5-PLA" id="WYa-Xm-LKh"/>
                     </connections>

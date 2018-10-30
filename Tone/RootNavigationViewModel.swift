@@ -16,5 +16,26 @@ enum NavigationStackAction {
 }
 
 class RootNavigationViewModel {
-    let navigationStackActions = BehaviorSubject<NavigationStackAction>(value: .set(viewModels: [LoginViewModel()], animated: false))
+    lazy private(set) var navigationStackActions = BehaviorSubject<NavigationStackAction>(value: .set(viewModels: [self.createLoginViewModel()], animated: false))
+
+    private let disposeBag = DisposeBag()
+    
+    func createLoginViewModel() -> LoginViewModel {
+        let loginViewModel = LoginViewModel()
+        loginViewModel.events
+            .subscribe(onNext: { [weak self] event in
+                switch event {
+                case .loggedIn(let email):
+                    self?.launchTone(withEmail: email)
+                }
+            })
+            .disposed(by: disposeBag)
+        
+        return loginViewModel
+    }
+    
+    private func launchTone(withEmail email: String) {
+        print("Launching Tone for user \(email)")
+    }
+
 }

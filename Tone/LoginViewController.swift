@@ -8,7 +8,8 @@
 
 import Foundation
 import UIKit
-//import RxSwift
+import RxSwift
+import RxCocoa
 
 class LoginViewController: UIViewController {
     var viewModel: LoginViewModel!
@@ -19,127 +20,51 @@ class LoginViewController: UIViewController {
     @IBOutlet weak var emailText: UITextField!
     @IBOutlet weak var passwordText: UITextField!
     @IBOutlet weak var loginButton: UIButton!
+    @IBOutlet weak var loginFields: UIView!
     
     @IBOutlet weak var constraintContentHeight: NSLayoutConstraint!
     
-    var activeField: UITextField?
-    var lastOffset: CGPoint!
-    var currentKeyboardHeight: CGFloat!
-    /*
-    var activeTextField = BehaviorSubject<UITextField?>(value: nil)
-    var isFocusedTextView = BehaviorSubject<Bool>(value: false)
- */
-    
+    private let disposeBag = DisposeBag()
+    private let backgroundRed = UIColor.init(red: 248/255, green: 131/255, blue: 121/255, alpha: 1)
+    private let backgroundWhite = UIColor.white
+
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Log In"
         
-        emailText.delegate = self as UITextFieldDelegate
-        passwordText.delegate = self as UITextFieldDelegate
-
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(notification:)), name: UIResponder.keyboardWillHideNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(notification:)), name: UIResponder.keyboardWillShowNotification, object: nil)
-        
-        
-        self.contentView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(setIsFocusTextView(gesture:))))
- 
-        /*
-        let disposeBag = DisposeBag()
-
-        emailText.rx.controlEvent(.editingDidBegin)
-            .subscribe({_ in self.activeTextField.onNext(self.emailText)})
-            .disposed(by: disposeBag)
-        
-        passwordText.rx.controlEvent(.editingDidBegin)
-            .subscribe({_ in self.activeTextField.onNext(self.passwordText)})
-            .disposed(by: disposeBag)
-        
-        contentView.
-        
-        Observable
-            .from([emailText.rx.controlEvent(.editingDidEnd), passwordText.rx.controlEvent(.editingDidEnd)])
-            .merge()
-            .subscribe({_ in self.activeTextField.onNext(nil)})
-            .disposed(by: disposeBag)
-        
         keyboardHeight()
-            .subscribe({height in
-                print("Height :: \(height)")
-            })
+            .subscribe(onNext: { height in
+                self.constraintContentHeight.constant = height * 1.1
+            }).disposed(by: disposeBag)
+        
+        let tapGesture = UITapGestureRecognizer()
+        contentView.addGestureRecognizer(tapGesture)
+        
+        tapGesture.rx.event
+            .bind(onNext: { recognizer in
+                self.emailText.resignFirstResponder()
+                self.passwordText.resignFirstResponder()
+            }).disposed(by: disposeBag)
+        
+        emailText.rx.text
+            .bind(to: viewModel.email)
             .disposed(by: disposeBag)
- */
+ 
+        passwordText.rx.text
+            .bind(to: viewModel.password)
+            .disposed(by: disposeBag)
         
-    }
-    
-    @objc func setIsFocusTextView(gesture: UIGestureRecognizer) {
-        //isFocusedTextView.onNext(false)
-        guard activeField != nil else {
-            return
-        }
+        let validLogin = loginButton.rx.tap.single(viewModel.isEmailValid)
         
-        activeField?.resignFirstResponder()
-        activeField = nil
-    }
-}
-
-extension LoginViewController: UITextFieldDelegate {
-    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-        activeField = textField
-        lastOffset = self.scrollView.contentOffset
-        return true
-    }
-    
-    func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
-        textField.resignFirstResponder()
-        if activeField == textField {
-            activeField = nil
-        }
-        adjustHeightOffset()
-        return true
+        validLogin.subscribe(onNext: { _ in
+                self.emailText.backgroundColor = self.backgroundWhite
+                self.viewModel.login()
+            }).disposed(by: disposeBag)
+        
+        loginButton.rx.tap
+            .takeUntil(validLogin)
+            .bind(onNext: {
+                self.emailText.backgroundColor = self.backgroundRed
+            }).disposed(by: disposeBag)
     }
 }
-
-extension LoginViewController {
-    func adjustHeightOffset() {
-        if activeField != nil {
-            let distanceToBottom = self.scrollView.frame.size.height - (activeField?.frame.origin.y)! - (activeField?.frame.size.height)!
-            let collapseSpace = currentKeyboardHeight - distanceToBottom
-            
-            if collapseSpace < 0 {
-                return
-            }
-            
-            UIView.animate(withDuration: 0.3, animations: {
-                self.scrollView.contentOffset = CGPoint(x: self.lastOffset.x, y: collapseSpace + 10)
-            })
-        }
-    }
-    
-    @objc func keyboardWillShow(notification: NSNotification) {
-        
-        if currentKeyboardHeight != nil {
-            return
-        }
-        
-        if let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue {
-            currentKeyboardHeight = keyboardSize.height
-            
-            UIView.animate(withDuration: 0.3, animations: {
-                self.constraintContentHeight.constant += self.currentKeyboardHeight
-            })
-        }
-        
-        adjustHeightOffset()
-    }
-    
-    @objc func keyboardWillHide(notification: NSNotification) {
-        
-        UIView.animate(withDuration: 0.3) {
-            self.constraintContentHeight.constant -= self.currentKeyboardHeight
-            self.scrollView.contentOffset = self.lastOffset
-        }
-        
-        currentKeyboardHeight = nil
-    }
-}
-
