@@ -27,7 +27,7 @@
         <!--Login View Controller-->
         <scene sceneID="OsB-RX-tOl">
             <objects>
-                <viewController storyboardIdentifier="loginViewController" id="xB5-uv-RNl" customClass="LoginViewController" customModule="Tone" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="loginViewController" automaticallyAdjustsScrollViewInsets="NO" id="xB5-uv-RNl" customClass="LoginViewController" customModule="Tone" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="vxB-HL-Qb0"/>
                         <viewControllerLayoutGuide type="bottom" id="jGp-Zk-6Wx"/>
@@ -36,7 +36,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="tcJ-G5-PLA">
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="tcJ-G5-PLA">
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="Vj4-rL-45t">
