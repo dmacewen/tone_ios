@@ -16,10 +16,10 @@ class LoginViewModel {
         case loggedIn(email: String)
     }
     
+    let events = PublishSubject<Event>()
+
     let email = Variable<String?>(nil)
     let password = Variable<String?>(nil)
-    
-    let events = PublishSubject<Event>()
     
     func isEmailValid() -> Bool {
         guard let email = email.value else { return false }

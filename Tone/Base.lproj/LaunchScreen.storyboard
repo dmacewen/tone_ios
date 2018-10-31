@@ -20,17 +20,17 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" text="TONE" textAlignment="center" minimumFontSize="60" translatesAutoresizingMaskIntoConstraints="NO" id="4nh-UP-Ycd">
-                                <rect key="frame" x="105.66666666666669" y="192.33333333333334" width="164" height="72.000000000000028"/>
+                            <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" text="TONE" textAlignment="center" minimumFontSize="60" translatesAutoresizingMaskIntoConstraints="NO" id="Oar-tn-A2X">
+                                <rect key="frame" x="92" y="180.33333333333337" width="191" height="96.000000000000028"/>
                                 <nil key="textColor"/>
-                                <fontDescription key="fontDescription" type="system" weight="heavy" pointSize="60"/>
+                                <fontDescription key="fontDescription" type="system" weight="ultraLight" pointSize="80"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
                         </subviews>
                         <color key="backgroundColor" red="0.29333442100812346" green="0.74110265979205125" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                         <constraints>
-                            <constraint firstItem="4nh-UP-Ycd" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" multiplier="9:16" id="U7n-sd-hDz"/>
-                            <constraint firstItem="4nh-UP-Ycd" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="nH2-na-J6n"/>
+                            <constraint firstItem="Oar-tn-A2X" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" multiplier="9:16" id="cat-WK-gN3"/>
+                            <constraint firstItem="Oar-tn-A2X" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="mUI-C6-hd1"/>
                         </constraints>
                     </view>
                 </viewController>

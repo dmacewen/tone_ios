@@ -46,9 +46,9 @@
                                                 <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                                                 <subviews>
                                                     <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" text="TONE" textAlignment="center" minimumFontSize="60" translatesAutoresizingMaskIntoConstraints="NO" id="MeD-w3-gVx">
-                                                        <rect key="frame" x="105.66666666666669" y="192.33333333333334" width="164" height="72.000000000000028"/>
+                                                        <rect key="frame" x="92" y="180.33333333333334" width="191" height="96.000000000000028"/>
                                                         <nil key="textColor"/>
-                                                        <fontDescription key="fontDescription" type="system" weight="heavy" pointSize="60"/>
+                                                        <fontDescription key="fontDescription" type="system" weight="ultraLight" pointSize="80"/>
                                                         <textInputTraits key="textInputTraits"/>
                                                     </textField>
                                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="VrN-rq-nYA">
@@ -68,7 +68,7 @@
                                                             </textField>
                                                             <button opaque="NO" contentMode="scaleToFill" verticalCompressionResistancePriority="749" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vRz-cj-nbz">
                                                                 <rect key="frame" x="0.0" y="104" width="250" height="42"/>
-                                                                <fontDescription key="fontDescription" type="system" weight="heavy" pointSize="25"/>
+                                                                <fontDescription key="fontDescription" type="system" weight="thin" pointSize="25"/>
                                                                 <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <state key="normal" title="LOGIN"/>
                                                             </button>
@@ -135,7 +135,94 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="KZm-3c-wM5" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="37.5" y="21.25"/>
+            <point key="canvasLocation" x="-164" y="23"/>
+        </scene>
+        <!--Home View Controller-->
+        <scene sceneID="BGb-hZ-dR5">
+            <objects>
+                <viewController storyboardIdentifier="homeViewController" id="qaw-Yw-BSl" customClass="HomeViewController" customModule="Tone" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="yRw-kU-r0J"/>
+                        <viewControllerLayoutGuide type="bottom" id="Aro-A0-srD"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="Pvi-wN-BTJ">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bkM-3d-8Zj">
+                                <rect key="frame" x="16" y="44" width="58" height="36"/>
+                                <fontDescription key="fontDescription" type="system" weight="thin" pointSize="20"/>
+                                <state key="normal" title="Logout"/>
+                            </button>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="GqX-HT-ArQ">
+                                <rect key="frame" x="0.0" y="406" width="375" height="406"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </tableView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vF2-1E-QEk">
+                                <rect key="frame" x="79.666666666666686" y="245" width="216" height="46"/>
+                                <color key="backgroundColor" red="0.29333442100000001" green="0.74110265980000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                <fontDescription key="fontDescription" type="system" weight="ultraLight" pointSize="26"/>
+                                <color key="tintColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <inset key="contentEdgeInsets" minX="15" minY="7" maxX="15" maxY="7"/>
+                                <state key="normal" title="Sample Skin Tone">
+                                    <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </state>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="bkM-3d-8Zj" secondAttribute="trailing" constant="20" symbolic="YES" id="1Zq-AY-3oM"/>
+                            <constraint firstItem="vF2-1E-QEk" firstAttribute="centerX" secondItem="Pvi-wN-BTJ" secondAttribute="centerX" id="4y3-Tw-3sd"/>
+                            <constraint firstItem="GqX-HT-ArQ" firstAttribute="height" secondItem="Pvi-wN-BTJ" secondAttribute="height" multiplier="0.5" id="5NT-ck-DKJ"/>
+                            <constraint firstItem="vF2-1E-QEk" firstAttribute="centerY" secondItem="Pvi-wN-BTJ" secondAttribute="centerY" multiplier="0.66" id="B7X-Zm-evr"/>
+                            <constraint firstAttribute="trailing" secondItem="GqX-HT-ArQ" secondAttribute="trailing" id="G5V-MO-jjB"/>
+                            <constraint firstItem="GqX-HT-ArQ" firstAttribute="leading" secondItem="Pvi-wN-BTJ" secondAttribute="leading" id="V7N-75-2Mv"/>
+                            <constraint firstItem="bkM-3d-8Zj" firstAttribute="leading" secondItem="Pvi-wN-BTJ" secondAttribute="leadingMargin" id="k8h-JB-1uS"/>
+                            <constraint firstItem="bkM-3d-8Zj" firstAttribute="top" secondItem="yRw-kU-r0J" secondAttribute="bottom" id="zco-NB-LOu"/>
+                            <constraint firstAttribute="bottom" secondItem="GqX-HT-ArQ" secondAttribute="bottom" id="zmw-qm-Sae"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="logoutButton" destination="bkM-3d-8Zj" id="AHC-Wl-HDd"/>
+                        <outlet property="sampleSkinToneButton" destination="vF2-1E-QEk" id="ZCA-ss-83c"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="bpH-t2-tWe" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="932" y="32.512315270935964"/>
+        </scene>
+        <!--Sample Skin Tone View Controller-->
+        <scene sceneID="3AW-GE-cWs">
+            <objects>
+                <viewController storyboardIdentifier="sampleSkinToneViewController" id="5vF-xe-h6l" customClass="SampleSkinToneViewController" customModule="Tone" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="VKa-gu-wTa"/>
+                        <viewControllerLayoutGuide type="bottom" id="Uyk-JU-F4m"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="RIr-Rm-Bfh">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BZB-uh-WVF">
+                                <rect key="frame" x="16" y="44" width="58" height="36"/>
+                                <fontDescription key="fontDescription" type="system" weight="thin" pointSize="20"/>
+                                <state key="normal" title="Cancel"/>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="BZB-uh-WVF" secondAttribute="trailing" id="0gh-fS-enM"/>
+                            <constraint firstItem="BZB-uh-WVF" firstAttribute="top" secondItem="VKa-gu-wTa" secondAttribute="bottom" id="Od9-x2-urG"/>
+                            <constraint firstItem="BZB-uh-WVF" firstAttribute="leading" secondItem="RIr-Rm-Bfh" secondAttribute="leadingMargin" id="o64-Vm-8Po"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="cancelButton" destination="BZB-uh-WVF" id="f4D-qR-aE7"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="7yQ-HM-D4i" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1959" y="33"/>
         </scene>
     </scenes>
 </document>

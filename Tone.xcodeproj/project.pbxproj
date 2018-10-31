@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		86193C8B21891B29001F5C4E /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C8A21891B29001F5C4E /* HomeViewModel.swift */; };
+		86193C8D21891B36001F5C4E /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C8C21891B36001F5C4E /* HomeViewController.swift */; };
+		86193C94218945B8001F5C4E /* SampleSkinToneViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C93218945B8001F5C4E /* SampleSkinToneViewModel.swift */; };
+		86193C96218945C6001F5C4E /* SampleSkinToneViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C95218945C6001F5C4E /* SampleSkinToneViewController.swift */; };
 		86213F9B2187F56600A622FB /* KeyboardHeightObservable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86213F9A2187F56600A622FB /* KeyboardHeightObservable.swift */; };
 		864A580C2187C8EB006FFC1D /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 864A580B2187C8EB006FFC1D /* Globals.swift */; };
 		8651B60C2187D6FA00FB7A3A /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8651B60B2187D6FA00FB7A3A /* LoginViewModel.swift */; };
@@ -16,7 +20,6 @@
 		8694A0812187BF4300615BE3 /* RootNavigationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8694A0802187BF4300615BE3 /* RootNavigationViewController.swift */; };
 		86D5C7442187897000D5E15E /* Alamofire.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 86F138DB21877F89004C6092 /* Alamofire.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		86F138AA218768C2004C6092 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F138A9218768C2004C6092 /* AppDelegate.swift */; };
-		86F138AC218768C2004C6092 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F138AB218768C2004C6092 /* ViewController.swift */; };
 		86F138AF218768C2004C6092 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 86F138AD218768C2004C6092 /* Main.storyboard */; };
 		86F138B1218768C4004C6092 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 86F138B0218768C4004C6092 /* Assets.xcassets */; };
 		86F138B4218768C4004C6092 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 86F138B2218768C4004C6092 /* LaunchScreen.storyboard */; };
@@ -68,6 +71,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		86193C8A21891B29001F5C4E /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
+		86193C8C21891B36001F5C4E /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
+		86193C93218945B8001F5C4E /* SampleSkinToneViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleSkinToneViewModel.swift; sourceTree = "<group>"; };
+		86193C95218945C6001F5C4E /* SampleSkinToneViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleSkinToneViewController.swift; sourceTree = "<group>"; };
 		86213F9A2187F56600A622FB /* KeyboardHeightObservable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardHeightObservable.swift; sourceTree = "<group>"; };
 		864A580B2187C8EB006FFC1D /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
 		8651B60B2187D6FA00FB7A3A /* LoginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
@@ -77,7 +84,6 @@
 		86D5C7452187898000D5E15E /* RxTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxTest.framework; path = Carthage/Build/iOS/RxTest.framework; sourceTree = "<group>"; };
 		86F138A6218768C2004C6092 /* Tone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		86F138A9218768C2004C6092 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		86F138AB218768C2004C6092 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		86F138AE218768C2004C6092 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		86F138B0218768C4004C6092 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		86F138B3218768C4004C6092 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -126,6 +132,51 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		86193C8E21894246001F5C4E /* RootNavigation */ = {
+			isa = PBXGroup;
+			children = (
+				8694A07E2187BF1A00615BE3 /* RootNavigationViewModel.swift */,
+				8694A0802187BF4300615BE3 /* RootNavigationViewController.swift */,
+			);
+			path = RootNavigation;
+			sourceTree = "<group>";
+		};
+		86193C8F2189425B001F5C4E /* LoginView */ = {
+			isa = PBXGroup;
+			children = (
+				8651B60B2187D6FA00FB7A3A /* LoginViewModel.swift */,
+				8651B60D2187D72200FB7A3A /* LoginViewController.swift */,
+			);
+			path = LoginView;
+			sourceTree = "<group>";
+		};
+		86193C9021894274001F5C4E /* HomeView */ = {
+			isa = PBXGroup;
+			children = (
+				86193C8A21891B29001F5C4E /* HomeViewModel.swift */,
+				86193C8C21891B36001F5C4E /* HomeViewController.swift */,
+			);
+			path = HomeView;
+			sourceTree = "<group>";
+		};
+		86193C912189428D001F5C4E /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				86213F9A2187F56600A622FB /* KeyboardHeightObservable.swift */,
+				864A580B2187C8EB006FFC1D /* Globals.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		86193C9221894590001F5C4E /* SampleSkinToneView */ = {
+			isa = PBXGroup;
+			children = (
+				86193C93218945B8001F5C4E /* SampleSkinToneViewModel.swift */,
+				86193C95218945C6001F5C4E /* SampleSkinToneViewController.swift */,
+			);
+			path = SampleSkinToneView;
+			sourceTree = "<group>";
+		};
 		86F1389D218768C2004C6092 = {
 			isa = PBXGroup;
 			children = (
@@ -150,18 +201,16 @@
 		86F138A8218768C2004C6092 /* Tone */ = {
 			isa = PBXGroup;
 			children = (
+				86193C9221894590001F5C4E /* SampleSkinToneView */,
+				86193C9021894274001F5C4E /* HomeView */,
+				86193C8F2189425B001F5C4E /* LoginView */,
+				86193C8E21894246001F5C4E /* RootNavigation */,
+				86193C912189428D001F5C4E /* Utils */,
 				86F138A9218768C2004C6092 /* AppDelegate.swift */,
-				86F138AB218768C2004C6092 /* ViewController.swift */,
 				86F138AD218768C2004C6092 /* Main.storyboard */,
-				8651B60B2187D6FA00FB7A3A /* LoginViewModel.swift */,
-				8651B60D2187D72200FB7A3A /* LoginViewController.swift */,
-				86213F9A2187F56600A622FB /* KeyboardHeightObservable.swift */,
-				864A580B2187C8EB006FFC1D /* Globals.swift */,
-				86F138B0218768C4004C6092 /* Assets.xcassets */,
 				86F138B2218768C4004C6092 /* LaunchScreen.storyboard */,
+				86F138B0218768C4004C6092 /* Assets.xcassets */,
 				86F138B5218768C4004C6092 /* Info.plist */,
-				8694A07E2187BF1A00615BE3 /* RootNavigationViewModel.swift */,
-				8694A0802187BF4300615BE3 /* RootNavigationViewController.swift */,
 			);
 			path = Tone;
 			sourceTree = "<group>";
@@ -330,10 +379,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				86193C96218945C6001F5C4E /* SampleSkinToneViewController.swift in Sources */,
 				86213F9B2187F56600A622FB /* KeyboardHeightObservable.swift in Sources */,
+				86193C94218945B8001F5C4E /* SampleSkinToneViewModel.swift in Sources */,
+				86193C8B21891B29001F5C4E /* HomeViewModel.swift in Sources */,
 				8651B60E2187D72200FB7A3A /* LoginViewController.swift in Sources */,
 				864A580C2187C8EB006FFC1D /* Globals.swift in Sources */,
-				86F138AC218768C2004C6092 /* ViewController.swift in Sources */,
+				86193C8D21891B36001F5C4E /* HomeViewController.swift in Sources */,
 				8651B60C2187D6FA00FB7A3A /* LoginViewModel.swift in Sources */,
 				8694A07F2187BF1A00615BE3 /* RootNavigationViewModel.swift in Sources */,
 				8694A0812187BF4300615BE3 /* RootNavigationViewController.swift in Sources */,
