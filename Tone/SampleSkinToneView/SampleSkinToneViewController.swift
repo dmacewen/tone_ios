@@ -16,6 +16,8 @@ class SampleSkinToneViewController: UIViewController {
     
     @IBOutlet weak var cancelButton: UIButton!
     @IBOutlet weak var takeSampleButton: UIButton!
+    @IBOutlet weak var UILayer: UIView!
+
     
     @IBOutlet weak var rootView: UIView!
     @IBOutlet weak var bottomFlash: UIView!
@@ -39,14 +41,42 @@ class SampleSkinToneViewController: UIViewController {
             .bind(to: userPrompt.rx.text)
             .disposed(by: disposeBag)
         
-        viewModel.userFaceState.asObserver()
+        viewModel.userFaceState//.asObserver()
             .map { $0 == .ok }
             .bind(to: takeSampleButton.rx.isEnabled)
             .disposed(by: disposeBag)
         
         takeSampleButton.rx.tap
-            .subscribe(onNext: { _ in
-                self.viewModel.sample()
+            .subscribe({ _ in
+                self.viewModel.sampleState.onNext(.referenceSample(photoSettings: nil))
             }).disposed(by: disposeBag)
-    }
+        
+        viewModel.sampleState
+            .map { if case .previewUser = $0 { return false } else { return true }}
+            .bind(to: UILayer.rx.isHidden )
+            .disposed(by: disposeBag)
+        
+        viewModel.sampleState
+            .subscribe(onNext: { sampleState in
+                switch(sampleState) {
+                case .previewUser: do {
+                    print("PREVIEW!!!")
+                    return
+                    }
+                case .referenceSample(photoSettings: let photoSettings): do {
+                    print("REFERENCE PHOTOS!!!")
+                    return
+                    }
+                case .sample(photoSettings: let photoSettings): do {
+                    print("SAMPLE PHOTOS!!!")
+                    return
+                    }
+                case .upload:
+                    print("UPLOADS!!!")
+                    return
+                }
+                
+            }).disposed(by: disposeBag)
+        
+    }    
 }
