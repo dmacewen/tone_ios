@@ -60,14 +60,15 @@ class SampleSkinToneViewModel {
     let events = PublishSubject<Event>()
     
     var originalScreenBrightness: CGFloat = 0.0
-    var cameraState = CameraState()
+    var camera: Camera
+        
+    init() {
+        camera = Camera(flashStream: flashSettings)
+        print("finished setup")
+    }
     
     func cancel() {
         events.onNext(.cancel)
-    }
-    
-    func sample() {
-        print("Gettin that sample")
     }
 }
 

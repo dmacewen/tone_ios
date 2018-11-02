@@ -30,13 +30,21 @@ struct FlashSettings {
     var areas = 0
 }
 
-struct CameraState {
+//Defining a Camera how we want it
+class Camera: NSObject {
     var capturePhotoOutput: AVCapturePhotoOutput
     var captureDevice: AVCaptureDevice
     var captureSession: AVCaptureSession
     
-    init() {
-        print("Setting up camera state...")
+    private var flashStream: PublishSubject<FlashSettings>
+    private var photoSettingsIndex = 0
+    
+    private let capture = PublishSubject<AVCapturePhoto>()
+    
+    init(flashStream: PublishSubject<FlashSettings>) {
+        print("Setting up camera...")
+        self.flashStream = flashStream
+
         //Create Capture Session
         captureSession = AVCaptureSession()
         captureSession.sessionPreset = AVCaptureSession.Preset.photo
@@ -73,12 +81,12 @@ struct CameraState {
         }
         
         captureSession.commitConfiguration()
+        print("Commited Capture Session")
     }
     
     //Prepares numPhotos prepared settings
     func preparePhotoSettings(numPhotos: Int) -> Observable<Bool> {
         let photoSettings = (0..<numPhotos).map { _ in getPhotoSettings() }
-        
         return Observable.create { observer in
             self.capturePhotoOutput.setPreparedPhotoSettingsArray(photoSettings) {
                 isPrepared, error in
@@ -86,55 +94,45 @@ struct CameraState {
                     observer.on(.error(error!))
                     return
                 }
+                
                 observer.on(.next(isPrepared))
                 observer.on(.completed)
             }
             return Disposables.create()
         }
     }
-}
-
-class CapturePhoto: NSObject {
-    private let capture = PublishSubject<AVCapturePhoto>()
-    
-    private var cameraState: CameraState
-    private var flashStream: PublishSubject<FlashSettings>
-    private var photoSettingsIndex = 0
-    
-    init(cameraState: CameraState, flashStream: PublishSubject<FlashSettings>) {
-        self.cameraState = cameraState
-        self.flashStream = flashStream
-    }
     
     func capturePhoto(flashSettings: FlashSettings) -> PublishSubject<AVCapturePhoto> {
-        flashStream.onNext(flashSettings)
+        //flashStream.onNext(flashSettings)
         
         //Move to chain? bind isAdjustingExposure?
-        if cameraState.captureDevice.isAdjustingExposure == true {
-            fatalError("Still Adjusting Exposure")
+        if captureDevice.isAdjustingExposure == true {
+            //fatalError("Still Adjusting Exposure")
+            print("Still Adjusting Exposure")
+
             /*
-            print("Posponing Capture!")
-            
-            delay(0.5) {
-                return self.capturePhoto(flashSettings: flashSettings, photoSettings: photoSettings)
-            }
+             print("Posponing Capture!")
+             
+             delay(0.5) {
+             return self.capturePhoto(flashSettings: flashSettings, photoSettings: photoSettings)
+             }
              */
         }
-        
+        print("Captuing Photo with Flash Settings :: \(flashSettings.area) \(flashSettings.areas)")
         flashStream.onNext(flashSettings)
         
-        let photoSettings = cameraState.capturePhotoOutput.preparedPhotoSettingsArray.count > photoSettingsIndex
-                                ? cameraState.capturePhotoOutput.preparedPhotoSettingsArray[photoSettingsIndex]
-                                : getPhotoSettings()
+        let photoSettings = capturePhotoOutput.preparedPhotoSettingsArray.count > photoSettingsIndex
+            ? capturePhotoOutput.preparedPhotoSettingsArray[photoSettingsIndex]
+            : getPhotoSettings()
         
         photoSettingsIndex += 1
-        cameraState.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
+        capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
         
         return capture
     }
 }
 
-extension CapturePhoto: AVCapturePhotoCaptureDelegate {
+extension Camera: AVCapturePhotoCaptureDelegate {
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
         guard error == nil else {
             capture.onError(error!)

@@ -210,67 +210,79 @@
                                     <constraint firstItem="5FP-ew-f1b" firstAttribute="height" secondItem="k2S-t8-msJ" secondAttribute="height" id="ObM-Az-hhF"/>
                                 </constraints>
                             </stackView>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="aVh-aI-2c1" userLabel="UI Layer">
-                                <rect key="frame" x="0.0" y="44" width="375" height="768"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="aVh-aI-2c1" userLabel="Interaction Layers">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ryY-vs-Sq3">
-                                        <rect key="frame" x="132.66666666666666" y="663" width="110" height="39.333333333333371"/>
-                                        <color key="backgroundColor" red="0.29333442100000001" green="0.74110265980000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-                                        <fontDescription key="fontDescription" type="system" weight="ultraLight" pointSize="26"/>
-                                        <color key="tintColor" cocoaTouchSystemColor="darkTextColor"/>
-                                        <inset key="contentEdgeInsets" minX="15" minY="7" maxX="15" maxY="7"/>
-                                        <state key="normal" title="Sample">
-                                            <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        </state>
-                                        <state key="disabled">
-                                            <color key="titleColor" cocoaTouchSystemColor="darkTextColor"/>
-                                        </state>
-                                    </button>
-                                    <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="dlu-Xl-jQO">
-                                        <rect key="frame" x="174.66666666666666" y="618" width="26" height="30"/>
-                                        <nil key="textColor"/>
-                                        <fontDescription key="fontDescription" type="system" weight="thin" pointSize="20"/>
-                                        <textInputTraits key="textInputTraits"/>
-                                    </textField>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BZB-uh-WVF">
-                                        <rect key="frame" x="17" y="0.0" width="58" height="36"/>
-                                        <fontDescription key="fontDescription" type="system" weight="thin" pointSize="20"/>
-                                        <state key="normal" title="Cancel"/>
-                                    </button>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="edy-f2-1BM" userLabel="UI Layer">
+                                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                                        <subviews>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="RP2-AB-HVB">
+                                                <rect key="frame" x="132.66666666666666" y="698.66666666666663" width="110" height="46"/>
+                                                <color key="backgroundColor" red="0.29333442100000001" green="0.74110265980000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                                <fontDescription key="fontDescription" type="system" weight="ultraLight" pointSize="26"/>
+                                                <color key="tintColor" cocoaTouchSystemColor="darkTextColor"/>
+                                                <inset key="contentEdgeInsets" minX="15" minY="7" maxX="15" maxY="7"/>
+                                                <state key="normal" title="Sample">
+                                                    <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                </state>
+                                                <state key="disabled">
+                                                    <color key="titleColor" cocoaTouchSystemColor="darkTextColor"/>
+                                                </state>
+                                            </button>
+                                            <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="DWZ-NG-ucs">
+                                                <rect key="frame" x="174.66666666666666" y="653.66666666666663" width="26" height="30"/>
+                                                <nil key="textColor"/>
+                                                <fontDescription key="fontDescription" type="system" weight="thin" pointSize="20"/>
+                                                <textInputTraits key="textInputTraits"/>
+                                            </textField>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hO1-5z-RhK">
+                                                <rect key="frame" x="17" y="52" width="58" height="36"/>
+                                                <fontDescription key="fontDescription" type="system" weight="thin" pointSize="20"/>
+                                                <state key="normal" title="Cancel"/>
+                                            </button>
+                                        </subviews>
+                                        <constraints>
+                                            <constraint firstItem="hO1-5z-RhK" firstAttribute="top" secondItem="edy-f2-1BM" secondAttribute="topMargin" id="6De-AA-KJ7"/>
+                                            <constraint firstItem="RP2-AB-HVB" firstAttribute="centerY" secondItem="edy-f2-1BM" secondAttribute="centerY" multiplier="16:9" id="6ry-ak-bZL"/>
+                                            <constraint firstItem="hO1-5z-RhK" firstAttribute="leading" secondItem="edy-f2-1BM" secondAttribute="leading" constant="17" id="BK8-mC-1UH"/>
+                                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="hO1-5z-RhK" secondAttribute="trailing" constant="20" symbolic="YES" id="Jis-Kq-Lmn"/>
+                                            <constraint firstItem="DWZ-NG-ucs" firstAttribute="centerX" secondItem="RP2-AB-HVB" secondAttribute="centerX" id="coA-VZ-Zd4"/>
+                                            <constraint firstItem="RP2-AB-HVB" firstAttribute="top" secondItem="DWZ-NG-ucs" secondAttribute="bottom" constant="15" id="dSE-mE-67H"/>
+                                            <constraint firstItem="RP2-AB-HVB" firstAttribute="centerX" secondItem="edy-f2-1BM" secondAttribute="centerX" id="svP-MR-rAu"/>
+                                        </constraints>
+                                    </view>
                                 </subviews>
                                 <constraints>
-                                    <constraint firstItem="dlu-Xl-jQO" firstAttribute="centerX" secondItem="ryY-vs-Sq3" secondAttribute="centerX" id="F7M-JG-38v"/>
-                                    <constraint firstItem="BZB-uh-WVF" firstAttribute="top" secondItem="aVh-aI-2c1" secondAttribute="top" id="IUT-Vf-nLg"/>
-                                    <constraint firstItem="ryY-vs-Sq3" firstAttribute="centerX" secondItem="aVh-aI-2c1" secondAttribute="centerX" id="KGA-5x-ihl"/>
-                                    <constraint firstAttribute="bottom" secondItem="dlu-Xl-jQO" secondAttribute="bottom" constant="120" id="UYO-2r-Q7W"/>
-                                    <constraint firstItem="BZB-uh-WVF" firstAttribute="leading" secondItem="aVh-aI-2c1" secondAttribute="leading" constant="17" id="Wz7-yi-gCM"/>
-                                    <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="BZB-uh-WVF" secondAttribute="trailing" symbolic="YES" id="bN9-tv-e5d"/>
-                                    <constraint firstItem="ryY-vs-Sq3" firstAttribute="centerY" secondItem="aVh-aI-2c1" secondAttribute="centerY" multiplier="16:9" id="d6w-1v-KoT"/>
-                                    <constraint firstItem="ryY-vs-Sq3" firstAttribute="top" secondItem="dlu-Xl-jQO" secondAttribute="bottom" constant="15" id="vRd-aD-CSg"/>
+                                    <constraint firstItem="edy-f2-1BM" firstAttribute="height" secondItem="aVh-aI-2c1" secondAttribute="height" id="6PI-QN-QLz"/>
+                                    <constraint firstItem="edy-f2-1BM" firstAttribute="leading" secondItem="aVh-aI-2c1" secondAttribute="leading" id="ERX-Qa-R54"/>
+                                    <constraint firstAttribute="trailing" secondItem="edy-f2-1BM" secondAttribute="trailing" id="QXV-NB-gkc"/>
+                                    <constraint firstItem="edy-f2-1BM" firstAttribute="top" secondItem="aVh-aI-2c1" secondAttribute="top" id="hiX-bf-Kpz"/>
                                 </constraints>
                             </view>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="BoH-1e-Ycg" firstAttribute="bottom" secondItem="RIr-Rm-Bfh" secondAttribute="bottom" id="K2n-T5-jaz"/>
-                            <constraint firstItem="aVh-aI-2c1" firstAttribute="top" secondItem="c70-Zo-887" secondAttribute="top" id="MwT-9k-isj"/>
+                            <constraint firstItem="aVh-aI-2c1" firstAttribute="top" secondItem="RIr-Rm-Bfh" secondAttribute="top" id="MwT-9k-isj"/>
+                            <constraint firstItem="aVh-aI-2c1" firstAttribute="height" secondItem="RIr-Rm-Bfh" secondAttribute="height" id="NO6-ab-kiK"/>
                             <constraint firstItem="aVh-aI-2c1" firstAttribute="leading" secondItem="RIr-Rm-Bfh" secondAttribute="leading" id="RaD-8Q-TR7"/>
                             <constraint firstItem="BoH-1e-Ycg" firstAttribute="leading" secondItem="RIr-Rm-Bfh" secondAttribute="leading" id="XEm-sg-55a"/>
                             <constraint firstItem="BoH-1e-Ycg" firstAttribute="trailing" secondItem="RIr-Rm-Bfh" secondAttribute="trailing" id="aK4-Fa-r64"/>
                             <constraint firstItem="BoH-1e-Ycg" firstAttribute="top" secondItem="c70-Zo-887" secondAttribute="top" id="e57-ML-j3r"/>
                             <constraint firstItem="aVh-aI-2c1" firstAttribute="trailing" secondItem="RIr-Rm-Bfh" secondAttribute="trailing" id="jfD-oG-gRg"/>
-                            <constraint firstItem="aVh-aI-2c1" firstAttribute="bottom" secondItem="BoH-1e-Ycg" secondAttribute="bottom" id="qC3-g0-Hgg"/>
+                            <constraint firstItem="aVh-aI-2c1" firstAttribute="bottom" secondItem="RIr-Rm-Bfh" secondAttribute="bottom" id="qC3-g0-Hgg"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="c70-Zo-887"/>
                     </view>
                     <connections>
-                        <outlet property="UILayer" destination="aVh-aI-2c1" id="UaW-W7-mhU"/>
+                        <outlet property="InteractionLayer" destination="aVh-aI-2c1" id="Mu9-9w-1Y5"/>
+                        <outlet property="UILayer" destination="edy-f2-1BM" id="hva-Og-wu5"/>
                         <outlet property="bottomFlash" destination="5FP-ew-f1b" id="lQV-Qh-aZx"/>
-                        <outlet property="cancelButton" destination="BZB-uh-WVF" id="f4D-qR-aE7"/>
+                        <outlet property="cancelButton" destination="hO1-5z-RhK" id="gkQ-Zn-oFq"/>
                         <outlet property="rootView" destination="RIr-Rm-Bfh" id="PfM-xR-6mV"/>
-                        <outlet property="takeSampleButton" destination="ryY-vs-Sq3" id="yrd-Od-sH6"/>
+                        <outlet property="takeSampleButton" destination="RP2-AB-HVB" id="Ufq-S7-neU"/>
                         <outlet property="topFlash" destination="k2S-t8-msJ" id="VNH-EK-egS"/>
-                        <outlet property="userPrompt" destination="dlu-Xl-jQO" id="7QI-nt-2gr"/>
+                        <outlet property="userPrompt" destination="DWZ-NG-ucs" id="ClA-cC-uEX"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="7yQ-HM-D4i" userLabel="First Responder" sceneMemberID="firstResponder"/>
