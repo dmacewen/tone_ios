@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import AVFoundation
 import UIKit
 import RxSwift
 import RxCocoa
@@ -48,7 +49,7 @@ class SampleSkinToneViewController: UIViewController {
         
         takeSampleButton.rx.tap
             .subscribe({ _ in
-                self.viewModel.sampleState.onNext(.referenceSample(photoSettings: nil))
+                self.viewModel.sampleState.onNext(.referenceSample)
             }).disposed(by: disposeBag)
         
         viewModel.sampleState
@@ -56,21 +57,56 @@ class SampleSkinToneViewController: UIViewController {
             .bind(to: UILayer.rx.isHidden )
             .disposed(by: disposeBag)
         
+        viewModel.flashSettings
+            .subscribe(onNext: { flashSetting in
+                //Flash Shim while working on checkers
+                let area = flashSetting.area
+                let areas = flashSetting.areas
+                
+                if areas == 2 {
+                    if area == 1 {
+                        self.topFlash.isHidden = false
+                        self.bottomFlash.isHidden = true
+                    } else {
+                        self.bottomFlash.isHidden = false
+                        self.topFlash.isHidden = true
+                    }
+                } else if areas == 1 {
+                    if area == 0 {
+                        self.topFlash.isHidden = true
+                        self.topFlash.isHidden = true
+                    } else {
+                        self.topFlash.isHidden = false
+                        self.topFlash.isHidden = false
+                    }
+                }
+            }).disposed(by: disposeBag)
+        
+        viewModel.sampleState
+            .filter { $0 == .previewUser }
+            .do { self.setupPreview(cameraState: self.viewModel.cameraState) }
+            .flatMap { _ in self.viewModel.cameraState.preparePhotoSettings(numPhotos: 4) }
+            .subscribe { print("Preview Processed!") }
+            .disposed(by: disposeBag)
+
+        
         viewModel.sampleState
             .subscribe(onNext: { sampleState in
                 switch(sampleState) {
-                case .previewUser: do {
+                case .previewUser:
+                    self.setupPreview(cameraState: self.viewModel.cameraState)
+
                     print("PREVIEW!!!")
                     return
-                    }
-                case .referenceSample(photoSettings: let photoSettings): do {
+                    
+                case .referenceSample:
                     print("REFERENCE PHOTOS!!!")
                     return
-                    }
-                case .sample(photoSettings: let photoSettings): do {
+                
+                case .sample:
                     print("SAMPLE PHOTOS!!!")
                     return
-                    }
+                
                 case .upload:
                     print("UPLOADS!!!")
                     return
@@ -78,5 +114,20 @@ class SampleSkinToneViewController: UIViewController {
                 
             }).disposed(by: disposeBag)
         
-    }    
+    }
+    
+    func setupPreview(cameraState: CameraState) {
+        //Save original screen brightness so we can revert to it later
+        viewModel.originalScreenBrightness = UIScreen.main.brightness
+        UIScreen.main.brightness = CGFloat(1.0)
+
+        //Create View Preview Layer
+        let videoPreviewLayer = AVCaptureVideoPreviewLayer(session: cameraState.captureSession)
+        videoPreviewLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
+        videoPreviewLayer.frame = view.layer.bounds
+        
+        //Set Video Preview Layer to Root View
+        rootView.backgroundColor = UIColor.black
+        rootView.layer.insertSublayer(videoPreviewLayer, below: UILayer.layer)
+    }
 }

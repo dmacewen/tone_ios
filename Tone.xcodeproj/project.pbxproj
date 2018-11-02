@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		86131005218B9E0A00BD1305 /* CaptureUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86131004218B9E0A00BD1305 /* CaptureUtils.swift */; };
 		86193C8B21891B29001F5C4E /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C8A21891B29001F5C4E /* HomeViewModel.swift */; };
 		86193C8D21891B36001F5C4E /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C8C21891B36001F5C4E /* HomeViewController.swift */; };
 		86193C94218945B8001F5C4E /* SampleSkinToneViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C93218945B8001F5C4E /* SampleSkinToneViewModel.swift */; };
@@ -71,6 +72,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		86131004218B9E0A00BD1305 /* CaptureUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureUtils.swift; sourceTree = "<group>"; };
 		86193C8A21891B29001F5C4E /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		86193C8C21891B36001F5C4E /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
 		86193C93218945B8001F5C4E /* SampleSkinToneViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleSkinToneViewModel.swift; sourceTree = "<group>"; };
@@ -164,6 +166,7 @@
 			children = (
 				86213F9A2187F56600A622FB /* KeyboardHeightObservable.swift */,
 				864A580B2187C8EB006FFC1D /* Globals.swift */,
+				86131004218B9E0A00BD1305 /* CaptureUtils.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -385,6 +388,7 @@
 				86193C8B21891B29001F5C4E /* HomeViewModel.swift in Sources */,
 				8651B60E2187D72200FB7A3A /* LoginViewController.swift in Sources */,
 				864A580C2187C8EB006FFC1D /* Globals.swift in Sources */,
+				86131005218B9E0A00BD1305 /* CaptureUtils.swift in Sources */,
 				86193C8D21891B36001F5C4E /* HomeViewController.swift in Sources */,
 				8651B60C2187D6FA00FB7A3A /* LoginViewModel.swift in Sources */,
 				8694A07F2187BF1A00615BE3 /* RootNavigationViewModel.swift in Sources */,

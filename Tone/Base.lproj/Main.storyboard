@@ -226,8 +226,8 @@
                                             <color key="titleColor" cocoaTouchSystemColor="darkTextColor"/>
                                         </state>
                                     </button>
-                                    <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="dlu-Xl-jQO">
-                                        <rect key="frame" x="0.0" y="624" width="375" height="24"/>
+                                    <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="dlu-Xl-jQO">
+                                        <rect key="frame" x="174.66666666666666" y="618" width="26" height="30"/>
                                         <nil key="textColor"/>
                                         <fontDescription key="fontDescription" type="system" weight="thin" pointSize="20"/>
                                         <textInputTraits key="textInputTraits"/>
@@ -244,7 +244,6 @@
                                     <constraint firstItem="ryY-vs-Sq3" firstAttribute="centerX" secondItem="aVh-aI-2c1" secondAttribute="centerX" id="KGA-5x-ihl"/>
                                     <constraint firstAttribute="bottom" secondItem="dlu-Xl-jQO" secondAttribute="bottom" constant="120" id="UYO-2r-Q7W"/>
                                     <constraint firstItem="BZB-uh-WVF" firstAttribute="leading" secondItem="aVh-aI-2c1" secondAttribute="leading" constant="17" id="Wz7-yi-gCM"/>
-                                    <constraint firstItem="dlu-Xl-jQO" firstAttribute="leading" secondItem="aVh-aI-2c1" secondAttribute="leading" id="b9U-8l-C5o"/>
                                     <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="BZB-uh-WVF" secondAttribute="trailing" symbolic="YES" id="bN9-tv-e5d"/>
                                     <constraint firstItem="ryY-vs-Sq3" firstAttribute="centerY" secondItem="aVh-aI-2c1" secondAttribute="centerY" multiplier="16:9" id="d6w-1v-KoT"/>
                                     <constraint firstItem="ryY-vs-Sq3" firstAttribute="top" secondItem="dlu-Xl-jQO" secondAttribute="bottom" constant="15" id="vRd-aD-CSg"/>

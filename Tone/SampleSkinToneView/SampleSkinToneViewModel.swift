@@ -18,21 +18,15 @@ import UIKit
 //import Compression
 
 class SampleSkinToneViewModel {
-    struct PhotoSettings {
-        var iso = 0.0
-        var exposure = 0.0
-        var whiteBalance = [0.0, 0.0, 0.0]
-    }
-    
     enum Event {
         case cancel
     }
     
     enum SampleStates {
         case previewUser
-        case referenceSample(photoSettings: PhotoSettings?)
-        case sample(photoSettings: PhotoSettings)
-        case upload(images: [UIImage], photoSettings: PhotoSettings)
+        case referenceSample
+        case sample
+        case upload
     }
     
     enum UserFaceStates {
@@ -57,11 +51,17 @@ class SampleSkinToneViewModel {
     
     let userFaceState = BehaviorSubject<UserFaceStates>(value: .ok/*.noFaceFound*/)
     let sampleState = BehaviorSubject<SampleStates>(value: .previewUser)
+    
     let referencePhotos = PublishSubject<AVCapturePhoto>()
     let samplePhotos = PublishSubject<AVCapturePhoto>()
     
+    let flashSettings = PublishSubject<FlashSettings>()
+    
     let events = PublishSubject<Event>()
-        
+    
+    var originalScreenBrightness: CGFloat = 0.0
+    var cameraState = CameraState()
+    
     func cancel() {
         events.onNext(.cancel)
     }
