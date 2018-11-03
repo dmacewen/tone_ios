@@ -12,38 +12,44 @@ import RxSwift
 extension ObservableType {
     //Takes a function that returns an observable
     //Waits for the observable of that function to complete, emitting the result, before processing the next
-    func serialMap<R>(transform: @escaping (E) -> R) -> Observable<R> {
+    func serialMap<R>(transform: @escaping (E) -> PublishSubject<R>) -> Observable<R> {
         let disposeBag = DisposeBag()
-        var taskQueue: [PublishSubject<E>] = []
-        let workerA = PublishSubject<PublishSubject<E>>()
-        let workerB = PublishSubject<PublishSubject<E>>()
-        let results = PublishSubject<E>()
+        //var taskQueue: [PublishSubject<E>] = []
+        var taskQueue: [E] = []
+
+        let workerA = PublishSubject<E>()
+        let workerB = PublishSubject<E>()
+        let results = PublishSubject<[R]>()
         
         workerA.asObservable()
-            .subscribe(onNext: {
-                $0.subscribe(
-                    onNext: { value in
-                        results.onNext(value)
-                }, onCompleted: {
-                    taskQueue.removeFirst()
-                    if !taskQueue.isEmpty {
-                        workerB.onNext(taskQueue.first!)
-                    }
-                }).disposed(by:disposeBag)
+            .subscribe(onNext: { arg in
+                transform(arg)
+                    .toArray()
+                    .subscribe(
+                        onNext: { value in
+                            results.onNext(value)
+                        } , onCompleted: {
+                            taskQueue.removeFirst()
+                            if !taskQueue.isEmpty {
+                                workerB.onNext(taskQueue.first!)
+                            }
+                    }).disposed(by:disposeBag)
             })
             .disposed(by: disposeBag)
         
         workerB.asObservable()
-            .subscribe(onNext: {
-                $0.subscribe(
-                    onNext: { value in
-                        results.onNext(value)
-                }, onCompleted: {
-                    taskQueue.removeFirst()
-                    if !taskQueue.isEmpty {
-                        workerA.onNext(taskQueue.first!)
-                    }
-                }).disposed(by:disposeBag)
+            .subscribe(onNext: { arg in
+                transform(arg)
+                    .toArray()
+                    .subscribe(
+                        onNext: { value in
+                            results.onNext(value)
+                    } , onCompleted: {
+                        taskQueue.removeFirst()
+                        if !taskQueue.isEmpty {
+                            workerB.onNext(taskQueue.first!)
+                        }
+                    }).disposed(by:disposeBag)
             })
             .disposed(by: disposeBag)
         
