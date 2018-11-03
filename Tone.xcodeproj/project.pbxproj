@@ -34,6 +34,9 @@
 		86F138EB2187884F004C6092 /* RxCocoa.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 86F138D921877F89004C6092 /* RxCocoa.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		86F138EC21878876004C6092 /* RxSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 86F138DA21877F89004C6092 /* RxSwift.framework */; };
 		86F138ED21878876004C6092 /* RxSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 86F138DA21877F89004C6092 /* RxSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		86F1BCA6218D0F1F00A18457 /* RxSwiftExt.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 869FB6D0218D0DDC00B257D2 /* RxSwiftExt.framework */; };
+		86F1BCA8218D0F2700A18457 /* RxSwiftExt.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 869FB6D0218D0DDC00B257D2 /* RxSwiftExt.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		86F1BCAA218D219E00A18457 /* serialMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F1BCA9218D219E00A18457 /* serialMap.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -64,6 +67,7 @@
 				86F138EB2187884F004C6092 /* RxCocoa.framework in Embed Frameworks */,
 				86F138E621878804004C6092 /* RxAlamofire.framework in Embed Frameworks */,
 				86D5C7442187897000D5E15E /* Alamofire.framework in Embed Frameworks */,
+				86F1BCA8218D0F2700A18457 /* RxSwiftExt.framework in Embed Frameworks */,
 				86F138E921878823004C6092 /* RxBlocking.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -83,6 +87,7 @@
 		8651B60D2187D72200FB7A3A /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		8694A07E2187BF1A00615BE3 /* RootNavigationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootNavigationViewModel.swift; sourceTree = "<group>"; };
 		8694A0802187BF4300615BE3 /* RootNavigationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootNavigationViewController.swift; sourceTree = "<group>"; };
+		869FB6D0218D0DDC00B257D2 /* RxSwiftExt.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxSwiftExt.framework; path = Carthage/Build/iOS/RxSwiftExt.framework; sourceTree = "<group>"; };
 		86D5C7452187898000D5E15E /* RxTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxTest.framework; path = Carthage/Build/iOS/RxTest.framework; sourceTree = "<group>"; };
 		86F138A6218768C2004C6092 /* Tone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		86F138A9218768C2004C6092 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -102,6 +107,7 @@
 		86F138DB21877F89004C6092 /* Alamofire.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Alamofire.framework; path = Carthage/Build/iOS/Alamofire.framework; sourceTree = "<group>"; };
 		86F138DC21877F89004C6092 /* RxAlamofire.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxAlamofire.framework; path = Carthage/Build/iOS/RxAlamofire.framework; sourceTree = "<group>"; };
 		86F138DD21877F89004C6092 /* Carthage */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Carthage; sourceTree = "<group>"; };
+		86F1BCA9218D219E00A18457 /* serialMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = serialMap.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -114,6 +120,7 @@
 				86F138DE21877F89004C6092 /* RxBlocking.framework in Frameworks */,
 				86F138EA2187884F004C6092 /* RxCocoa.framework in Frameworks */,
 				86F138E521878804004C6092 /* RxAlamofire.framework in Frameworks */,
+				86F1BCA6218D0F1F00A18457 /* RxSwiftExt.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -166,6 +173,7 @@
 			children = (
 				86213F9A2187F56600A622FB /* KeyboardHeightObservable.swift */,
 				864A580B2187C8EB006FFC1D /* Globals.swift */,
+				86F1BCA9218D219E00A18457 /* serialMap.swift */,
 				86131004218B9E0A00BD1305 /* CaptureUtils.swift */,
 			);
 			path = Utils;
@@ -239,6 +247,7 @@
 		86F138D721877F89004C6092 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				869FB6D0218D0DDC00B257D2 /* RxSwiftExt.framework */,
 				86D5C7452187898000D5E15E /* RxTest.framework */,
 				86F138DB21877F89004C6092 /* Alamofire.framework */,
 				86F138DD21877F89004C6092 /* Carthage */,
@@ -386,6 +395,7 @@
 				86213F9B2187F56600A622FB /* KeyboardHeightObservable.swift in Sources */,
 				86193C94218945B8001F5C4E /* SampleSkinToneViewModel.swift in Sources */,
 				86193C8B21891B29001F5C4E /* HomeViewModel.swift in Sources */,
+				86F1BCAA218D219E00A18457 /* serialMap.swift in Sources */,
 				8651B60E2187D72200FB7A3A /* LoginViewController.swift in Sources */,
 				864A580C2187C8EB006FFC1D /* Globals.swift in Sources */,
 				86131005218B9E0A00BD1305 /* CaptureUtils.swift in Sources */,

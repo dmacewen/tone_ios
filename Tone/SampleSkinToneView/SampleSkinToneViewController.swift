@@ -36,32 +36,30 @@ class SampleSkinToneViewController: UIViewController {
             .single()
             .subscribe(onNext: { _ in self.viewModel.cancel() })
             .disposed(by: disposeBag)
+        
+        takeSampleButton.rx.tap
+            .subscribe(onNext: { _ in
+                self.viewModel.sampleState.onNext(.referenceSample)
+            }).disposed(by: disposeBag)
 
-        viewModel.userFaceState.asObserver()
+        viewModel.userFaceState
             .map { $0.message }
             .bind(to: userPrompt.rx.text)
             .disposed(by: disposeBag)
         
-        viewModel.userFaceState//.asObserver()
+        viewModel.userFaceState
             .map { $0 == .ok }
             .bind(to: takeSampleButton.rx.isEnabled)
             .disposed(by: disposeBag)
         
-        takeSampleButton.rx.tap
-            .subscribe({ _ in
-                self.viewModel.sampleState.onNext(.referenceSample)
-            }).disposed(by: disposeBag)
-        
         viewModel.sampleState
+            .observeOn(MainScheduler.instance)
             .map { .previewUser != $0}
             .bind(to: InteractionLayer.rx.isHidden )
             .disposed(by: disposeBag)
         
         viewModel.flashSettings
             .observeOn(MainScheduler.instance)
-            .distinctUntilChanged({ (A, B) -> Bool in
-                return (A.areas == B.areas && A.area == B.area)
-            })
             .subscribe(onNext: { flashSetting in
                 //Flash Shim while working on checkers
                 let area = flashSetting.area
@@ -88,58 +86,21 @@ class SampleSkinToneViewController: UIViewController {
         
         viewModel.sampleState
             .filter { $0 == .previewUser }
-            .do(onNext: {_ in self.setupPreview(camera: self.viewModel.camera) })
-            .subscribe { _ in print("Preview Processed!") }
-            .disposed(by: disposeBag)
-        
-        viewModel.sampleState
-            .filter { $0 == .referenceSample }
-            .subscribe { _ in
-                print("Taking Reference Sample!")
-                self.viewModel.sampleState.onNext(.sample)
-            }
-            .disposed(by: disposeBag)
-        
-        viewModel.sampleState
-            .filter { $0 == .sample }
-            .do(onNext: { _ in print("CAPTURING SAMPLE") } )
-            //.do { self.setupPreview(cameraState: self.viewModel.cameraState) }
-            .flatMap { _ in self.viewModel.camera.preparePhotoSettings(numPhotos: 4).asObservable() }
-            .flatMap { _ in self.viewModel.camera.capturePhoto(flashSettings: FlashSettings(area: 1, areas: 1)).asObserver() }
-            .flatMap { _ in self.viewModel.camera.capturePhoto(flashSettings: FlashSettings(area: 1, areas: 2)).asObserver() }
-            .flatMap { _ in self.viewModel.camera.capturePhoto(flashSettings: FlashSettings(area: 2, areas: 2)).asObserver() }
-            .flatMap { _ in self.viewModel.camera.capturePhoto(flashSettings: FlashSettings(area: 0, areas: 1)).asObserver() }
-            .subscribe { _ in
-                print("Taking Samples!")
-                self.viewModel.sampleState.onNext(.upload)
-            }
-            .disposed(by: disposeBag)
-        
-        viewModel.sampleState
-            .filter { $0 == .upload }
-            .subscribe { _ in
-                print("Uploading Images!")
-                self.viewModel.sampleState.onNext(.previewUser)
-            }
-            .disposed(by: disposeBag)
-        
-    }
-    
-    func setupPreview(camera: Camera) {
-        print("Setting up preview!")
-        //Save original screen brightness so we can revert to it later
-        viewModel.originalScreenBrightness = UIScreen.main.brightness
-        UIScreen.main.brightness = CGFloat(1.0)
-
-        //Create View Preview Layer
-        let videoPreviewLayer = AVCaptureVideoPreviewLayer(session: camera.captureSession)
-        videoPreviewLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
-        videoPreviewLayer.frame = view.layer.bounds
-        
-        //Set Video Preview Layer to Root View
-        rootView.backgroundColor = UIColor.black
-        //rootView.layer.insertSublayer(videoPreviewLayer, below: UILayer.layer)
-        //UILayer.layer.insertSublayer(videoPreviewLayer, below: UILayer.layer)
-        InteractionLayer.layer.insertSublayer(videoPreviewLayer, below: UILayer.layer)
+            .take(1)
+            .subscribe(onNext: { _ in
+                print("Setting up preview!")
+                //Save original screen brightness so we can revert to it later
+                self.viewModel.originalScreenBrightness = UIScreen.main.brightness
+                UIScreen.main.brightness = CGFloat(1.0)
+                
+                //Create View Preview Layer
+                let videoPreviewLayer = AVCaptureVideoPreviewLayer(session: self.viewModel.camera.captureSession)
+                videoPreviewLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
+                videoPreviewLayer.frame = self.view.layer.bounds
+                
+                //Set Video Preview Layer to Root View
+                self.rootView.backgroundColor = UIColor.black
+                self.InteractionLayer.layer.insertSublayer(videoPreviewLayer, below: self.UILayer.layer)
+            }, onError: { error in print(error) } ).disposed(by: disposeBag)
     }
 }

@@ -10,6 +10,7 @@ import Foundation
 //import Foundation.NSTimer
 
 import RxSwift
+import RxSwiftExt
 
 import AVFoundation
 import UIKit
@@ -49,6 +50,7 @@ class SampleSkinToneViewModel {
         }
     }
     
+    
     let userFaceState = BehaviorSubject<UserFaceStates>(value: .ok/*.noFaceFound*/)
     let sampleState = BehaviorSubject<SampleStates>(value: .previewUser)
     
@@ -61,10 +63,58 @@ class SampleSkinToneViewModel {
     
     var originalScreenBrightness: CGFloat = 0.0
     var camera: Camera
-        
+    
+    let disposeBag = DisposeBag()
+
     init() {
-        camera = Camera(flashStream: flashSettings)
+        camera = Camera(flashStream: flashSettings, photoStream: samplePhotos)
         print("finished setup")
+        
+        sampleState
+            .observeOn(MainScheduler.instance)
+            .filter { $0 == .referenceSample }
+            .subscribe { _ in
+                print("Taking Reference Sample!")
+                self.sampleState.onNext(.sample)
+            }
+            .disposed(by: disposeBag)
+        
+        sampleState
+            .observeOn(MainScheduler.instance)
+            .filter { $0 == .sample }
+            .subscribe { _ in
+                print("Taking Samples!")
+                
+                let sampleFlashSettings = [FlashSettings(area: 1, areas: 1), FlashSettings(area: 1, areas: 2),FlashSettings(area: 2, areas: 2),FlashSettings(area: 0, areas: 1)]
+                
+                Observable<FlashSettings>.from(sampleFlashSettings)
+                    .observeOn(MainScheduler.instance)
+                    .pausableBuffered(self.camera.isAvailable, limit: 4)
+                    .subscribe(onNext: { flashSetting in
+                        self.camera.isAvailable.onNext(false)
+                        self.camera.capturePhoto(flashSettings: flashSetting)
+                    }, onError: { error in print(error) })
+                    .disposed(by: self.disposeBag)
+            }
+            .disposed(by: disposeBag)
+        
+        samplePhotos
+            .take(4)
+            .toArray()
+            .subscribe(onNext: { _ in
+               print("Got All The Photos!!!")
+                self.sampleState.onNext(.upload)
+            })
+            .disposed(by: disposeBag)
+        
+        sampleState
+            .observeOn(MainScheduler.instance)
+            .filter { $0 == .upload }
+            .subscribe { _ in
+                print("Uploading Images!")
+                self.sampleState.onNext(.previewUser)
+            }
+            .disposed(by: disposeBag)
     }
     
     func cancel() {
@@ -73,3 +123,10 @@ class SampleSkinToneViewModel {
 }
 
 
+//.observeOn(MainScheduler.instance)
+//.do { self.setupPreview(cameraState: self.viewModel.cameraState) }
+//.flatMap { _ in return self.camera.preparePhotoSettings(numPhotos: 4).asObservable() }
+//.flatMap { _ in return self.camera.capturePhoto(flashSettings: FlashSettings(area: 1, areas: 1)).asObservable() }
+//.flatMap { _ in return self.camera.capturePhoto(flashSettings: FlashSettings(area: 1, areas: 2)).asObservable() }
+//.flatMap { _ in return self.viewModel.getCamera().capturePhoto(flashSettings: FlashSettings(area: 2, areas: 2)).asObservable() }
+//.flatMap { _ in return self.viewModel.getCamera().capturePhoto(flashSettings: FlashSettings(area: 0, areas: 1)).asObservable() }

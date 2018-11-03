@@ -36,14 +36,17 @@ class Camera: NSObject {
     var captureDevice: AVCaptureDevice
     var captureSession: AVCaptureSession
     
-    private var flashStream: PublishSubject<FlashSettings>
-    private var photoSettingsIndex = 0
+    var flashStream: PublishSubject<FlashSettings>
+    var photoStream: PublishSubject<AVCapturePhoto>
+    var isAvailable =  BehaviorSubject<Bool>(value: true)
+    var photoSettingsIndex = 0
     
     private let capture = PublishSubject<AVCapturePhoto>()
     
-    init(flashStream: PublishSubject<FlashSettings>) {
+    init(flashStream: PublishSubject<FlashSettings>, photoStream: PublishSubject<AVCapturePhoto>) {
         print("Setting up camera...")
         self.flashStream = flashStream
+        self.photoStream = photoStream
 
         //Create Capture Session
         captureSession = AVCaptureSession()
@@ -102,14 +105,16 @@ class Camera: NSObject {
         }
     }
     
-    func capturePhoto(flashSettings: FlashSettings) -> PublishSubject<AVCapturePhoto> {
-        //flashStream.onNext(flashSettings)
+    //Use Synchronous Subject and apply a flat map to each instead of as a function?
+    // Or just neatly wrap capture Photo and the delegate in a single observable? Observable.just("AVCaputurePhoto") or something?
+    func capturePhoto(flashSettings: FlashSettings) {
+        print("Creating New Capture Subject!")
         
         //Move to chain? bind isAdjustingExposure?
         if captureDevice.isAdjustingExposure == true {
             //fatalError("Still Adjusting Exposure")
             print("Still Adjusting Exposure")
-
+            
             /*
              print("Posponing Capture!")
              
@@ -120,25 +125,26 @@ class Camera: NSObject {
         }
         print("Captuing Photo with Flash Settings :: \(flashSettings.area) \(flashSettings.areas)")
         flashStream.onNext(flashSettings)
-        
+        print("Getting Photo Settings!")
         let photoSettings = capturePhotoOutput.preparedPhotoSettingsArray.count > photoSettingsIndex
             ? capturePhotoOutput.preparedPhotoSettingsArray[photoSettingsIndex]
             : getPhotoSettings()
         
         photoSettingsIndex += 1
+        print("Capturing!")
         capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
-        
-        return capture
     }
 }
 
 extension Camera: AVCapturePhotoCaptureDelegate {
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+        print("Done Capture!")
         guard error == nil else {
-            capture.onError(error!)
-            return
+            fatalError("Error in capture!")
         }
-        capture.onNext(photo)
+        
+        photoStream.onNext(photo)
+        isAvailable.onNext(true)
     }
 }
 
