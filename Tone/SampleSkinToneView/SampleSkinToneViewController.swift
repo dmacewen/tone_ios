@@ -67,19 +67,19 @@ class SampleSkinToneViewController: UIViewController {
                 print("Setting Flash! Area: \(area) Areas: \(areas)")
                 if areas == 2 {
                     if area == 1 {
-                        self.topFlash.isHidden = false
-                        self.bottomFlash.isHidden = true
+                        self.topFlash.backgroundColor = UIColor.white
+                        self.bottomFlash.backgroundColor = UIColor.clear
                     } else {
-                        self.bottomFlash.isHidden = false
-                        self.topFlash.isHidden = true
+                        self.topFlash.backgroundColor = UIColor.clear
+                        self.bottomFlash.backgroundColor = UIColor.white
                     }
                 } else if areas == 1 {
-                    if area == 0 {
-                        self.topFlash.isHidden = true
-                        self.topFlash.isHidden = true
+                    if area == 1 {
+                        self.topFlash.backgroundColor = UIColor.white
+                        self.bottomFlash.backgroundColor = UIColor.white
                     } else {
-                        self.topFlash.isHidden = false
-                        self.topFlash.isHidden = false
+                        self.topFlash.backgroundColor = UIColor.clear
+                        self.bottomFlash.backgroundColor = UIColor.clear
                     }
                 }
             }).disposed(by: disposeBag)
@@ -99,7 +99,6 @@ class SampleSkinToneViewController: UIViewController {
                 videoPreviewLayer.frame = self.view.layer.bounds
                 
                 //Set Video Preview Layer to Root View
-                self.rootView.backgroundColor = UIColor.black
                 self.InteractionLayer.layer.insertSublayer(videoPreviewLayer, below: self.UILayer.layer)
             }, onError: { error in print(error) } ).disposed(by: disposeBag)
     }

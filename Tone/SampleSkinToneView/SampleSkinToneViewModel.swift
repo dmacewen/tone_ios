@@ -93,39 +93,18 @@ class SampleSkinToneViewModel {
                 
                 Observable<(Camera, FlashSettings)>.from(sampleFlashSettings)
                     .serialMap(transform: { (camera, flashSetting) in camera.capturePhoto(flashSetting) })
+                    .toArray()
                     .subscribe(onNext: { photo in
-                        print("")
-                        print("Got Photo! \(photo)")
+                        print("Got Photos! \(photo)")
                     }, onError: { error in
-                        print("")
                         print(error)
                     }, onCompleted: {
-                        print("")
                         print("Completed All Sample Photos...")
+                        self.sampleState.onNext(.upload)
                     })
                     .disposed(by: self.disposeBag)
-                    
-                    /*
-                    .observeOn(MainScheduler.instance)
-                    .pausableBuffered(self.camera.isAvailable, limit: 4)
-                    .subscribe(onNext: { flashSetting in
-                        self.camera.isAvailable.onNext(false)
-                        self.camera.capturePhoto(flashSettings: flashSetting)
-                    }, onError: { error in print(error) })
-                    .disposed(by: self.disposeBag)
-                    */
             }
             .disposed(by: disposeBag)
-        /*
-        samplePhotos
-            .take(4)
-            .toArray()
-            .subscribe(onNext: { _ in
-               print("Got All The Photos!!!")
-                self.sampleState.onNext(.upload)
-            })
-            .disposed(by: disposeBag)
- */
         
         sampleState
             .observeOn(MainScheduler.instance)

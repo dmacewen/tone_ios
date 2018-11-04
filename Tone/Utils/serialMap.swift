@@ -43,16 +43,12 @@ extension ObservableType {
                     .toArray()
                     .subscribe(
                         onNext: { value in
-                            print("On Next A :: \(value)")
                             callbackQueue[0].onNext(value)
                         }, onCompleted: {
-                            print("On Completed A")
                             taskQueue.removeFirst()
                             let callback = callbackQueue.removeFirst()
                             if !taskQueue.isEmpty {
                                 workerB.onNext(taskQueue.first!)
-                            } else {
-                                completedCallback.onCompleted()
                             }
                             callback.onCompleted()
                     }).disposed(by:disposeBag)
@@ -66,16 +62,12 @@ extension ObservableType {
                     .subscribeOn(MainScheduler.instance)
                     .toArray()
                     .subscribe( onNext: { value in
-                        print("On Next B :: \(value)")
                         callbackQueue[0].onNext(value)
                     }, onCompleted: {
-                        print("On Completed B")
                         taskQueue.removeFirst()
                         let callback = callbackQueue.removeFirst()
                         if !taskQueue.isEmpty {
                             workerA.onNext(taskQueue.first!)
-                        } else {
-                            completedCallback.onCompleted()
                         }
                         callback.onCompleted()
                     }).disposed(by:disposeBag)
@@ -90,31 +82,16 @@ extension ObservableType {
                     addTask(task: value)
                         .observeOn(MainScheduler.instance)
                         .subscribe(onNext: { result in
-                            print("RESULT:: \(result)")
                             observer.on(.next(result[0]))
+                            
+                            if taskQueue.isEmpty {
+                                completedCallback.onCompleted()
+                            }
                         }).disposed(by: disposeBag)
                 case .error(let error):
                     observer.on(.error(error))
                 case .completed:
                     completedCallback.subscribe(onCompleted: { observer.on(.completed) }).disposed(by: disposeBag)
-                }
-            }
-            
-            return subscription
-        }
-    }
-
-    func myMap<R>(transform: @escaping (E) -> R) -> Observable<R> {
-        return Observable.create { observer in
-            let subscription = self.subscribe { e in
-                switch e {
-                case .next(let value):
-                    let result = transform(value)
-                    observer.on(.next(result))
-                case .error(let error):
-                    observer.on(.error(error))
-                case .completed:
-                    observer.on(.completed)
                 }
             }
             
