@@ -94,7 +94,7 @@ class SampleSkinToneViewController: UIViewController {
                 UIScreen.main.brightness = CGFloat(1.0)
                 
                 //Create View Preview Layer
-                let videoPreviewLayer = AVCaptureVideoPreviewLayer(session: self.viewModel.camera.captureSession)
+                let videoPreviewLayer = AVCaptureVideoPreviewLayer(session: self.viewModel.cameraState.captureSession)
                 videoPreviewLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
                 videoPreviewLayer.frame = self.view.layer.bounds
                 

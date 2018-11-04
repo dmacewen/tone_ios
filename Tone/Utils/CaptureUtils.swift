@@ -31,22 +31,20 @@ struct FlashSettings {
 }
 
 //Defining a Camera how we want it
-class Camera: NSObject {
+class CameraState {
     var capturePhotoOutput: AVCapturePhotoOutput
     var captureDevice: AVCaptureDevice
     var captureSession: AVCaptureSession
     
     var flashStream: PublishSubject<FlashSettings>
-    var photoStream: PublishSubject<AVCapturePhoto>
+    //var photoStream: PublishSubject<AVCapturePhoto>
     var isAvailable =  BehaviorSubject<Bool>(value: true)
     var photoSettingsIndex = 0
     
-    private let capture = PublishSubject<AVCapturePhoto>()
-    
-    init(flashStream: PublishSubject<FlashSettings>, photoStream: PublishSubject<AVCapturePhoto>) {
+    init(flashStream: PublishSubject<FlashSettings>){//}, photoStream: PublishSubject<AVCapturePhoto>) {
         print("Setting up camera...")
         self.flashStream = flashStream
-        self.photoStream = photoStream
+        //self.photoStream = photoStream
 
         //Create Capture Session
         captureSession = AVCaptureSession()
@@ -104,14 +102,25 @@ class Camera: NSObject {
             return Disposables.create()
         }
     }
+}
+
+class Camera: NSObject {
+    private var cameraState: CameraState
+    private let capture = PublishSubject<AVCapturePhoto>()
     
+    
+    init(cameraState: CameraState) {
+        print("New Camera")
+        self.cameraState = cameraState
+    }
+
     //Use Synchronous Subject and apply a flat map to each instead of as a function?
     // Or just neatly wrap capture Photo and the delegate in a single observable? Observable.just("AVCaputurePhoto") or something?
-    func capturePhoto(flashSettings: FlashSettings) {
+    func capturePhoto(_ flashSettings: FlashSettings) -> PublishSubject<AVCapturePhoto> {
         print("Creating New Capture Subject!")
         
         //Move to chain? bind isAdjustingExposure?
-        if captureDevice.isAdjustingExposure == true {
+        if cameraState.captureDevice.isAdjustingExposure == true {
             //fatalError("Still Adjusting Exposure")
             print("Still Adjusting Exposure")
             
@@ -124,15 +133,16 @@ class Camera: NSObject {
              */
         }
         print("Captuing Photo with Flash Settings :: \(flashSettings.area) \(flashSettings.areas)")
-        flashStream.onNext(flashSettings)
+        cameraState.flashStream.onNext(flashSettings)
         print("Getting Photo Settings!")
-        let photoSettings = capturePhotoOutput.preparedPhotoSettingsArray.count > photoSettingsIndex
-            ? capturePhotoOutput.preparedPhotoSettingsArray[photoSettingsIndex]
+        let photoSettings = cameraState.capturePhotoOutput.preparedPhotoSettingsArray.count > cameraState.photoSettingsIndex
+            ? cameraState.capturePhotoOutput.preparedPhotoSettingsArray[cameraState.photoSettingsIndex]
             : getPhotoSettings()
         
-        photoSettingsIndex += 1
+        cameraState.photoSettingsIndex += 1
         print("Capturing!")
-        capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
+        cameraState.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
+        return capture
     }
 }
 
@@ -143,8 +153,8 @@ extension Camera: AVCapturePhotoCaptureDelegate {
             fatalError("Error in capture!")
         }
         
-        photoStream.onNext(photo)
-        isAvailable.onNext(true)
+        capture.onNext(photo)
+        capture.onCompleted()
     }
 }
 

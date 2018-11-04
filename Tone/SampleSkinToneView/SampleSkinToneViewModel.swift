@@ -62,12 +62,12 @@ class SampleSkinToneViewModel {
     let events = PublishSubject<Event>()
     
     var originalScreenBrightness: CGFloat = 0.0
-    var camera: Camera
+    var cameraState: CameraState
     
     let disposeBag = DisposeBag()
 
     init() {
-        camera = Camera(flashStream: flashSettings, photoStream: samplePhotos)
+        cameraState = CameraState(flashStream: flashSettings)//, photoStream: samplePhotos)
         print("finished setup")
         
         sampleState
@@ -85,9 +85,27 @@ class SampleSkinToneViewModel {
             .subscribe { _ in
                 print("Taking Samples!")
                 
-                let sampleFlashSettings = [FlashSettings(area: 1, areas: 1), FlashSettings(area: 1, areas: 2),FlashSettings(area: 2, areas: 2),FlashSettings(area: 0, areas: 1)]
+                let sampleFlashSettings = [
+                    (Camera(cameraState: self.cameraState), FlashSettings(area: 1, areas: 1)),
+                    (Camera(cameraState: self.cameraState), FlashSettings(area: 1, areas: 2)),
+                    (Camera(cameraState: self.cameraState), FlashSettings(area: 2, areas: 2)),
+                    (Camera(cameraState: self.cameraState), FlashSettings(area: 0, areas: 1))]
                 
-                Observable<FlashSettings>.from(sampleFlashSettings)
+                Observable<(Camera, FlashSettings)>.from(sampleFlashSettings)
+                    .serialMap(transform: { (camera, flashSetting) in camera.capturePhoto(flashSetting) })
+                    .subscribe(onNext: { photo in
+                        print("")
+                        print("Got Photo! \(photo)")
+                    }, onError: { error in
+                        print("")
+                        print(error)
+                    }, onCompleted: {
+                        print("")
+                        print("Completed All Sample Photos...")
+                    })
+                    .disposed(by: self.disposeBag)
+                    
+                    /*
                     .observeOn(MainScheduler.instance)
                     .pausableBuffered(self.camera.isAvailable, limit: 4)
                     .subscribe(onNext: { flashSetting in
@@ -95,9 +113,10 @@ class SampleSkinToneViewModel {
                         self.camera.capturePhoto(flashSettings: flashSetting)
                     }, onError: { error in print(error) })
                     .disposed(by: self.disposeBag)
+                    */
             }
             .disposed(by: disposeBag)
-        
+        /*
         samplePhotos
             .take(4)
             .toArray()
@@ -106,6 +125,7 @@ class SampleSkinToneViewModel {
                 self.sampleState.onNext(.upload)
             })
             .disposed(by: disposeBag)
+ */
         
         sampleState
             .observeOn(MainScheduler.instance)
