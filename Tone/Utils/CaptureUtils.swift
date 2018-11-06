@@ -37,14 +37,12 @@ class CameraState {
     var captureSession: AVCaptureSession
     
     var flashStream: PublishSubject<FlashSettings>
-    //var photoStream: PublishSubject<AVCapturePhoto>
     var isAvailable =  BehaviorSubject<Bool>(value: true)
     var photoSettingsIndex = 0
     
-    init(flashStream: PublishSubject<FlashSettings>){//}, photoStream: PublishSubject<AVCapturePhoto>) {
+    init(flashStream: PublishSubject<FlashSettings>) {
         print("Setting up camera...")
         self.flashStream = flashStream
-        //self.photoStream = photoStream
 
         //Create Capture Session
         captureSession = AVCaptureSession()
@@ -87,6 +85,7 @@ class CameraState {
     
     //Prepares numPhotos prepared settings
     func preparePhotoSettings(numPhotos: Int) -> Observable<Bool> {
+        print("Preparing PhotoSettings!")
         let photoSettings = (0..<numPhotos).map { _ in getPhotoSettings() }
         return Observable.create { observer in
             self.capturePhotoOutput.setPreparedPhotoSettingsArray(photoSettings) {
@@ -95,12 +94,23 @@ class CameraState {
                     observer.on(.error(error!))
                     return
                 }
-                
                 observer.on(.next(isPrepared))
                 observer.on(.completed)
             }
             return Disposables.create()
         }
+    }
+    
+    func lockCameraSettings() {
+        captureDevice.exposureMode = AVCaptureDevice.ExposureMode.locked
+        captureDevice.whiteBalanceMode = AVCaptureDevice.WhiteBalanceMode.locked
+    }
+    
+    func unlockCameraSettings() {
+        let middlePoint = CGPoint.init(x: 0.5, y: 0.5)
+        captureDevice.exposurePointOfInterest = middlePoint
+        captureDevice.exposureMode = AVCaptureDevice.ExposureMode.continuousAutoExposure
+        captureDevice.whiteBalanceMode = AVCaptureDevice.WhiteBalanceMode.continuousAutoWhiteBalance
     }
 }
 
@@ -114,11 +124,7 @@ class Camera: NSObject {
         self.cameraState = cameraState
     }
 
-    //Use Synchronous Subject and apply a flat map to each instead of as a function?
-    // Or just neatly wrap capture Photo and the delegate in a single observable? Observable.just("AVCaputurePhoto") or something?
     func capturePhoto(_ flashSettings: FlashSettings) -> PublishSubject<AVCapturePhoto> {
-        print("Creating New Capture Subject!")
-        
         //Move to chain? bind isAdjustingExposure?
         if cameraState.captureDevice.isAdjustingExposure == true {
             //fatalError("Still Adjusting Exposure")

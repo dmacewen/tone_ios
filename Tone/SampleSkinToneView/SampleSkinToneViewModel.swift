@@ -27,7 +27,7 @@ class SampleSkinToneViewModel {
         case previewUser
         case referenceSample
         case sample
-        case upload
+        case upload(images: [ImageData])
     }
     
     enum UserFaceStates {
@@ -68,64 +68,76 @@ class SampleSkinToneViewModel {
 
     init() {
         cameraState = CameraState(flashStream: flashSettings)//, photoStream: samplePhotos)
-        print("finished setup")
         
         sampleState
             .observeOn(MainScheduler.instance)
-            .filter { $0 == .referenceSample }
+            .filter { if case .previewUser = $0 { return true } else { return false } }
+            .subscribe { _ in self.cameraState.unlockCameraSettings() }
+            .disposed(by: disposeBag)
+            
+        sampleState
+            .observeOn(MainScheduler.instance)
+            .filter { if case .referenceSample = $0 { return true } else { return false } }
+            .flatMap { _ in self.captureReferencePhoto() }
             .subscribe { _ in
-                print("Taking Reference Sample!")
+                print("Took Reference Sample!")
                 self.sampleState.onNext(.sample)
             }
             .disposed(by: disposeBag)
         
         sampleState
             .observeOn(MainScheduler.instance)
-            .filter { $0 == .sample }
-            .subscribe { _ in
-                print("Taking Samples!")
-                
-                let sampleFlashSettings = [
-                    (Camera(cameraState: self.cameraState), FlashSettings(area: 1, areas: 1)),
-                    (Camera(cameraState: self.cameraState), FlashSettings(area: 1, areas: 2)),
-                    (Camera(cameraState: self.cameraState), FlashSettings(area: 2, areas: 2)),
-                    (Camera(cameraState: self.cameraState), FlashSettings(area: 0, areas: 1))]
-                
-                Observable<(Camera, FlashSettings)>.from(sampleFlashSettings)
-                    .serialMap(transform: { (camera, flashSetting) in camera.capturePhoto(flashSetting) })
-                    .toArray()
-                    .subscribe(onNext: { photo in
-                        print("Got Photos! \(photo)")
-                    }, onError: { error in
-                        print(error)
-                    }, onCompleted: {
-                        print("Completed All Sample Photos...")
-                        self.sampleState.onNext(.upload)
-                    })
-                    .disposed(by: self.disposeBag)
-            }
-            .disposed(by: disposeBag)
+            .filter { if case .sample = $0 { return true } else { return false } }
+            .flatMap { _ in self.cameraState.preparePhotoSettings(numPhotos: 4) }
+            .flatMap { _ in self.captureSamplePhotos() }
+            .subscribe(onNext: { imageData in
+                //print("Got Sample Photos :: \(photos)")
+                self.sampleState.onNext(.upload(images: imageData))
+            }).disposed(by: disposeBag)
         
         sampleState
             .observeOn(MainScheduler.instance)
-            .filter { $0 == .upload }
-            .subscribe { _ in
-                print("Uploading Images!")
+            .filter { if case .upload = $0 { return true } else { return false } }
+            .subscribe(onNext: {
+                if case .upload(let imageData) = $0 {
+                    print("Uploading Images!")
+                    for photo in imageData {
+                        photo.metaData.prettyPrint()
+                    }
+                }
                 self.sampleState.onNext(.previewUser)
-            }
-            .disposed(by: disposeBag)
+            }).disposed(by: disposeBag)
     }
     
     func cancel() {
         events.onNext(.cancel)
     }
+    
+    private func captureSamplePhotos() -> Observable<[ImageData]> {
+        let flashSettings = [
+            FlashSettings(area: 1, areas: 1),
+            FlashSettings(area: 1, areas: 2),
+            FlashSettings(area: 2, areas: 2),
+            FlashSettings(area: 0, areas: 1)]
+        
+        return Observable.from(flashSettings)
+            .map { (Camera(cameraState: self.cameraState), $0) }
+            .serialMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
+            .map { photo in  createUIImageSet(cameraState: self.cameraState, photo: photo)}
+            //.do(onNext: { imageData in UIImageWriteToSavedPhotosAlbum(imageData.image, nil, nil, nil) })
+            .toArray()
+    }
+    
+    //Eventually scale exposure to that it doesnt clip in reflection
+    private func captureReferencePhoto() -> Observable<Bool> {
+        let flashSetting = FlashSettings(area: 1, areas: 1)
+        
+        //.repeatElement When we need more then one?
+        return Observable.once(flashSetting)
+            .map { (Camera(cameraState: self.cameraState), $0) }
+            .serialMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
+            .do { self.cameraState.lockCameraSettings() }
+            .toArray()
+            .map { _ in true }
+    }
 }
-
-
-//.observeOn(MainScheduler.instance)
-//.do { self.setupPreview(cameraState: self.viewModel.cameraState) }
-//.flatMap { _ in return self.camera.preparePhotoSettings(numPhotos: 4).asObservable() }
-//.flatMap { _ in return self.camera.capturePhoto(flashSettings: FlashSettings(area: 1, areas: 1)).asObservable() }
-//.flatMap { _ in return self.camera.capturePhoto(flashSettings: FlashSettings(area: 1, areas: 2)).asObservable() }
-//.flatMap { _ in return self.viewModel.getCamera().capturePhoto(flashSettings: FlashSettings(area: 2, areas: 2)).asObservable() }
-//.flatMap { _ in return self.viewModel.getCamera().capturePhoto(flashSettings: FlashSettings(area: 0, areas: 1)).asObservable() }

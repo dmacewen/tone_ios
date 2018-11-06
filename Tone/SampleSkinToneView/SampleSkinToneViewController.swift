@@ -54,7 +54,7 @@ class SampleSkinToneViewController: UIViewController {
         
         viewModel.sampleState
             .observeOn(MainScheduler.instance)
-            .map { .previewUser != $0}
+            .map { if case .previewUser = $0 { return false } else { return true } }
             .bind(to: InteractionLayer.rx.isHidden )
             .disposed(by: disposeBag)
         
@@ -85,7 +85,7 @@ class SampleSkinToneViewController: UIViewController {
             }).disposed(by: disposeBag)
         
         viewModel.sampleState
-            .filter { $0 == .previewUser }
+            .filter { if case .previewUser = $0 { return true } else { return false } }
             .take(1)
             .subscribe(onNext: { _ in
                 print("Setting up preview!")

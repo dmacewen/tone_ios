@@ -1,5 +1,5 @@
 //
-//  bufferedComplete.swift
+//  serialMap.swift
 //  Tone
 //
 //  Created by Doug MacEwen on 11/2/18.
@@ -12,7 +12,7 @@ import RxSwift
 extension ObservableType {
     //Takes a function that returns an observable
     //Waits for the observable of that function to complete, emitting the result, before processing the next
-    func serialMap<R>(transform: @escaping (E) -> PublishSubject<R>) -> Observable<R> {
+    func serialMap<R>(_ transform: @escaping (E) -> PublishSubject<R>) -> Observable<R> {
         let disposeBag = DisposeBag()
         
         var taskQueue: [E] = []
@@ -78,7 +78,6 @@ extension ObservableType {
             let subscription = self.subscribe { e in
                 switch e {
                 case .next(let value):
-                    print("Adding New Task :: \(value)")
                     addTask(task: value)
                         .observeOn(MainScheduler.instance)
                         .subscribe(onNext: { result in
