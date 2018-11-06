@@ -20,6 +20,13 @@ class SampleSkinToneViewController: UIViewController {
     @IBOutlet weak var UILayer: UIView!
     @IBOutlet weak var InteractionLayer: UIView!
     
+    @IBOutlet weak var UploadProgessLayer: UIView!
+    @IBOutlet weak var ProgessLayer: UIView!
+    @IBOutlet weak var ProgessSpinner: UIActivityIndicatorView!
+    @IBOutlet weak var UploadLayer: UIView!
+    @IBOutlet weak var UploadBar: UIProgressView!
+
+    
     @IBOutlet weak var rootView: UIView!
     @IBOutlet weak var bottomFlash: UIView!
     @IBOutlet weak var topFlash: UIView!
@@ -31,6 +38,7 @@ class SampleSkinToneViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Sample Skin Tone"
+        self.viewModel.originalScreenBrightness = UIScreen.main.brightness
         
         cancelButton.rx.tap
             .single()
@@ -58,8 +66,54 @@ class SampleSkinToneViewController: UIViewController {
             .bind(to: InteractionLayer.rx.isHidden )
             .disposed(by: disposeBag)
         
+        viewModel.sampleState
+            .observeOn(MainScheduler.instance)
+            .map { if case .upload = $0 { return false } else { return true } }
+            .bind(to: UploadProgessLayer.rx.isHidden )
+            .disposed(by: disposeBag)
+        
+        viewModel.uploadProgress
+            .bind(to: UploadBar.rx.progress)
+            .disposed(by: disposeBag)
+        
+        viewModel.uploadProgress
+            .map { $0 == 1.0 }
+            .distinctUntilChanged()
+            .subscribe(onNext: { isUploaded in
+                print("isUploaded! :: \(isUploaded)")
+                if isUploaded {
+                    self.ProgessLayer.isHidden = false
+                    self.UploadLayer.isHidden = true
+                    self.ProgessSpinner.startAnimating()
+                } else {
+                    self.ProgessLayer.isHidden = true
+                    self.UploadLayer.isHidden = false
+                }
+            }).disposed(by: disposeBag)
+
+        
+        viewModel.sampleState
+            .observeOn(MainScheduler.instance)
+            .map { (state) -> Bool in
+                switch(state) {
+                case .previewUser, .upload(_): return false
+                case .referenceSample, .sample: return true
+                }
+            }
+            .distinctUntilChanged()
+            .subscribe(onNext: { shouldMaximizeBrightness in
+                if shouldMaximizeBrightness {
+                    self.viewModel.originalScreenBrightness = UIScreen.main.brightness
+                    UIScreen.main.brightness = CGFloat(1.0)
+                } else {
+                    UIScreen.main.brightness = self.viewModel.originalScreenBrightness
+                }
+            })
+            .disposed(by: disposeBag)
+
         viewModel.flashSettings
             .observeOn(MainScheduler.instance)
+            .subscribeOn(MainScheduler.instance)
             .subscribe(onNext: { flashSetting in
                 //Flash Shim while working on checkers
                 let area = flashSetting.area
@@ -89,10 +143,6 @@ class SampleSkinToneViewController: UIViewController {
             .take(1)
             .subscribe(onNext: { _ in
                 print("Setting up preview!")
-                //Save original screen brightness so we can revert to it later
-                self.viewModel.originalScreenBrightness = UIScreen.main.brightness
-                UIScreen.main.brightness = CGFloat(1.0)
-                
                 //Create View Preview Layer
                 let videoPreviewLayer = AVCaptureVideoPreviewLayer(session: self.viewModel.cameraState.captureSession)
                 videoPreviewLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill

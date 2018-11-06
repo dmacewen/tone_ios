@@ -36,6 +36,8 @@ extension ObservableType {
         }
         
         workerA.asObservable()
+            .observeOn(MainScheduler.instance)
+            .subscribeOn(MainScheduler.instance)
             .subscribe(onNext: { arg in
                 transform(arg)
                     .observeOn(MainScheduler.instance)
@@ -56,6 +58,8 @@ extension ObservableType {
             .disposed(by: disposeBag)
         
         workerB.asObservable()
+            .observeOn(MainScheduler.instance)
+            .subscribeOn(MainScheduler.instance)
             .subscribe(onNext: { arg in
                 transform(arg)
                     .observeOn(MainScheduler.instance)
@@ -80,6 +84,7 @@ extension ObservableType {
                 case .next(let value):
                     addTask(task: value)
                         .observeOn(MainScheduler.instance)
+                        .subscribeOn(MainScheduler.instance)
                         .subscribe(onNext: { result in
                             observer.on(.next(result[0]))
                             

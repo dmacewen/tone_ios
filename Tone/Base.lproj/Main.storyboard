@@ -162,6 +162,12 @@
                                     <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 </state>
                             </button>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Welcome!" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="gYo-Cc-MvD">
+                                <rect key="frame" x="37.666666666666657" y="124.66666666666669" width="300" height="41"/>
+                                <nil key="textColor"/>
+                                <fontDescription key="fontDescription" type="system" weight="ultraLight" pointSize="34"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
@@ -171,7 +177,10 @@
                             <constraint firstItem="vF2-1E-QEk" firstAttribute="centerY" secondItem="Pvi-wN-BTJ" secondAttribute="centerY" multiplier="0.66" id="B7X-Zm-evr"/>
                             <constraint firstItem="ZJa-zg-SPv" firstAttribute="trailing" secondItem="GqX-HT-ArQ" secondAttribute="trailing" id="G5V-MO-jjB"/>
                             <constraint firstItem="GqX-HT-ArQ" firstAttribute="leading" secondItem="ZJa-zg-SPv" secondAttribute="leading" id="V7N-75-2Mv"/>
+                            <constraint firstItem="gYo-Cc-MvD" firstAttribute="centerY" secondItem="Pvi-wN-BTJ" secondAttribute="centerY" multiplier="5:14" id="cJW-mM-Ez7"/>
                             <constraint firstItem="bkM-3d-8Zj" firstAttribute="leading" secondItem="Pvi-wN-BTJ" secondAttribute="leadingMargin" id="k8h-JB-1uS"/>
+                            <constraint firstItem="gYo-Cc-MvD" firstAttribute="centerX" secondItem="Pvi-wN-BTJ" secondAttribute="centerX" id="oRv-bB-pxv"/>
+                            <constraint firstItem="gYo-Cc-MvD" firstAttribute="width" secondItem="Pvi-wN-BTJ" secondAttribute="width" multiplier="4:5" id="vLU-7f-30C"/>
                             <constraint firstItem="bkM-3d-8Zj" firstAttribute="top" secondItem="ZJa-zg-SPv" secondAttribute="top" id="zco-NB-LOu"/>
                             <constraint firstAttribute="bottom" secondItem="GqX-HT-ArQ" secondAttribute="bottom" id="zmw-qm-Sae"/>
                         </constraints>
@@ -259,24 +268,110 @@
                                     <constraint firstItem="edy-f2-1BM" firstAttribute="top" secondItem="aVh-aI-2c1" secondAttribute="top" id="hiX-bf-Kpz"/>
                                 </constraints>
                             </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="eKA-xe-WhX" userLabel="Upload Progress Layer">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dGy-wn-MWS" userLabel="Uploading">
+                                        <rect key="frame" x="62.666666666666657" y="220.00000000000003" width="249.99999999999997" height="101.33333333333334"/>
+                                        <subviews>
+                                            <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="JFN-hA-XF6" userLabel="Upload Progress">
+                                                <rect key="frame" x="31.000000000000014" y="75" width="187.66666666666669" height="2"/>
+                                            </progressView>
+                                            <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Uploading" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="9K7-xS-Ewu" userLabel="Uploading Title">
+                                                <rect key="frame" x="13.666666666666657" y="17.666666666666657" width="139" height="32"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="139" id="UH8-FF-OcT"/>
+                                                </constraints>
+                                                <nil key="textColor"/>
+                                                <fontDescription key="fontDescription" type="system" weight="ultraLight" pointSize="26"/>
+                                                <textInputTraits key="textInputTraits"/>
+                                            </textField>
+                                        </subviews>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstItem="JFN-hA-XF6" firstAttribute="width" secondItem="dGy-wn-MWS" secondAttribute="width" multiplier="3:4" id="AwS-Vw-CWB"/>
+                                            <constraint firstItem="JFN-hA-XF6" firstAttribute="centerX" secondItem="dGy-wn-MWS" secondAttribute="centerX" id="c5S-Ds-fKr"/>
+                                            <constraint firstItem="JFN-hA-XF6" firstAttribute="centerY" secondItem="dGy-wn-MWS" secondAttribute="centerY" multiplier="3:2" id="qzf-j2-kQK"/>
+                                            <constraint firstItem="9K7-xS-Ewu" firstAttribute="centerX" secondItem="dGy-wn-MWS" secondAttribute="centerX" multiplier="2:3" id="t7b-MH-AyQ"/>
+                                            <constraint firstItem="9K7-xS-Ewu" firstAttribute="centerY" secondItem="dGy-wn-MWS" secondAttribute="centerY" multiplier="2:3" id="x5A-Zk-GfT"/>
+                                        </constraints>
+                                    </view>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="N68-y1-g3p" userLabel="Processing">
+                                        <rect key="frame" x="62.666666666666657" y="220.00000000000003" width="249.99999999999997" height="101.33333333333334"/>
+                                        <subviews>
+                                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="Jtg-Os-boB" userLabel="Is Processing">
+                                                <rect key="frame" x="0.0" y="66" width="250" height="20"/>
+                                            </activityIndicatorView>
+                                            <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Processing" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="i2f-IK-4q9" userLabel="Processing Title">
+                                                <rect key="frame" x="13.666666666666657" y="17.666666666666657" width="139" height="32"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="139" id="CBW-lE-C0d"/>
+                                                </constraints>
+                                                <nil key="textColor"/>
+                                                <fontDescription key="fontDescription" type="system" weight="ultraLight" pointSize="26"/>
+                                                <textInputTraits key="textInputTraits"/>
+                                            </textField>
+                                        </subviews>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstItem="Jtg-Os-boB" firstAttribute="centerX" secondItem="N68-y1-g3p" secondAttribute="centerX" id="1MJ-wU-Z9W"/>
+                                            <constraint firstItem="i2f-IK-4q9" firstAttribute="centerX" secondItem="N68-y1-g3p" secondAttribute="centerX" multiplier="2:3" id="QcP-Xa-vrt"/>
+                                            <constraint firstItem="Jtg-Os-boB" firstAttribute="width" secondItem="N68-y1-g3p" secondAttribute="width" id="him-Oo-J6r"/>
+                                            <constraint firstItem="Jtg-Os-boB" firstAttribute="centerY" secondItem="N68-y1-g3p" secondAttribute="centerY" multiplier="3:2" id="lBG-Nh-PxF"/>
+                                            <constraint firstItem="i2f-IK-4q9" firstAttribute="centerY" secondItem="N68-y1-g3p" secondAttribute="centerY" multiplier="2:3" id="rEK-Sz-g6Z"/>
+                                        </constraints>
+                                    </view>
+                                    <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Hold Tight..." minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="oSn-Xp-ukO">
+                                        <rect key="frame" x="37.666666666666657" y="124.66666666666669" width="300" height="41"/>
+                                        <nil key="textColor"/>
+                                        <fontDescription key="fontDescription" type="system" weight="ultraLight" pointSize="34"/>
+                                        <textInputTraits key="textInputTraits"/>
+                                    </textField>
+                                </subviews>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstItem="dGy-wn-MWS" firstAttribute="centerX" secondItem="eKA-xe-WhX" secondAttribute="centerX" id="2vR-JP-XT6"/>
+                                    <constraint firstItem="dGy-wn-MWS" firstAttribute="centerY" secondItem="eKA-xe-WhX" secondAttribute="centerY" multiplier="2:3" id="AyK-0q-z01"/>
+                                    <constraint firstItem="dGy-wn-MWS" firstAttribute="height" secondItem="eKA-xe-WhX" secondAttribute="height" multiplier="1:8" id="KYr-au-0Rq"/>
+                                    <constraint firstItem="oSn-Xp-ukO" firstAttribute="centerY" secondItem="eKA-xe-WhX" secondAttribute="centerY" multiplier="5:14" id="NG0-wF-851"/>
+                                    <constraint firstItem="dGy-wn-MWS" firstAttribute="height" secondItem="N68-y1-g3p" secondAttribute="height" id="ehc-11-Lf7"/>
+                                    <constraint firstItem="dGy-wn-MWS" firstAttribute="width" secondItem="eKA-xe-WhX" secondAttribute="width" multiplier="2:3" id="hN7-gY-dcK"/>
+                                    <constraint firstItem="N68-y1-g3p" firstAttribute="centerX" secondItem="eKA-xe-WhX" secondAttribute="centerX" id="hj4-JE-nqV"/>
+                                    <constraint firstItem="oSn-Xp-ukO" firstAttribute="width" secondItem="eKA-xe-WhX" secondAttribute="width" multiplier="4:5" id="mc7-N4-wcv"/>
+                                    <constraint firstItem="N68-y1-g3p" firstAttribute="centerY" secondItem="eKA-xe-WhX" secondAttribute="centerY" multiplier="2:3" id="quY-gf-oBg"/>
+                                    <constraint firstItem="dGy-wn-MWS" firstAttribute="width" secondItem="N68-y1-g3p" secondAttribute="width" id="wlX-sn-egh"/>
+                                    <constraint firstItem="oSn-Xp-ukO" firstAttribute="centerX" secondItem="eKA-xe-WhX" secondAttribute="centerX" id="xCd-rL-ux5"/>
+                                </constraints>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
+                            <constraint firstAttribute="trailing" secondItem="eKA-xe-WhX" secondAttribute="trailing" id="6zd-Bs-RPV"/>
+                            <constraint firstItem="eKA-xe-WhX" firstAttribute="top" secondItem="RIr-Rm-Bfh" secondAttribute="top" id="Ine-ch-Zcn"/>
                             <constraint firstItem="BoH-1e-Ycg" firstAttribute="bottom" secondItem="c70-Zo-887" secondAttribute="bottom" id="K2n-T5-jaz"/>
                             <constraint firstItem="aVh-aI-2c1" firstAttribute="top" secondItem="RIr-Rm-Bfh" secondAttribute="top" id="MwT-9k-isj"/>
                             <constraint firstItem="aVh-aI-2c1" firstAttribute="height" secondItem="RIr-Rm-Bfh" secondAttribute="height" id="NO6-ab-kiK"/>
+                            <constraint firstItem="eKA-xe-WhX" firstAttribute="centerX" secondItem="RIr-Rm-Bfh" secondAttribute="centerX" id="Pm6-za-jQl"/>
                             <constraint firstItem="aVh-aI-2c1" firstAttribute="leading" secondItem="RIr-Rm-Bfh" secondAttribute="leading" id="RaD-8Q-TR7"/>
                             <constraint firstItem="BoH-1e-Ycg" firstAttribute="leading" secondItem="RIr-Rm-Bfh" secondAttribute="leading" id="XEm-sg-55a"/>
                             <constraint firstItem="BoH-1e-Ycg" firstAttribute="trailing" secondItem="RIr-Rm-Bfh" secondAttribute="trailing" id="aK4-Fa-r64"/>
+                            <constraint firstItem="eKA-xe-WhX" firstAttribute="centerY" secondItem="RIr-Rm-Bfh" secondAttribute="centerY" id="coU-6s-me4"/>
                             <constraint firstItem="BoH-1e-Ycg" firstAttribute="top" secondItem="c70-Zo-887" secondAttribute="top" id="e57-ML-j3r"/>
+                            <constraint firstItem="eKA-xe-WhX" firstAttribute="leading" secondItem="RIr-Rm-Bfh" secondAttribute="leading" id="iwm-kV-Eax"/>
                             <constraint firstItem="aVh-aI-2c1" firstAttribute="trailing" secondItem="RIr-Rm-Bfh" secondAttribute="trailing" id="jfD-oG-gRg"/>
+                            <constraint firstAttribute="bottom" secondItem="eKA-xe-WhX" secondAttribute="bottom" id="oqm-cV-Wgl"/>
                             <constraint firstItem="aVh-aI-2c1" firstAttribute="bottom" secondItem="RIr-Rm-Bfh" secondAttribute="bottom" id="qC3-g0-Hgg"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="c70-Zo-887"/>
                     </view>
                     <connections>
                         <outlet property="InteractionLayer" destination="aVh-aI-2c1" id="Mu9-9w-1Y5"/>
+                        <outlet property="ProgessLayer" destination="N68-y1-g3p" id="7zd-8g-Sc7"/>
+                        <outlet property="ProgessSpinner" destination="Jtg-Os-boB" id="Th4-4k-99y"/>
                         <outlet property="UILayer" destination="edy-f2-1BM" id="hva-Og-wu5"/>
+                        <outlet property="UploadBar" destination="JFN-hA-XF6" id="jD8-gk-wQL"/>
+                        <outlet property="UploadLayer" destination="dGy-wn-MWS" id="Ohy-CQ-0HM"/>
+                        <outlet property="UploadProgessLayer" destination="eKA-xe-WhX" id="2r8-yP-w4X"/>
                         <outlet property="bottomFlash" destination="5FP-ew-f1b" id="lQV-Qh-aZx"/>
                         <outlet property="cancelButton" destination="hO1-5z-RhK" id="gkQ-Zn-oFq"/>
                         <outlet property="rootView" destination="RIr-Rm-Bfh" id="PfM-xR-6mV"/>

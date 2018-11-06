@@ -57,7 +57,7 @@ class SampleSkinToneViewModel {
     let referencePhotos = PublishSubject<AVCapturePhoto>()
     let samplePhotos = PublishSubject<AVCapturePhoto>()
     
-    let progressBar = BehaviorSubject<Float>(value: 0.0)
+    let uploadProgress = BehaviorSubject<Float>(value: 0.0)
     
     let flashSettings = PublishSubject<FlashSettings>()
     
@@ -70,6 +70,9 @@ class SampleSkinToneViewModel {
 
     init() {
         cameraState = CameraState(flashStream: flashSettings)//, photoStream: samplePhotos)
+        sampleState
+            .subscribe(onCompleted: { print("Sample State Completed!!!") })
+            .disposed(by: disposeBag)
         
         sampleState
             .observeOn(MainScheduler.instance)
@@ -101,14 +104,14 @@ class SampleSkinToneViewModel {
             .observeOn(MainScheduler.instance)
             .filter { if case .upload = $0 { return true } else { return false } }
             .subscribe(onNext: {
-                print("")
+                self.uploadProgress.onNext(0.0)
                 if case .upload(let imageData) = $0 {
                     print("Uploading Images!")
                     for photo in imageData {
                         photo.metaData.prettyPrint()
                     }
                     
-                    uploadImageData(imageData: imageData, progressBar: self.progressBar)
+                    uploadImageData(imageData: imageData, progressBar: self.uploadProgress)
                         .subscribe(onNext: { _ in
                             print("Done Upload")
                             self.sampleState.onNext(.previewUser)
@@ -129,6 +132,7 @@ class SampleSkinToneViewModel {
             FlashSettings(area: 0, areas: 1)]
         
         return Observable.from(flashSettings)
+            .observeOn(MainScheduler.instance)
             .map { (Camera(cameraState: self.cameraState), $0) }
             .serialMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
             .map { photo in  createUIImageSet(cameraState: self.cameraState, photo: photo)}
@@ -142,6 +146,7 @@ class SampleSkinToneViewModel {
         
         //.repeatElement When we need more then one?
         return Observable.once(flashSetting)
+            .observeOn(MainScheduler.instance)
             .map { (Camera(cameraState: self.cameraState), $0) }
             .serialMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
             .do { self.cameraState.lockCameraSettings() }
