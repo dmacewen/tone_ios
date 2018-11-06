@@ -11,10 +11,15 @@ import AVFoundation
 import RxSwift
 import UIKit
 
-struct MetaData {
+struct WhiteBalance : Codable {
+    let x: Float
+    let y: Float
+}
+
+struct MetaData : Codable {
     let iso: Float
     let exposureTime: Float64
-    let whiteBalance: AVCaptureDevice.WhiteBalanceChromaticityValues
+    let whiteBalance: WhiteBalance
     
     static func getFrom(cameraState: CameraState, photo: AVCapturePhoto) -> MetaData {
         let meta = photo.metadata
@@ -23,7 +28,8 @@ struct MetaData {
         
         let iso = (exif["ISOSpeedRatings"] as! Array)[0] as Float
         let exposureTime = exif["ExposureTime"] as! Float64
-        let whiteBalance = cameraState.captureDevice.chromaticityValues(for: cameraState.captureDevice.deviceWhiteBalanceGains)
+        let whiteBalanceChromacity = cameraState.captureDevice.chromaticityValues(for: cameraState.captureDevice.deviceWhiteBalanceGains)
+        let whiteBalance = WhiteBalance(x: whiteBalanceChromacity.x, y: whiteBalanceChromacity.y)
         
         return MetaData(iso: iso, exposureTime: exposureTime, whiteBalance: whiteBalance)
     }
@@ -46,7 +52,7 @@ struct ImageData {
 
 func createUIImageSet(cameraState: CameraState, photo: AVCapturePhoto) -> ImageData {
     let metaData = MetaData.getFrom(cameraState: cameraState, photo: photo)
-    //let image = UIImage.init(data: photo.fileDataRepresentation()!)!
-    let image = UIImage.init(cgImage: photo.cgImageRepresentation()!.takeUnretainedValue()) //Add orientation if necissary
+    let image = UIImage.init(data: photo.fileDataRepresentation()!)!
+    //var image = UIImage.init(cgImage: photo.cgImageRepresentation()!.takeUnretainedValue()) //Add orientation if necessary
     return ImageData(image: image, metaData: metaData)
 }

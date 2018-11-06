@@ -17,6 +17,7 @@
 		8651B60C2187D6FA00FB7A3A /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8651B60B2187D6FA00FB7A3A /* LoginViewModel.swift */; };
 		8651B60E2187D72200FB7A3A /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8651B60D2187D72200FB7A3A /* LoginViewController.swift */; };
 		866C405D2190CB69007BABDE /* ImageUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866C405C2190CB69007BABDE /* ImageUtils.swift */; };
+		866C405F21911709007BABDE /* ImageDataUpload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866C405E21911709007BABDE /* ImageDataUpload.swift */; };
 		8694A07D21878A1B00615BE3 /* Alamofire.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 86F138DB21877F89004C6092 /* Alamofire.framework */; };
 		8694A07F2187BF1A00615BE3 /* RootNavigationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8694A07E2187BF1A00615BE3 /* RootNavigationViewModel.swift */; };
 		8694A0812187BF4300615BE3 /* RootNavigationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8694A0802187BF4300615BE3 /* RootNavigationViewController.swift */; };
@@ -87,6 +88,7 @@
 		8651B60B2187D6FA00FB7A3A /* LoginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
 		8651B60D2187D72200FB7A3A /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		866C405C2190CB69007BABDE /* ImageUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageUtils.swift; sourceTree = "<group>"; };
+		866C405E21911709007BABDE /* ImageDataUpload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageDataUpload.swift; sourceTree = "<group>"; };
 		8694A07E2187BF1A00615BE3 /* RootNavigationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootNavigationViewModel.swift; sourceTree = "<group>"; };
 		8694A0802187BF4300615BE3 /* RootNavigationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootNavigationViewController.swift; sourceTree = "<group>"; };
 		869FB6D0218D0DDC00B257D2 /* RxSwiftExt.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxSwiftExt.framework; path = Carthage/Build/iOS/RxSwiftExt.framework; sourceTree = "<group>"; };
@@ -178,6 +180,7 @@
 				86F1BCA9218D219E00A18457 /* serialMap.swift */,
 				86131004218B9E0A00BD1305 /* CaptureUtils.swift */,
 				866C405C2190CB69007BABDE /* ImageUtils.swift */,
+				866C405E21911709007BABDE /* ImageDataUpload.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -407,6 +410,7 @@
 				8651B60C2187D6FA00FB7A3A /* LoginViewModel.swift in Sources */,
 				8694A07F2187BF1A00615BE3 /* RootNavigationViewModel.swift in Sources */,
 				8694A0812187BF4300615BE3 /* RootNavigationViewController.swift in Sources */,
+				866C405F21911709007BABDE /* ImageDataUpload.swift in Sources */,
 				86F138AA218768C2004C6092 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

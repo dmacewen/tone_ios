@@ -14,7 +14,7 @@ import RxSwiftExt
 
 import AVFoundation
 import UIKit
-//import Alamofire
+import Alamofire
 //import RxAlamofire
 //import Compression
 
@@ -56,6 +56,8 @@ class SampleSkinToneViewModel {
     
     let referencePhotos = PublishSubject<AVCapturePhoto>()
     let samplePhotos = PublishSubject<AVCapturePhoto>()
+    
+    let progressBar = BehaviorSubject<Float>(value: 0.0)
     
     let flashSettings = PublishSubject<FlashSettings>()
     
@@ -99,13 +101,19 @@ class SampleSkinToneViewModel {
             .observeOn(MainScheduler.instance)
             .filter { if case .upload = $0 { return true } else { return false } }
             .subscribe(onNext: {
+                print("")
                 if case .upload(let imageData) = $0 {
                     print("Uploading Images!")
                     for photo in imageData {
                         photo.metaData.prettyPrint()
                     }
+                    
+                    uploadImageData(imageData: imageData, progressBar: self.progressBar)
+                        .subscribe(onNext: { _ in
+                            print("Done Upload")
+                            self.sampleState.onNext(.previewUser)
+                        }).disposed(by: self.disposeBag)
                 }
-                self.sampleState.onNext(.previewUser)
             }).disposed(by: disposeBag)
     }
     
