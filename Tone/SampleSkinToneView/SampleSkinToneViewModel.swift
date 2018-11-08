@@ -30,6 +30,11 @@ class SampleSkinToneViewModel {
         case upload(images: [ImageData])
     }
     
+    struct Message {
+        let message: String
+        let tip: String
+    }
+    
     enum UserFaceStates {
         case ok
         case noFaceFound
@@ -38,14 +43,22 @@ class SampleSkinToneViewModel {
         case faceGradient
         case faceTooFar
         
-        var message: String {
+        var prompt: Message {
             switch self {
-            case .ok: return "Looking Good!"
-            case .noFaceFound: return "Looking For You..."
-            case .tooDark: return "It's A Little Too Dark Here..."// Lets try again in a room with a bit more light"
-            case .tooBright: return "It's A Little Too Bright Here..."// Try facing away from the brightest light in the room or moving to a darker area"
-            case .faceTooFar: return "You're Too Far Away!"// Bring me closer to your face!"
-            case .faceGradient: return "You're Too Unevenly Lit!"// Try and face away from the brightest light in the room"
+            case .ok:
+                return Message(message: "Looking Good!", tip: "Hit the button to capture your skin tone")
+            case .noFaceFound:
+                return Message(message: "Looking For You...", tip: "Is the camera pointed towards you?")
+            case .tooDark:
+                return Message(message: "It's A Little Too Dark Here", tip: "Lets try again in a room with a bit more light")
+            case .tooBright:
+                return Message(message: "It's A Little Too Bright Here", tip: "Try facing away from bright lights or trying again somewhere darker")
+            case .faceTooFar:
+                return Message(message: "You're Too Far Away!", tip: "Bring the phone closer to your face!")
+            case .faceGradient:
+                return Message(message: "You're Unevenly Lit!", tip: "Try facing away from the brightest lights in the room")
+            //case .faceGradient:
+                //return "The Lighting On Your Face Is Uneven!"// Try and face away from the brightest light in the room"
             }
         }
     }
@@ -93,7 +106,6 @@ class SampleSkinToneViewModel {
         sampleState
             .observeOn(MainScheduler.instance)
             .filter { if case .sample = $0 { return true } else { return false } }
-            .flatMap { _ in self.cameraState.lockCameraSettings() }
             .flatMap { _ in self.cameraState.preparePhotoSettings(numPhotos: 3) }
             .flatMap { _ in self.captureSamplePhotos() }
             .subscribe(onNext: { imageData in
@@ -149,8 +161,9 @@ class SampleSkinToneViewModel {
             .observeOn(MainScheduler.instance)
             .map { (Camera(cameraState: self.cameraState), $0) }
             .serialMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
-            .do { self.cameraState.lockCameraSettings() }
+            //.do { self.cameraState.lockCameraSettings() }
             .toArray()
+            .flatMap { _ in self.cameraState.lockCameraSettings() }
             .map { _ in true }
     }
 }

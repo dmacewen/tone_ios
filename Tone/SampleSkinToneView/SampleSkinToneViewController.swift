@@ -34,6 +34,7 @@ class SampleSkinToneViewController: UIViewController {
     @IBOutlet weak var FlashLayer: UIImageView!
     
     @IBOutlet weak var userPrompt: UITextField!
+    @IBOutlet weak var userTip: UITextField!
     
     let disposeBag = DisposeBag()
     
@@ -53,8 +54,12 @@ class SampleSkinToneViewController: UIViewController {
             }).disposed(by: disposeBag)
 
         viewModel.userFaceState
-            .map { $0.message }
-            .bind(to: userPrompt.rx.text)
+            //.map { $0.prompt.message }
+            .subscribe(onNext: {
+                self.userPrompt.text = $0.prompt.message
+                self.userTip.text = $0.prompt.tip
+            })
+            //.bind(to: userPrompt.rx.text)
             .disposed(by: disposeBag)
         
         viewModel.userFaceState
