@@ -100,10 +100,15 @@ class CameraState {
             return Disposables.create()
         }
     }
-    
-    func lockCameraSettings() {
+
+    func lockCameraSettings() -> Observable<Bool> {
         captureDevice.exposureMode = AVCaptureDevice.ExposureMode.locked
-        captureDevice.whiteBalanceMode = AVCaptureDevice.WhiteBalanceMode.locked
+        return Observable.create { observable in
+            self.captureDevice.setWhiteBalanceModeLocked(with: AVCaptureDevice.currentWhiteBalanceGains, completionHandler: { time in
+                observable.onNext(true)
+            })
+            return Disposables.create()
+        }
     }
     
     func unlockCameraSettings() {
@@ -126,9 +131,15 @@ class Camera: NSObject {
 
     func capturePhoto(_ flashSettings: FlashSettings) -> PublishSubject<AVCapturePhoto> {
         //Move to chain? bind isAdjustingExposure?
+        print("Beginning to capture photo!")
+        print("White Balance Mode :: \(cameraState.captureDevice.whiteBalanceMode.rawValue)")
+        print("Exposure Mode :: \(cameraState.captureDevice.exposureMode.rawValue)")
+        
+        
+
         if cameraState.captureDevice.isAdjustingExposure == true {
             //fatalError("Still Adjusting Exposure")
-            print("Still Adjusting Exposure")
+            print("\nStill Adjusting Exposure!!\n")
             
             /*
              print("Posponing Capture!")
@@ -138,6 +149,20 @@ class Camera: NSObject {
              }
              */
         }
+        
+        if cameraState.captureDevice.isAdjustingWhiteBalance == true {
+            //fatalError("Still Adjusting Exposure")
+            print("\nStill Adjusting White Balance!!\n")
+            
+            /*
+             print("Posponing Capture!")
+             
+             delay(0.5) {
+             return self.capturePhoto(flashSettings: flashSettings, photoSettings: photoSettings)
+             }
+             */
+        }
+        
         print("Captuing Photo with Flash Settings :: \(flashSettings.area) \(flashSettings.areas)")
         cameraState.flashStream.onNext(flashSettings)
         print("Getting Photo Settings!")

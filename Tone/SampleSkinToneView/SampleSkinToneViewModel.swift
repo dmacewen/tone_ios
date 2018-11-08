@@ -93,6 +93,7 @@ class SampleSkinToneViewModel {
         sampleState
             .observeOn(MainScheduler.instance)
             .filter { if case .sample = $0 { return true } else { return false } }
+            .flatMap { _ in self.cameraState.lockCameraSettings() }
             .flatMap { _ in self.cameraState.preparePhotoSettings(numPhotos: 3) }
             .flatMap { _ in self.captureSamplePhotos() }
             .subscribe(onNext: { imageData in
