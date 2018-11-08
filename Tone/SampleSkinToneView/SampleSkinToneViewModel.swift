@@ -93,7 +93,7 @@ class SampleSkinToneViewModel {
         sampleState
             .observeOn(MainScheduler.instance)
             .filter { if case .sample = $0 { return true } else { return false } }
-            .flatMap { _ in self.cameraState.preparePhotoSettings(numPhotos: 4) }
+            .flatMap { _ in self.cameraState.preparePhotoSettings(numPhotos: 3) }
             .flatMap { _ in self.captureSamplePhotos() }
             .subscribe(onNext: { imageData in
                 //print("Got Sample Photos :: \(photos)")
@@ -126,10 +126,9 @@ class SampleSkinToneViewModel {
     
     private func captureSamplePhotos() -> Observable<[ImageData]> {
         let flashSettings = [
-            FlashSettings(area: 1, areas: 1),
-            FlashSettings(area: 1, areas: 2),
             FlashSettings(area: 2, areas: 2),
-            FlashSettings(area: 0, areas: 1)]
+            FlashSettings(area: 1, areas: 2),
+            FlashSettings(area: 0, areas: 2)]
         
         return Observable.from(flashSettings)
             .observeOn(MainScheduler.instance)
@@ -142,7 +141,7 @@ class SampleSkinToneViewModel {
     
     //Eventually scale exposure to that it doesnt clip in reflection
     private func captureReferencePhoto() -> Observable<Bool> {
-        let flashSetting = FlashSettings(area: 1, areas: 1)
+        let flashSetting = FlashSettings(area: 2, areas: 2)
         
         //.repeatElement When we need more then one?
         return Observable.once(flashSetting)

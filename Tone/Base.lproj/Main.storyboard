@@ -219,6 +219,9 @@
                                     <constraint firstItem="5FP-ew-f1b" firstAttribute="height" secondItem="k2S-t8-msJ" secondAttribute="height" id="ObM-Az-hhF"/>
                                 </constraints>
                             </stackView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="6mp-Zh-erb" userLabel="Flash Layer">
+                                <rect key="frame" x="0.0" y="44" width="375" height="734"/>
+                            </imageView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="aVh-aI-2c1" userLabel="Interaction Layers">
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                                 <subviews>
@@ -347,7 +350,9 @@
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="eKA-xe-WhX" secondAttribute="trailing" id="6zd-Bs-RPV"/>
+                            <constraint firstItem="6mp-Zh-erb" firstAttribute="top" secondItem="c70-Zo-887" secondAttribute="top" id="IcO-1T-tdt"/>
                             <constraint firstItem="eKA-xe-WhX" firstAttribute="top" secondItem="RIr-Rm-Bfh" secondAttribute="top" id="Ine-ch-Zcn"/>
+                            <constraint firstItem="6mp-Zh-erb" firstAttribute="bottom" secondItem="c70-Zo-887" secondAttribute="bottom" id="Jfe-vv-1aS"/>
                             <constraint firstItem="BoH-1e-Ycg" firstAttribute="bottom" secondItem="c70-Zo-887" secondAttribute="bottom" id="K2n-T5-jaz"/>
                             <constraint firstItem="aVh-aI-2c1" firstAttribute="top" secondItem="RIr-Rm-Bfh" secondAttribute="top" id="MwT-9k-isj"/>
                             <constraint firstItem="aVh-aI-2c1" firstAttribute="height" secondItem="RIr-Rm-Bfh" secondAttribute="height" id="NO6-ab-kiK"/>
@@ -357,14 +362,28 @@
                             <constraint firstItem="BoH-1e-Ycg" firstAttribute="trailing" secondItem="RIr-Rm-Bfh" secondAttribute="trailing" id="aK4-Fa-r64"/>
                             <constraint firstItem="eKA-xe-WhX" firstAttribute="centerY" secondItem="RIr-Rm-Bfh" secondAttribute="centerY" id="coU-6s-me4"/>
                             <constraint firstItem="BoH-1e-Ycg" firstAttribute="top" secondItem="c70-Zo-887" secondAttribute="top" id="e57-ML-j3r"/>
+                            <constraint firstItem="6mp-Zh-erb" firstAttribute="trailing" secondItem="c70-Zo-887" secondAttribute="trailing" id="hDS-EA-Vaq"/>
                             <constraint firstItem="eKA-xe-WhX" firstAttribute="leading" secondItem="RIr-Rm-Bfh" secondAttribute="leading" id="iwm-kV-Eax"/>
                             <constraint firstItem="aVh-aI-2c1" firstAttribute="trailing" secondItem="RIr-Rm-Bfh" secondAttribute="trailing" id="jfD-oG-gRg"/>
                             <constraint firstAttribute="bottom" secondItem="eKA-xe-WhX" secondAttribute="bottom" id="oqm-cV-Wgl"/>
                             <constraint firstItem="aVh-aI-2c1" firstAttribute="bottom" secondItem="RIr-Rm-Bfh" secondAttribute="bottom" id="qC3-g0-Hgg"/>
+                            <constraint firstItem="6mp-Zh-erb" firstAttribute="leading" secondItem="c70-Zo-887" secondAttribute="leading" id="ypg-Z5-z0h"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="c70-Zo-887"/>
+                        <variation key="default">
+                            <mask key="subviews">
+                                <exclude reference="BoH-1e-Ycg"/>
+                            </mask>
+                            <mask key="constraints">
+                                <exclude reference="K2n-T5-jaz"/>
+                                <exclude reference="XEm-sg-55a"/>
+                                <exclude reference="aK4-Fa-r64"/>
+                                <exclude reference="e57-ML-j3r"/>
+                            </mask>
+                        </variation>
                     </view>
                     <connections>
+                        <outlet property="FlashLayer" destination="6mp-Zh-erb" id="AgH-78-f59"/>
                         <outlet property="InteractionLayer" destination="aVh-aI-2c1" id="Mu9-9w-1Y5"/>
                         <outlet property="ProgessLayer" destination="N68-y1-g3p" id="7zd-8g-Sc7"/>
                         <outlet property="ProgessSpinner" destination="Jtg-Os-boB" id="Th4-4k-99y"/>
@@ -372,11 +391,9 @@
                         <outlet property="UploadBar" destination="JFN-hA-XF6" id="jD8-gk-wQL"/>
                         <outlet property="UploadLayer" destination="dGy-wn-MWS" id="Ohy-CQ-0HM"/>
                         <outlet property="UploadProgessLayer" destination="eKA-xe-WhX" id="2r8-yP-w4X"/>
-                        <outlet property="bottomFlash" destination="5FP-ew-f1b" id="lQV-Qh-aZx"/>
                         <outlet property="cancelButton" destination="hO1-5z-RhK" id="gkQ-Zn-oFq"/>
                         <outlet property="rootView" destination="RIr-Rm-Bfh" id="PfM-xR-6mV"/>
                         <outlet property="takeSampleButton" destination="RP2-AB-HVB" id="Ufq-S7-neU"/>
-                        <outlet property="topFlash" destination="k2S-t8-msJ" id="VNH-EK-egS"/>
                         <outlet property="userPrompt" destination="DWZ-NG-ucs" id="ClA-cC-uEX"/>
                     </connections>
                 </viewController>

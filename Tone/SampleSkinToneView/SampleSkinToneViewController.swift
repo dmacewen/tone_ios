@@ -28,8 +28,10 @@ class SampleSkinToneViewController: UIViewController {
 
     
     @IBOutlet weak var rootView: UIView!
-    @IBOutlet weak var bottomFlash: UIView!
-    @IBOutlet weak var topFlash: UIView!
+    //@IBOutlet weak var bottomFlash: UIView!
+    //@IBOutlet weak var topFlash: UIView!
+    
+    @IBOutlet weak var FlashLayer: UIImageView!
     
     @IBOutlet weak var userPrompt: UITextField!
     
@@ -101,12 +103,14 @@ class SampleSkinToneViewController: UIViewController {
                 }
             }
             .distinctUntilChanged()
-            .subscribe(onNext: { shouldMaximizeBrightness in
-                if shouldMaximizeBrightness {
+            .subscribe(onNext: { isFlashLayer in
+                if isFlashLayer {
                     self.viewModel.originalScreenBrightness = UIScreen.main.brightness
                     UIScreen.main.brightness = CGFloat(1.0)
+                    self.FlashLayer.isHidden = false
                 } else {
                     UIScreen.main.brightness = self.viewModel.originalScreenBrightness
+                    self.FlashLayer.isHidden = true
                 }
             })
             .disposed(by: disposeBag)
@@ -115,27 +119,52 @@ class SampleSkinToneViewController: UIViewController {
             .observeOn(MainScheduler.instance)
             .subscribeOn(MainScheduler.instance)
             .subscribe(onNext: { flashSetting in
-                //Flash Shim while working on checkers
                 let area = flashSetting.area
                 let areas = flashSetting.areas
+                let screenSize = UIScreen.main.bounds
+                
+                let checkerSize = 10
+                let width = screenSize.width
+                let columns = Int((width / CGFloat(checkerSize)))
+                
+                let height = screenSize.height
+                let rows = Int((height / CGFloat(checkerSize)))
+                
                 print("Setting Flash! Area: \(area) Areas: \(areas)")
-                if areas == 2 {
-                    if area == 1 {
-                        self.topFlash.backgroundColor = UIColor.white
-                        self.bottomFlash.backgroundColor = UIColor.clear
+                
+                let renderer = UIGraphicsImageRenderer(size: CGSize(width: (columns * checkerSize), height: (rows * checkerSize)))
+                
+                let img = renderer.image { ctx in
+                    ctx.cgContext.setFillColor(UIColor.white.cgColor)
+                    ctx.cgContext.fill(CGRect(x: 0, y: 0, width: width, height: height))
+                    
+                    ctx.cgContext.setFillColor(UIColor.black.cgColor)
+                    
+                    if areas == 2 {
+                        switch area {
+                        case 0:
+                            ctx.cgContext.fill(CGRect(x: 0, y: 0, width: width, height: height))
+                        case 1:
+                            for row in 0 ..< rows {
+                                for column in 0 ..< columns {
+                                    if (row + column) % 2 == 0 {
+                                        ctx.cgContext.fill(CGRect(x: (column * checkerSize), y: (row * checkerSize), width: checkerSize, height: checkerSize))
+                                    }
+                                }
+                            }
+                        case 2:
+                            ctx.cgContext.setFillColor(UIColor.white.cgColor)
+                            ctx.cgContext.fill(CGRect(x: 0, y: 0, width: width, height: height))
+                        default:
+                            fatalError("Flash Not Implemented for area > 2")
+                        }
                     } else {
-                        self.topFlash.backgroundColor = UIColor.clear
-                        self.bottomFlash.backgroundColor = UIColor.white
-                    }
-                } else if areas == 1 {
-                    if area == 1 {
-                        self.topFlash.backgroundColor = UIColor.white
-                        self.bottomFlash.backgroundColor = UIColor.white
-                    } else {
-                        self.topFlash.backgroundColor = UIColor.clear
-                        self.bottomFlash.backgroundColor = UIColor.clear
+                        fatalError("Flash Not Implemented for areas != 2")
                     }
                 }
+                
+                self.FlashLayer.image = img
+                print("Done Drawing!")
             }).disposed(by: disposeBag)
         
         viewModel.sampleState
