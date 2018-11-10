@@ -9,6 +9,8 @@
 import Foundation
 import AVFoundation
 import RxSwift
+import Vision
+import AVKit
 
 struct PhotoSettings {
     var iso = 0.0
@@ -117,6 +119,27 @@ class CameraState {
         captureDevice.exposureMode = AVCaptureDevice.ExposureMode.continuousAutoExposure
         captureDevice.whiteBalanceMode = AVCaptureDevice.WhiteBalanceMode.continuousAutoWhiteBalance
     }
+    
+    func exifOrientationForDeviceOrientation(_ deviceOrientation: UIDeviceOrientation) -> CGImagePropertyOrientation {
+        
+        switch deviceOrientation {
+        case .portraitUpsideDown:
+            return .rightMirrored
+            
+        case .landscapeLeft:
+            return .downMirrored
+            
+        case .landscapeRight:
+            return .upMirrored
+            
+        default:
+            return .leftMirrored
+        }
+    }
+    
+    func exifOrientationForCurrentDeviceOrientation() -> CGImagePropertyOrientation {
+        return exifOrientationForDeviceOrientation(UIDevice.current.orientation)
+    }
 }
 
 class Camera: NSObject {
@@ -196,4 +219,101 @@ func getPhotoSettings() -> AVCapturePhotoSettings {
     photoSettings.isHighResolutionPhotoEnabled = true
     photoSettings.flashMode = .off
     return photoSettings
+}
+
+class Video:  NSObject {
+    private var cameraState: CameraState
+    let faceLandmarks = PublishSubject<VNFaceLandmarks2D?>()
+    
+    init(cameraState: CameraState) {
+        self.cameraState = cameraState
+        
+        super.init()
+        
+        let videoDataOutput = AVCaptureVideoDataOutput()
+        videoDataOutput.alwaysDiscardsLateVideoFrames = true
+        
+        // Create a serial dispatch queue used for the sample buffer delegate as well as when a still image is captured.
+        // A serial dispatch queue must be used to guarantee that video frames will be delivered in order.
+        let videoDataOutputQueue = DispatchQueue(label: "com.Tone-Cosmetics.Tone")
+        videoDataOutput.setSampleBufferDelegate(self, queue: videoDataOutputQueue)
+        
+        if cameraState.captureSession.canAddOutput(videoDataOutput) {
+            cameraState.captureSession.addOutput(videoDataOutput)
+        }
+        
+        videoDataOutput.connection(with: .video)?.isEnabled = true
+        
+        if let captureConnection = videoDataOutput.connection(with: AVMediaType.video) {
+            if captureConnection.isCameraIntrinsicMatrixDeliverySupported {
+                captureConnection.isCameraIntrinsicMatrixDeliveryEnabled = true
+            }
+        }
+        
+        //self.videoDataOutput = videoDataOutput
+        //self.videoDataOutputQueue = videoDataOutputQueue
+        
+        //self.captureDevice = inputDevice
+        //self.captureDeviceResolution = resolution
+    }
+}
+
+extension Video: AVCaptureVideoDataOutputSampleBufferDelegate {
+    // MARK: AVCaptureVideoDataOutputSampleBufferDelegate
+    /// - Tag: PerformRequests
+    // Handle delegate method callback on receiving a sample buffer.
+    public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        var requestHandlerOptions: [VNImageOption: AnyObject] = [:]
+        
+        let cameraIntrinsicData = CMGetAttachment(sampleBuffer, key: kCMSampleBufferAttachmentKey_CameraIntrinsicMatrix, attachmentModeOut: nil)
+        if cameraIntrinsicData != nil {
+            requestHandlerOptions[VNImageOption.cameraIntrinsics] = cameraIntrinsicData
+        }
+        
+        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+            print("Failed to obtain a CVPixelBuffer for the current output frame.")
+            return
+        }
+        
+        let exifOrientation = self.cameraState.exifOrientationForCurrentDeviceOrientation()
+        
+        // Perform face landmark tracking on detected faces.
+        //var faceLandmarkRequests = [VNDetectFaceLandmarksRequest]()
+        let faceLandmarksRequest = VNDetectFaceLandmarksRequest(completionHandler: { (request, error) in
+            
+            if error != nil {
+                print("FaceLandmarks error: \(String(describing: error)).")
+            }
+            
+            guard let landmarksRequest = request as? VNDetectFaceLandmarksRequest,
+                let results = landmarksRequest.results as? [VNFaceObservation] else {
+                    return
+            }
+            
+            if results.count > 0 {
+                self.faceLandmarks.onNext(results[0].landmarks)
+            } else {
+                self.faceLandmarks.onNext(nil)
+            }
+            //print("Landmark Results :: \(results)")
+            // Perform all UI updates (drawing) on the main queue, not the background queue on which this handler is being called.
+            /*
+            DispatchQueue.main.async {
+                self.drawFaceObservations(results)
+            }
+             */
+        })
+        
+        //faceLandmarkRequests.append(faceLandmarksRequest)
+        
+        let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer,
+                                                        orientation: exifOrientation,
+                                                        options: requestHandlerOptions)
+        
+        do {
+            try imageRequestHandler.perform([faceLandmarksRequest])
+        } catch let error as NSError {
+            NSLog("Failed to perform FaceLandmarkRequest: %@", error)
+        }
+    }
 }

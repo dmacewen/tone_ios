@@ -78,11 +78,32 @@ class SampleSkinToneViewModel {
     
     var originalScreenBrightness: CGFloat = 0.0
     var cameraState: CameraState
+    var video: Video
     
     let disposeBag = DisposeBag()
 
     init() {
         cameraState = CameraState(flashStream: flashSettings)//, photoStream: samplePhotos)
+        video = Video(cameraState: cameraState)
+        
+        video.faceLandmarks
+            .subscribe(onNext: { faceLandmarks in
+                if faceLandmarks != nil {
+                    print("Contour :: \(faceLandmarks!.faceContour!.normalizedPoints)")
+                    
+                   let boundingBox = faceLandmarks!.faceContour!.normalizedPoints
+                    .reduce({ var minPoint: CGPoint; var maxPoint: CGPoint }, { BB, point in
+                            BB.minPoint = BB.minPoint ?? point
+                            BB.maxPoint = BB.maxPoint ?? point
+                            return BB
+                        })
+                    
+                    self.userFaceState.onNext(.ok)
+                } else {
+                    self.userFaceState.onNext(.noFaceFound)
+                }
+            }).disposed(by: disposeBag)
+        
         sampleState
             .subscribe(onCompleted: { print("Sample State Completed!!!") })
             .disposed(by: disposeBag)

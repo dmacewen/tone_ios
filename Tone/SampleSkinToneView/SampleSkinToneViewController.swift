@@ -55,6 +55,7 @@ class SampleSkinToneViewController: UIViewController {
 
         viewModel.userFaceState
             //.map { $0.prompt.message }
+            .observeOn(MainScheduler.instance)
             .subscribe(onNext: {
                 self.userPrompt.text = $0.prompt.message
                 self.userTip.text = $0.prompt.tip
@@ -172,6 +173,8 @@ class SampleSkinToneViewController: UIViewController {
                 print("Done Drawing!")
             }).disposed(by: disposeBag)
         
+        
+        
         viewModel.sampleState
             .filter { if case .previewUser = $0 { return true } else { return false } }
             .take(1)
@@ -180,6 +183,7 @@ class SampleSkinToneViewController: UIViewController {
                 //Create View Preview Layer
                 let videoPreviewLayer = AVCaptureVideoPreviewLayer(session: self.viewModel.cameraState.captureSession)
                 videoPreviewLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
+                //videoPreviewLayer.videoGravity = AVLayerVideoGravity.resizeAspect
                 videoPreviewLayer.frame = self.view.layer.bounds
                 
                 //Set Video Preview Layer to Root View
