@@ -42,6 +42,11 @@ class SampleSkinToneViewModel {
         case tooBright
         case faceGradient
         case faceTooFar
+        case faceTooClose
+        case faceTooFarDown
+        case faceTooFarUp
+        case faceTooFarLeft
+        case faceTooFarRight
         
         var prompt: Message {
             switch self {
@@ -55,6 +60,16 @@ class SampleSkinToneViewModel {
                 return Message(message: "It's A Little Too Bright Here", tip: "Try facing away from bright lights or trying again somewhere darker")
             case .faceTooFar:
                 return Message(message: "You're Too Far Away!", tip: "Bring the phone closer to your face!")
+            case .faceTooClose:
+                return Message(message: "You're Too Close!", tip: "Move the phone a little farther from your face!")
+            case .faceTooFarDown:
+                return Message(message: "Your chin is cropped!", tip: "Try moving the phone down")
+            case .faceTooFarUp:
+                return Message(message: "Your head is cropped!", tip: "Try moving the phone up")
+            case .faceTooFarLeft:
+                return Message(message: "Your left cheek is cropped!", tip: "Try moving the phone to your left")
+            case .faceTooFarRight:
+                return Message(message: "Your right cheek is cropped!", tip: "Try moving the phone to your right")
             case .faceGradient:
                 return Message(message: "You're Unevenly Lit!", tip: "Try facing away from the brightest lights in the room")
             //case .faceGradient:
@@ -100,14 +115,33 @@ class SampleSkinToneViewModel {
                     //print("Max \(max) | Min \(min)")
 
                     let width = max.x - min.x
+                    let height = 1.65 * (max.y - min.y)
                     let fractionWidth = width / self.videoSize.width
+                    let fractionHeight = height / self.videoSize.height
                     
                     //print("Fraction Width :: \(fractionWidth)")
                     
                     if fractionWidth < 0.20 {
                         self.userFaceState.onNext(.noFaceFound)
-                    } else if fractionWidth > 0.70 {
-                        self.userFaceState.onNext(.ok)
+                    } else if fractionWidth > 0.65 {
+                        if fractionHeight < 1.0 {
+                            if min.x < 0 {
+                                self.userFaceState.onNext(.faceTooFarLeft)
+                            } else if max.x > self.videoSize.width {
+                                self.userFaceState.onNext(.faceTooFarRight)
+                            } else if min.y < -10 {
+                                self.userFaceState.onNext(.faceTooFarDown)
+                            } else if (min.y + height) > self.videoSize.height {
+                                self.userFaceState.onNext(.faceTooFarUp)
+                            } else {
+                                self.userFaceState.onNext(.ok)
+                            }
+                        } else {
+                            self.userFaceState.onNext(.faceTooClose)
+                        }
+
+                    } else if fractionWidth > 0.9 {
+                        self.userFaceState.onNext(.faceTooClose)
                     } else {
                         self.userFaceState.onNext(.faceTooFar)
                     }
