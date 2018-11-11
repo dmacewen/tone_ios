@@ -79,6 +79,7 @@ class SampleSkinToneViewModel {
     var originalScreenBrightness: CGFloat = 0.0
     var cameraState: CameraState
     var video: Video
+    var videoSize = CGSize.init(width: 0, height: 0)
     
     let disposeBag = DisposeBag()
 
@@ -89,16 +90,27 @@ class SampleSkinToneViewModel {
         video.faceLandmarks
             .subscribe(onNext: { faceLandmarks in
                 if faceLandmarks != nil {
-                    print("Contour :: \(faceLandmarks!.faceContour!.normalizedPoints)")
+                    let facePoints = faceLandmarks!.faceContour!.pointsInImage(imageSize: self.videoSize)
+                    let xValues = facePoints.map { $0.x }
+                    let yValues = facePoints.map { $0.y }
                     
-                   let boundingBox = faceLandmarks!.faceContour!.normalizedPoints
-                    .reduce({ var minPoint: CGPoint; var maxPoint: CGPoint }, { BB, point in
-                            BB.minPoint = BB.minPoint ?? point
-                            BB.maxPoint = BB.maxPoint ?? point
-                            return BB
-                        })
+                    let max = CGPoint.init(x: xValues.max()!, y: yValues.max()!)
+                    let min = CGPoint.init(x: xValues.min()!, y: yValues.min()!)
                     
-                    self.userFaceState.onNext(.ok)
+                    //print("Max \(max) | Min \(min)")
+
+                    let width = max.x - min.x
+                    let fractionWidth = width / self.videoSize.width
+                    
+                    //print("Fraction Width :: \(fractionWidth)")
+                    
+                    if fractionWidth < 0.20 {
+                        self.userFaceState.onNext(.noFaceFound)
+                    } else if fractionWidth > 0.70 {
+                        self.userFaceState.onNext(.ok)
+                    } else {
+                        self.userFaceState.onNext(.faceTooFar)
+                    }
                 } else {
                     self.userFaceState.onNext(.noFaceFound)
                 }

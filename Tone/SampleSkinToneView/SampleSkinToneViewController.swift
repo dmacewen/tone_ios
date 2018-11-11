@@ -185,6 +185,7 @@ class SampleSkinToneViewController: UIViewController {
                 videoPreviewLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
                 //videoPreviewLayer.videoGravity = AVLayerVideoGravity.resizeAspect
                 videoPreviewLayer.frame = self.view.layer.bounds
+                self.viewModel.videoSize = videoPreviewLayer.bounds.size
                 
                 //Set Video Preview Layer to Root View
                 self.InteractionLayer.layer.insertSublayer(videoPreviewLayer, below: self.UILayer.layer)
