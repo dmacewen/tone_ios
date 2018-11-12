@@ -232,6 +232,7 @@ class Video:  NSObject {
         
         let videoDataOutput = AVCaptureVideoDataOutput()
         videoDataOutput.alwaysDiscardsLateVideoFrames = true
+        videoDataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: Int(kCVPixelFormatType_32BGRA)]
         
         // Create a serial dispatch queue used for the sample buffer delegate as well as when a still image is captured.
         // A serial dispatch queue must be used to guarantee that video frames will be delivered in order.
@@ -275,6 +276,27 @@ extension Video: AVCaptureVideoDataOutputSampleBufferDelegate {
             return
         }
         
+        CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(rawValue: CVOptionFlags(0)))
+        
+        //let width = CVPixelBufferGetWidth(pixelBuffer)
+        //let height = CVPixelBufferGetHeight(pixelBuffer)
+        let isPlanar = CVPixelBufferIsPlanar(pixelBuffer)
+        print("Is Planar ? \(isPlanar)")
+        //let bitsPerComponent = 8
+        
+        //let bytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer)
+        let baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer)!
+        
+        let byteBuffer = baseAddress.assumingMemoryBound(to: UInt8.self)
+        
+        let index = 12
+        let b = byteBuffer[index]
+        let g = byteBuffer[index + 1]
+        let r = byteBuffer[index + 2]
+        
+        print("Index :: \(index) | BGR :: (\(b), \(g), \(r))")
+        //let a = byteBuffer[index + 3]
+        
         let exifOrientation = self.cameraState.exifOrientationForCurrentDeviceOrientation()
         
         // Perform face landmark tracking on detected faces.
@@ -295,16 +317,7 @@ extension Video: AVCaptureVideoDataOutputSampleBufferDelegate {
             } else {
                 self.faceLandmarks.onNext(nil)
             }
-            //print("Landmark Results :: \(results)")
-            // Perform all UI updates (drawing) on the main queue, not the background queue on which this handler is being called.
-            /*
-            DispatchQueue.main.async {
-                self.drawFaceObservations(results)
-            }
-             */
         })
-        
-        //faceLandmarkRequests.append(faceLandmarksRequest)
         
         let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer,
                                                         orientation: exifOrientation,
