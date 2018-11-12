@@ -104,50 +104,33 @@ class SampleSkinToneViewModel {
         
         video.faceLandmarks
             .subscribe(onNext: { faceLandmarks in
-                if faceLandmarks != nil {
-                    let facePoints = faceLandmarks!.faceContour!.pointsInImage(imageSize: self.videoSize)
-                    let xValues = facePoints.map { $0.x }
-                    let yValues = facePoints.map { $0.y }
-                    
-                    let max = CGPoint.init(x: xValues.max()!, y: yValues.max()!)
-                    let min = CGPoint.init(x: xValues.min()!, y: yValues.min()!)
-                    
-                    //print("Max \(max) | Min \(min)")
-
-                    let width = max.x - min.x
-                    let height = 1.65 * (max.y - min.y)
-                    let fractionWidth = width / self.videoSize.width
-                    let fractionHeight = height / self.videoSize.height
-                    
-                    //print("Fraction Width :: \(fractionWidth)")
-                    
-                    if fractionWidth < 0.20 {
-                        self.userFaceState.onNext(.noFaceFound)
-                    } else if fractionWidth > 0.65 {
-                        if fractionHeight < 1.0 {
-                            if min.x < 0 {
-                                self.userFaceState.onNext(.faceTooFarLeft)
-                            } else if max.x > self.videoSize.width {
-                                self.userFaceState.onNext(.faceTooFarRight)
-                            } else if min.y < -10 {
-                                self.userFaceState.onNext(.faceTooFarDown)
-                            } else if (min.y + height) > self.videoSize.height {
-                                self.userFaceState.onNext(.faceTooFarUp)
-                            } else {
-                                self.userFaceState.onNext(.ok)
-                            }
-                        } else {
-                            self.userFaceState.onNext(.faceTooClose)
-                        }
-
-                    } else if fractionWidth > 0.9 {
-                        self.userFaceState.onNext(.faceTooClose)
-                    } else {
-                        self.userFaceState.onNext(.faceTooFar)
-                    }
-                } else {
+                if faceLandmarks == nil {
                     self.userFaceState.onNext(.noFaceFound)
+                    return
                 }
+                
+                let facePoints = faceLandmarks!.faceContour!.pointsInImage(imageSize: self.videoSize)
+                let xValues = facePoints.map { $0.x }
+                let yValues = facePoints.map { $0.y }
+                
+                let max = CGPoint.init(x: xValues.max()!, y: yValues.max()!)
+                let min = CGPoint.init(x: xValues.min()!, y: yValues.min()!)
+                
+                let faceSizeState = self.checkFaceSize(min: min, max: max)
+                
+                if faceSizeState != .ok {
+                    self.userFaceState.onNext(faceSizeState)
+                    return
+                }
+                
+                let faceClipState = self.checkFaceClipped(min: min, max: max)
+                
+                if faceClipState != .ok {
+                    self.userFaceState.onNext(faceClipState)
+                    return
+                }
+                
+                self.userFaceState.onNext(.ok)
             }).disposed(by: disposeBag)
         
         sampleState
@@ -232,5 +215,40 @@ class SampleSkinToneViewModel {
             .toArray()
             .flatMap { _ in self.cameraState.lockCameraSettings() }
             .map { _ in true }
+    }
+    
+    private func checkFaceSize(min: CGPoint, max: CGPoint) -> UserFaceStates {
+        let width = max.x - min.x
+        let height = 1.65 * (max.y - min.y)
+        
+        let fractionWidth = width / self.videoSize.width
+        let fractionHeight = height / self.videoSize.height
+        
+        //Mostly to avoid picking up background faces
+        if (fractionWidth < 0.20) || (fractionHeight < 0.20) {
+            return .noFaceFound
+        } else if (fractionWidth < 0.65) || (fractionHeight < 0.7) {
+            return .faceTooFar
+        } else if (fractionWidth > 0.9) || (fractionHeight > 1.0) {
+            return .faceTooClose
+        }
+        
+        return .ok
+    }
+    
+    private func checkFaceClipped(min: CGPoint, max: CGPoint) -> UserFaceStates {
+        let height = 1.65 * (max.y - min.y)
+
+        if min.x < 0 {
+            return .faceTooFarLeft
+        } else if max.x > self.videoSize.width {
+            return .faceTooFarRight
+        } else if min.y < -10 {
+            return .faceTooFarDown
+        } else if (min.y + height) > self.videoSize.height {
+            return .faceTooFarUp
+        }
+        
+        return .ok
     }
 }
