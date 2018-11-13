@@ -79,7 +79,7 @@ class SampleSkinToneViewModel {
     }
     
     
-    let userFaceState = BehaviorSubject<UserFaceStates>(value: .ok/*.noFaceFound*/)
+    let userFaceState = BehaviorSubject<UserFaceStates>(value: .noFaceFound)
     let sampleState = BehaviorSubject<SampleStates>(value: .previewUser)
     
     let referencePhotos = PublishSubject<AVCapturePhoto>()
@@ -97,19 +97,19 @@ class SampleSkinToneViewModel {
     var videoSize = CGSize.init(width: 0, height: 0)
     
     let disposeBag = DisposeBag()
-
+    
     init() {
         cameraState = CameraState(flashStream: flashSettings)//, photoStream: samplePhotos)
         video = Video(cameraState: cameraState)
         
         video.faceLandmarks
-            .subscribe(onNext: { faceLandmarks in
-                if faceLandmarks == nil {
+            .subscribe(onNext: { faceData in
+                if faceData == nil {
                     self.userFaceState.onNext(.noFaceFound)
                     return
                 }
                 
-                let facePoints = faceLandmarks!.faceContour!.pointsInImage(imageSize: self.videoSize)
+                let facePoints = faceData!.landmarks.faceContour!.pointsInImage(imageSize: self.videoSize)
                 let xValues = facePoints.map { $0.x }
                 let yValues = facePoints.map { $0.y }
                 
@@ -127,6 +127,12 @@ class SampleSkinToneViewModel {
                 
                 if faceClipState != .ok {
                     self.userFaceState.onNext(faceClipState)
+                    return
+                }
+                
+                print("Cheek Ratio! :: \(faceData!.cheekRatio)")
+                if faceData!.cheekRatio > 0.15 {
+                    self.userFaceState.onNext(.faceGradient)
                     return
                 }
                 
