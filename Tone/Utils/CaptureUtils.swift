@@ -35,6 +35,8 @@ struct FlashSettings {
 struct RealTimeFaceData {
     var landmarks: VNFaceLandmarks2D
     var cheekRatio: Float
+    var iso: Float
+    var exposureDuration: Float
 }
 
 //Defining a Camera how we want it
@@ -374,7 +376,13 @@ extension Video: AVCaptureVideoDataOutputSampleBufferDelegate {
                 //print("Right Average Value :: \(rightValueAverage) | Left AverageValue :: \(leftValueAverage)")
                 //print("\(cheekRatio)% difference | Right Average Value :: \(rightValueAverage) | Left AverageValue :: \(leftValueAverage)")
                 
-                self.faceLandmarks.onNext(RealTimeFaceData(landmarks: results[0].landmarks!, cheekRatio: cheekRatio))
+                let exposureDurationValue = Float(self.cameraState.captureDevice.exposureDuration.value)
+                let exposureDurationTimeScale = Float(self.cameraState.captureDevice.exposureDuration.timescale)
+                let exposureDuration = exposureDurationValue / exposureDurationTimeScale
+                
+                //print("ISO :: \(self.cameraState.captureDevice.iso) | Exposure Duration :: \(exposureDuration)")
+                
+                self.faceLandmarks.onNext(RealTimeFaceData(landmarks: results[0].landmarks!, cheekRatio: cheekRatio, iso: self.cameraState.captureDevice.iso, exposureDuration: exposureDuration))
                 CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
             } else {
                 self.faceLandmarks.onNext(nil)
@@ -389,6 +397,8 @@ extension Video: AVCaptureVideoDataOutputSampleBufferDelegate {
             try imageRequestHandler.perform([faceLandmarksRequest])
         } catch let error as NSError {
             NSLog("Failed to perform FaceLandmarkRequest: %@", error)
+            fatalError("Error Landmarking")
+            //self.faceLandmarks.onNext(nil)
         }
     }
 }

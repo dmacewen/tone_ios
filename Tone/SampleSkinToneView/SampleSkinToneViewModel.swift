@@ -57,7 +57,7 @@ class SampleSkinToneViewModel {
             case .tooDark:
                 return Message(message: "It's A Little Too Dark Here", tip: "Lets try again in a room with a bit more light")
             case .tooBright:
-                return Message(message: "It's A Little Too Bright Here", tip: "Try facing away from bright lights or trying again somewhere darker")
+                return Message(message: "Your Face Is Too Bright!", tip: "Try facing away from bright lights or trying again somewhere darker")
             case .faceTooFar:
                 return Message(message: "You're Too Far Away!", tip: "Bring the phone closer to your face!")
             case .faceTooClose:
@@ -123,7 +123,16 @@ class SampleSkinToneViewModel {
                     return
                 }
                 
-                //print("Cheek Ratio! :: \(faceData!.cheekRatio)")
+                let maxExposureIso: Float = 160.0
+                let maxExposureDuration: Float = 0.07
+                
+                let totalExposureMultiple = (faceData!.iso/maxExposureIso) * (faceData!.exposureDuration/maxExposureDuration)
+                
+                if totalExposureMultiple < 1.0 {
+                    self.userFaceState.onNext(.tooBright)
+                    return
+                }
+                
                 if faceData!.cheekRatio > 0.15 {
                     self.userFaceState.onNext(.faceGradient)
                     return
