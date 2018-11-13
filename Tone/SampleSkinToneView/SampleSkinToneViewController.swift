@@ -56,6 +56,8 @@ class SampleSkinToneViewController: UIViewController {
         viewModel.userFaceState
             //.map { $0.prompt.message }
             .observeOn(MainScheduler.instance)
+            .distinctUntilChanged()
+            .throttle(0.5, scheduler: MainScheduler.instance)
             .subscribe(onNext: {
                 self.userPrompt.text = $0.prompt.message
                 self.userTip.text = $0.prompt.tip

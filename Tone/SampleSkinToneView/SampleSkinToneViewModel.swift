@@ -123,16 +123,16 @@ class SampleSkinToneViewModel {
                     return
                 }
                 
+                //print("Cheek Ratio! :: \(faceData!.cheekRatio)")
+                if faceData!.cheekRatio > 0.15 {
+                    self.userFaceState.onNext(.faceGradient)
+                    return
+                }
+                
                 let faceClipState = self.checkFaceClipped(min: min, max: max)
                 
                 if faceClipState != .ok {
                     self.userFaceState.onNext(faceClipState)
-                    return
-                }
-                
-                print("Cheek Ratio! :: \(faceData!.cheekRatio)")
-                if faceData!.cheekRatio > 0.15 {
-                    self.userFaceState.onNext(.faceGradient)
                     return
                 }
                 
