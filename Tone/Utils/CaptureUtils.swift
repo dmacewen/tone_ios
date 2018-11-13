@@ -18,15 +18,6 @@ struct PhotoSettings {
     var whiteBalance = [0.0, 0.0, 0.0]
 }
 
-// areas: the number of equal areas to divide the screen into
-// area: the specific area to illuminate
-//Ex.
-// (area, areas)
-// (0, 1) is all black
-// (1, 1) is all white
-// (1, 2) is half 1 of the screen is illuminated
-// (2, 2) is half 2 of the screen is illuminated
-
 struct FlashSettings {
     var area = 0
     var areas = 0
@@ -230,10 +221,30 @@ func getPhotoSettings() -> AVCapturePhotoSettings {
 
 class Video:  NSObject {
     private var cameraState: CameraState
-    let faceLandmarks = PublishSubject<RealTimeFaceData?>()
-    
+    let faceLandmarks: Observable<RealTimeFaceData?>
+    private let pixelBufferSubject = PublishSubject<CVImageBuffer>()
+
     init(cameraState: CameraState) {
         self.cameraState = cameraState
+        
+        self.faceLandmarks = pixelBufferSubject
+            .flatMap { getFacialLandmarks(cameraState: cameraState, pixelBuffer: $0) }
+            .map({ (faceLandmarksOptional) -> RealTimeFaceData? in
+                guard let (faceLandmarks, pixelBuffer) = faceLandmarksOptional else {
+                    return nil
+                }
+                
+                guard let cheekRatio = getCheekRatio(pixelBuffer: pixelBuffer, landmarks: faceLandmarks) else {
+                    return nil
+                }
+                
+                let exposureDurationValue = Float(cameraState.captureDevice.exposureDuration.value)
+                let exposureDurationTimeScale = Float(cameraState.captureDevice.exposureDuration.timescale)
+                let exposureDuration = exposureDurationValue / exposureDurationTimeScale
+                
+                return RealTimeFaceData(landmarks: faceLandmarks, cheekRatio: cheekRatio, iso: cameraState.captureDevice.iso, exposureDuration: exposureDuration)
+            })
+            .asObservable()
         
         super.init()
         
@@ -257,12 +268,6 @@ class Video:  NSObject {
                 captureConnection.isCameraIntrinsicMatrixDeliveryEnabled = true
             }
         }
-        
-        //self.videoDataOutput = videoDataOutput
-        //self.videoDataOutputQueue = videoDataOutputQueue
-        
-        //self.captureDevice = inputDevice
-        //self.captureDeviceResolution = resolution
     }
 }
 
@@ -271,121 +276,123 @@ extension Video: AVCaptureVideoDataOutputSampleBufferDelegate {
     /// - Tag: PerformRequests
     // Handle delegate method callback on receiving a sample buffer.
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        var requestHandlerOptions: [VNImageOption: AnyObject] = [:]
-        
-        let cameraIntrinsicData = CMGetAttachment(sampleBuffer, key: kCMSampleBufferAttachmentKey_CameraIntrinsicMatrix, attachmentModeOut: nil)
-        if cameraIntrinsicData != nil {
-            requestHandlerOptions[VNImageOption.cameraIntrinsics] = cameraIntrinsicData
-        }
         
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
             print("Failed to obtain a CVPixelBuffer for the current output frame.")
             return
         }
         
-        let exifOrientation = self.cameraState.exifOrientationForCurrentDeviceOrientation()
+        pixelBufferSubject.onNext(pixelBuffer)
+    }
+}
+
+func getCheekRatio(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D) -> Float? {
+    CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
+    
+    let bufferWidth = CVPixelBufferGetWidth(pixelBuffer)
+    let bufferHeight = CVPixelBufferGetHeight(pixelBuffer)
+    
+    let width = bufferHeight
+    let height = bufferWidth
+    
+    let baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer)!
+    
+    let byteBuffer = baseAddress.assumingMemoryBound(to: UInt8.self)
+    
+    //Indexed from bottom left of screen
+    let facePoints = landmarks.faceContour!.pointsInImage(imageSize: CGSize(width: width, height: height))
+    let count = facePoints.count
+    
+    let sampleSquareSideLength = Int((facePoints[1].y - facePoints[2].y))
+    if sampleSquareSideLength < 0 {
+        CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
+        return nil
+    }
+    
+    let faceStartingPoint = 2
+    var leftSampleSquareStart = facePoints[faceStartingPoint]
+    leftSampleSquareStart.y = CGFloat(height) - leftSampleSquareStart.y
+    
+    if leftSampleSquareStart.x < 0 || leftSampleSquareStart.y < 0 {
+        CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
+        return nil
+    }
+    
+    var rightSampleSquareStart = facePoints[count - (faceStartingPoint + 1)]
+    rightSampleSquareStart.y = CGFloat(height) - rightSampleSquareStart.y
+    
+    if rightSampleSquareStart.x < 0 || rightSampleSquareStart.y < 0 {
+        CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
+        return nil
+    }
+    
+    let fractionOfPixels = 2
+    
+    var leftValueSum = 0
+    for j in Int(leftSampleSquareStart.x) ..< (Int(leftSampleSquareStart.x) + sampleSquareSideLength) {
+        for i in Int(leftSampleSquareStart.y) ..< (Int(leftSampleSquareStart.y) + sampleSquareSideLength) {
+            if (i + j) % fractionOfPixels == 0 {
+                let index = (j * bufferWidth + i) * 4
+                let value = [byteBuffer[index], byteBuffer[index + 1], byteBuffer[index + 2]].max()!
+                leftValueSum += Int(value)
+            }
+        }
+    }
+    
+    var rightValueSum = 0
+    for j in (Int(rightSampleSquareStart.x) - sampleSquareSideLength) ..< Int(rightSampleSquareStart.x)  {
+        for i in Int(rightSampleSquareStart.y) ..< (Int(rightSampleSquareStart.y) + sampleSquareSideLength) {
+            if (i + j) % fractionOfPixels == 0 {
+                let index = (j * bufferWidth + i) * 4
+                let value = [byteBuffer[index], byteBuffer[index + 1], byteBuffer[index + 2]].max()!
+                rightValueSum += Int(value)
+            }
+        }
+    }
+    
+    let sampleArea = (sampleSquareSideLength * sampleSquareSideLength) / fractionOfPixels
+    
+    let rightValueAverage = Float(rightValueSum) / Float(sampleArea)
+    let leftValueAverage = Float(leftValueSum) / Float(sampleArea)
+    
+    let cheekRatio = abs((rightValueAverage / 255) - (leftValueAverage / 255))
+    
+    CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
+    
+    return cheekRatio
+}
+
+func getFacialLandmarks(cameraState: CameraState, pixelBuffer: CVPixelBuffer) -> Observable<(VNFaceLandmarks2D, CVPixelBuffer)?> {
+    return Observable<(VNFaceLandmarks2D, CVPixelBuffer)?>.create { observable in
+        var requestHandlerOptions: [VNImageOption: AnyObject] = [:]
+        
+        let cameraIntrinsicData = CMGetAttachment(pixelBuffer, key: kCMSampleBufferAttachmentKey_CameraIntrinsicMatrix, attachmentModeOut: nil)
+        if cameraIntrinsicData != nil {
+            requestHandlerOptions[VNImageOption.cameraIntrinsics] = cameraIntrinsicData
+        }
+        
+        let exifOrientation = cameraState.exifOrientationForCurrentDeviceOrientation()
         
         // Perform face landmark tracking on detected faces.
-        //var faceLandmarkRequests = [VNDetectFaceLandmarksRequest]()
         let faceLandmarksRequest = VNDetectFaceLandmarksRequest(completionHandler: { (request, error) in
-            
             if error != nil {
                 print("FaceLandmarks error: \(String(describing: error)).")
             }
             
             guard let landmarksRequest = request as? VNDetectFaceLandmarksRequest,
                 let results = landmarksRequest.results as? [VNFaceObservation] else {
+                    observable.onNext(nil)
+                    observable.onCompleted()
                     return
             }
             
             if results.count > 0 {
-                CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
-
-                let bufferWidth = CVPixelBufferGetWidth(pixelBuffer)
-                let bufferHeight = CVPixelBufferGetHeight(pixelBuffer)
-                
-                let width = bufferHeight
-                let height = bufferWidth
-                
-                let baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer)!
-                
-                let byteBuffer = baseAddress.assumingMemoryBound(to: UInt8.self)
-            
-                let faceLandmarks = results[0].landmarks
-                //Indexed from bottom left of screen
-                let facePoints = faceLandmarks!.faceContour!.pointsInImage(imageSize: CGSize(width: width, height: height))
-                let count = facePoints.count
-                
-                let sampleSquareSideLength = Int((facePoints[1].y - facePoints[2].y))
-                if sampleSquareSideLength < 0 {
-                    self.faceLandmarks.onNext(nil)
-                    CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
-                    return
-                }
-
-                let faceStartingPoint = 2
-                var leftSampleSquareStart = facePoints[faceStartingPoint]
-                leftSampleSquareStart.y = CGFloat(height) - leftSampleSquareStart.y
-                
-                if leftSampleSquareStart.x < 0 || leftSampleSquareStart.y < 0 {
-                    self.faceLandmarks.onNext(nil)
-                    CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
-                    return
-                }
-                
-                var rightSampleSquareStart = facePoints[count - (faceStartingPoint + 1)]
-                rightSampleSquareStart.y = CGFloat(height) - rightSampleSquareStart.y
-                
-                if rightSampleSquareStart.x < 0 || rightSampleSquareStart.y < 0 {
-                    self.faceLandmarks.onNext(nil)
-                    CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
-                    return
-                }
-                
-                let fractionOfPixels = 2
-                
-                var leftValueSum = 0
-                for j in Int(leftSampleSquareStart.x) ..< (Int(leftSampleSquareStart.x) + sampleSquareSideLength) {
-                    for i in Int(leftSampleSquareStart.y) ..< (Int(leftSampleSquareStart.y) + sampleSquareSideLength) {
-                        if (i + j) % fractionOfPixels == 0 {
-                            let index = (j * bufferWidth + i) * 4
-                            let value = [byteBuffer[index], byteBuffer[index + 1], byteBuffer[index + 2]].max()!
-                            leftValueSum += Int(value)
-                        }
-                    }
-                }
-                
-                var rightValueSum = 0
-                for j in (Int(rightSampleSquareStart.x) - sampleSquareSideLength) ..< Int(rightSampleSquareStart.x)  {
-                    for i in Int(rightSampleSquareStart.y) ..< (Int(rightSampleSquareStart.y) + sampleSquareSideLength) {
-                        if (i + j) % fractionOfPixels == 0 {
-                            let index = (j * bufferWidth + i) * 4
-                            let value = [byteBuffer[index], byteBuffer[index + 1], byteBuffer[index + 2]].max()!
-                            rightValueSum += Int(value)
-                        }
-                    }
-                }
-                
-                let sampleArea = (sampleSquareSideLength * sampleSquareSideLength) / fractionOfPixels
-                
-                let rightValueAverage = Float(rightValueSum) / Float(sampleArea)
-                let leftValueAverage = Float(leftValueSum) / Float(sampleArea)
-                
-                let cheekRatio = abs((rightValueAverage / 255) - (leftValueAverage / 255))
-
-                //print("Right Average Value :: \(rightValueAverage) | Left AverageValue :: \(leftValueAverage)")
-                //print("\(cheekRatio)% difference | Right Average Value :: \(rightValueAverage) | Left AverageValue :: \(leftValueAverage)")
-                
-                let exposureDurationValue = Float(self.cameraState.captureDevice.exposureDuration.value)
-                let exposureDurationTimeScale = Float(self.cameraState.captureDevice.exposureDuration.timescale)
-                let exposureDuration = exposureDurationValue / exposureDurationTimeScale
-                
-                //print("ISO :: \(self.cameraState.captureDevice.iso) | Exposure Duration :: \(exposureDuration)")
-                
-                self.faceLandmarks.onNext(RealTimeFaceData(landmarks: results[0].landmarks!, cheekRatio: cheekRatio, iso: self.cameraState.captureDevice.iso, exposureDuration: exposureDuration))
-                CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
+                let faceLandmarks = results[0].landmarks!
+                observable.onNext((faceLandmarks, pixelBuffer))
+                observable.onCompleted()
             } else {
-                self.faceLandmarks.onNext(nil)
+                observable.onNext(nil)
+                observable.onCompleted()
             }
         })
         
@@ -398,7 +405,8 @@ extension Video: AVCaptureVideoDataOutputSampleBufferDelegate {
         } catch let error as NSError {
             NSLog("Failed to perform FaceLandmarkRequest: %@", error)
             fatalError("Error Landmarking")
-            //self.faceLandmarks.onNext(nil)
         }
+        
+        return Disposables.create()
     }
 }

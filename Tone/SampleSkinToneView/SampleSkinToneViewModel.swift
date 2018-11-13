@@ -124,7 +124,7 @@ class SampleSkinToneViewModel {
                 }
                 
                 let maxExposureIso: Float = 160.0
-                let maxExposureDuration: Float = 0.07
+                let maxExposureDuration: Float = 0.05
                 
                 let totalExposureMultiple = (faceData!.iso/maxExposureIso) * (faceData!.exposureDuration/maxExposureDuration)
                 
