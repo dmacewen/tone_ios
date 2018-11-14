@@ -15,6 +15,8 @@ import RxSwiftExt
 import AVFoundation
 import UIKit
 import Alamofire
+import Vision
+
 //import RxAlamofire
 //import Compression
 
@@ -222,7 +224,9 @@ class SampleSkinToneViewModel {
             .observeOn(MainScheduler.instance)
             .map { (Camera(cameraState: self.cameraState), $0) }
             .serialMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
-            .map { photo in  createUIImageSet(cameraState: self.cameraState, photo: photo)}
+            .flatMap { photo in self.getFaceLandmarks(photo: photo) }
+            .map { photoData in  createUIImageSet(cameraState: self.cameraState, photoData: photoData)}
+            
             //.do(onNext: { imageData in UIImageWriteToSavedPhotosAlbum(imageData.image, nil, nil, nil) })
             .toArray()
     }
@@ -276,4 +280,15 @@ class SampleSkinToneViewModel {
         
         return .ok
     }
+    
+    func getFaceLandmarks(photo: AVCapturePhoto) -> Observable<(VNFaceLandmarks2D, AVCapturePhoto)?> {
+        return getFacialLandmarks(cameraState: cameraState, pixelBuffer: photo.pixelBuffer!)
+            .map({
+                guard let (landmarks, _) = $0 else {
+                    return nil
+                }
+                return (landmarks, photo)
+            })
+    }
 }
+
