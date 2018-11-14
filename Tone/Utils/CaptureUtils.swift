@@ -222,7 +222,9 @@ func getPhotoSettings() -> AVCapturePhotoSettings {
 class Video:  NSObject {
     private var cameraState: CameraState
     let faceLandmarks: Observable<RealTimeFaceData?>
+    
     private let pixelBufferSubject = PublishSubject<CVImageBuffer>()
+    private let videoDataOutput: AVCaptureVideoDataOutput
 
     init(cameraState: CameraState) {
         self.cameraState = cameraState
@@ -246,19 +248,20 @@ class Video:  NSObject {
             })
             .asObservable()
         
+        self.videoDataOutput = AVCaptureVideoDataOutput()
+
         super.init()
         
-        let videoDataOutput = AVCaptureVideoDataOutput()
-        videoDataOutput.alwaysDiscardsLateVideoFrames = true
-        videoDataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: Int(kCVPixelFormatType_32BGRA)]
+        self.videoDataOutput.alwaysDiscardsLateVideoFrames = true
+        self.videoDataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: Int(kCVPixelFormatType_32BGRA)]
         
         // Create a serial dispatch queue used for the sample buffer delegate as well as when a still image is captured.
         // A serial dispatch queue must be used to guarantee that video frames will be delivered in order.
         let videoDataOutputQueue = DispatchQueue(label: "com.Tone-Cosmetics.Tone")
-        videoDataOutput.setSampleBufferDelegate(self, queue: videoDataOutputQueue)
+        self.videoDataOutput.setSampleBufferDelegate(self, queue: videoDataOutputQueue)
         
-        if cameraState.captureSession.canAddOutput(videoDataOutput) {
-            cameraState.captureSession.addOutput(videoDataOutput)
+        if cameraState.captureSession.canAddOutput(self.videoDataOutput) {
+            cameraState.captureSession.addOutput(self.videoDataOutput)
         }
         
         videoDataOutput.connection(with: .video)?.isEnabled = true
@@ -267,6 +270,18 @@ class Video:  NSObject {
             if captureConnection.isCameraIntrinsicMatrixDeliverySupported {
                 captureConnection.isCameraIntrinsicMatrixDeliveryEnabled = true
             }
+        }
+    }
+    
+    func pauseProcessing() {
+        cameraState.captureSession.removeOutput(self.videoDataOutput)
+    }
+    
+    func resumeProcessing() {
+        if cameraState.captureSession.canAddOutput(self.videoDataOutput) {
+            cameraState.captureSession.addOutput(self.videoDataOutput)
+        } else {
+            print("Can't Resume Video Processing")
         }
     }
 }

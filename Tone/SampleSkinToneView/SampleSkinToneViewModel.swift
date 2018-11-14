@@ -99,7 +99,7 @@ class SampleSkinToneViewModel {
     let disposeBag = DisposeBag()
     
     init() {
-        cameraState = CameraState(flashStream: flashSettings)//, photoStream: samplePhotos)
+        cameraState = CameraState(flashStream: flashSettings)
         video = Video(cameraState: cameraState)
         
         video.faceLandmarks
@@ -146,6 +146,16 @@ class SampleSkinToneViewModel {
                 }
                 
                 self.userFaceState.onNext(.ok)
+            }).disposed(by: disposeBag)
+        
+        sampleState
+            .subscribe(onNext: {
+                switch $0 {
+                case .previewUser:
+                    self.video.resumeProcessing()
+                default:
+                    self.video.pauseProcessing()
+                }
             }).disposed(by: disposeBag)
         
         sampleState

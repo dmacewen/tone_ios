@@ -28,8 +28,6 @@ class SampleSkinToneViewController: UIViewController {
 
     
     @IBOutlet weak var rootView: UIView!
-    //@IBOutlet weak var bottomFlash: UIView!
-    //@IBOutlet weak var topFlash: UIView!
     
     @IBOutlet weak var FlashLayer: UIImageView!
     
@@ -192,5 +190,10 @@ class SampleSkinToneViewController: UIViewController {
                 //Set Video Preview Layer to Root View
                 self.InteractionLayer.layer.insertSublayer(videoPreviewLayer, below: self.UILayer.layer)
             }, onError: { error in print(error) } ).disposed(by: disposeBag)
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        viewModel.video.pauseProcessing()
     }
 }
