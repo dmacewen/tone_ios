@@ -33,7 +33,9 @@ struct MetaData : Codable {
         let whiteBalanceChromacity = cameraState.captureDevice.chromaticityValues(for: cameraState.captureDevice.deviceWhiteBalanceGains)
         let whiteBalance = WhiteBalance(x: whiteBalanceChromacity.x, y: whiteBalanceChromacity.y)
         
-        return MetaData(iso: iso, exposureTime: exposureTime, whiteBalance: whiteBalance, faceLandmarks: faceLandmarks)
+        let faceLandmarksInt = faceLandmarks.map { CGPoint(x: Int($0.x), y: Int($0.y)) }
+        
+        return MetaData(iso: iso, exposureTime: exposureTime, whiteBalance: whiteBalance, faceLandmarks: faceLandmarksInt)
     }
     
     func prettyPrint() {
@@ -56,12 +58,9 @@ func createUIImageSet(cameraState: CameraState, photoData: (VNFaceLandmarks2D, A
         fatalError("Could Not Find Landmarks")
     }
     
-    
     let image = UIImage.init(data: photo.fileDataRepresentation()!)!
     let landmarkPoints = landmarks.allPoints!.pointsInImage(imageSize: image.size)
     let metaData = MetaData.getFrom(cameraState: cameraState, photo: photo, faceLandmarks: landmarkPoints)
-
-    print("Landmarks :: \(landmarkPoints)")
 
     //var image = UIImage.init(cgImage: photo.cgImageRepresentation()!.takeUnretainedValue()) //Add orientation if necessary
     return ImageData(image: image, metaData: metaData)
