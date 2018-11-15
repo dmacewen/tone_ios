@@ -25,9 +25,10 @@ func uploadImageData(imageData: [ImageData], progressBar: BehaviorSubject<Float>
             multipartFormData: { multipartFormData in
                 let metaData: [MetaData] = imageData.map { $0.metaData }
                 for (index, imageDatum) in imageData.enumerated() {
-                    let pngData = imageDatum.image.pngData()
+                    //let pngData = imageDatum.image.pngData()
+                    let pngData = imageDatum.imageData
                     let imageName = String(index + 1)
-                    multipartFormData.append(pngData!, withName: imageName, fileName: "\(imageName).png", mimeType: "image/png")
+                    multipartFormData.append(pngData, withName: imageName, fileName: "\(imageName).png", mimeType: "image/png")
                 }
                 
                 do {

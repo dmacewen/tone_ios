@@ -220,11 +220,14 @@ class SampleSkinToneViewModel {
             FlashSettings(area: 1, areas: 2),
             FlashSettings(area: 0, areas: 2)]
         
+        let context = CIContext()
+        
         return Observable.from(flashSettings)
             .observeOn(MainScheduler.instance)
             .map { (Camera(cameraState: self.cameraState), $0) }
             .serialMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
             .flatMap { photo in self.getFaceLandmarks(photo: photo) }
+            .map {  photoData in self.getLinearCIImage(photoData: photoData, context: context) }
             .map { photoData in  createUIImageSet(cameraState: self.cameraState, photoData: photoData)}
             
             //.do(onNext: { imageData in UIImageWriteToSavedPhotosAlbum(imageData.image, nil, nil, nil) })
@@ -239,12 +242,10 @@ class SampleSkinToneViewModel {
         return Observable.once(flashSetting)
             .observeOn(MainScheduler.instance)
             .map { (Camera(cameraState: self.cameraState), $0) }
+            .do(onNext: { _ in self.cameraState.unlockCameraSettings() })
             .serialMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
-            //.do { self.cameraState.lockCameraSettings() }
             .toArray()
-            .do(onNext: { _ in print("--> LOCKING Camera Settings...") })
             .flatMap { _ in self.cameraState.lockCameraSettings() }
-            .do(onNext:{ _ in print("--> LOCKED Camera Settings...") })
             .map { _ in true }
     }
     
@@ -291,6 +292,21 @@ class SampleSkinToneViewModel {
                 }
                 return (landmarks, photo)
             })
+    }
+    
+    func getLinearCIImage(photoData: (VNFaceLandmarks2D, AVCapturePhoto)?, context: CIContext) -> (VNFaceLandmarks2D, AVCapturePhoto, Data)? {
+        guard let (landmarks, capturePhoto) = photoData else {
+            return nil
+        }
+        let ciImage = CIImage(cgImage: capturePhoto.cgImageRepresentation()!.takeUnretainedValue())
+        
+        //let pngData2 = context.pngRepresentation(of: ciImage, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name:  CGColorSpace.linearSRGB)!, options: [:])
+        
+        let linearCIImage = convertImageToLinear(ciImage)
+        
+        let pngData = context.pngRepresentation(of: linearCIImage, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name:  CGColorSpace.sRGB)!, options: [:])
+
+        return (landmarks, capturePhoto, pngData!)
     }
 }
 

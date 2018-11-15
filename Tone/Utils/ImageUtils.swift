@@ -23,8 +23,8 @@ struct MetaData : Codable {
     let whiteBalance: WhiteBalance
     let faceLandmarks: [CGPoint]
     
-    static func getFrom(cameraState: CameraState, photo: AVCapturePhoto, faceLandmarks: [CGPoint]) -> MetaData {
-        let meta = photo.metadata
+    static func getFrom(cameraState: CameraState, capture: AVCapturePhoto, faceLandmarks: [CGPoint]) -> MetaData {
+        let meta = capture.metadata
         let exif = meta["{Exif}"] as! [String: Any]
         //print("Exif :: \(exif)")
         
@@ -44,21 +44,22 @@ struct MetaData : Codable {
 }
 
 struct ImageData {
-    let image: UIImage
+    let imageData: Data
     let metaData: MetaData
 }
 
-func createUIImageSet(cameraState: CameraState, photoData: (VNFaceLandmarks2D, AVCapturePhoto)?) -> ImageData {
-    guard let (landmarks, photo) = photoData else {
+func createUIImageSet(cameraState: CameraState, photoData: (VNFaceLandmarks2D, AVCapturePhoto, Data)?) -> ImageData {
+    guard let (landmarks, capture, data) = photoData else {
         fatalError("Could Not Find Landmarks")
     }
-    
-    let image = UIImage.init(data: photo.fileDataRepresentation()!)!
-    let landmarkPoints = landmarks.allPoints!.pointsInImage(imageSize: image.size)
-    let metaData = MetaData.getFrom(cameraState: cameraState, photo: photo, faceLandmarks: landmarkPoints)
+    print("png data :: \(data)")
+    let tempImage = UIImage.init(data: capture.fileDataRepresentation()!)!
+    //let image = UIImage.init(: photo)
+    let landmarkPoints = landmarks.allPoints!.pointsInImage(imageSize: tempImage.size)
+    let metaData = MetaData.getFrom(cameraState: cameraState, capture: capture, faceLandmarks: landmarkPoints)
 
     //var image = UIImage.init(cgImage: photo.cgImageRepresentation()!.takeUnretainedValue()) //Add orientation if necessary
-    return ImageData(image: image, metaData: metaData)
+    return ImageData(imageData: data, metaData: metaData)
 }
 
 func getCheekRatio(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D) -> Float? {
@@ -208,4 +209,14 @@ func getFacialLandmarks(cameraState: CameraState, pixelBuffer: CVPixelBuffer) ->
         
         return Disposables.create()
     }
+}
+
+func convertImageToLinear(_ input: CIImage) -> CIImage
+{
+    print("Converting To Linear! \(input)")
+    let toLinearFilter = CIFilter(name:"CISRGBToneCurveToLinear")
+    toLinearFilter!.setValue(input, forKey: kCIInputImageKey)
+    let linear = toLinearFilter!.outputImage!
+    print("Linear Image :: \(linear)")
+    return linear
 }
