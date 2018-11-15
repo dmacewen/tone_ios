@@ -100,25 +100,6 @@ class CameraState {
         
         _ = isAdjustingWB.connect()
         _ = isAdjustingExposure.connect()
-            //.subscribe(onNext: { print("Adjusting Exposure \($0)") })
-            //.disposed(by: disposeBag)
-
-/*
-        
-        isAdjustingExposure
-            .subscribe(onNext: {
-                print("Is Adjusting Exposure? :: \($0)")
-            }, onCompleted: { print("Completed Ajusting Exposure Observable...") }).disposed(by: disposeBag)
-        
-        isAdjustingWB
-            .subscribe(onNext: {
-                print("Is Adjusting WB? :: \($0)")
-            }, onCompleted: { print("Completed Ajusting WB Observable...") }).disposed(by: disposeBag)
-        
-        
-        _ = isAdjustingExposure.connect()
-        _ = isAdjustingWB.connect()*/
-        print("SET UP IS ADJUSTING")
     }
     
     //Prepares numPhotos prepared settings

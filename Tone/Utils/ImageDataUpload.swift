@@ -34,10 +34,7 @@ func uploadImageData(imageData: [ImageData], progressBar: BehaviorSubject<Float>
                 do {
                     let jsonData = try JSONEncoder().encode(metaData)
                     let jsonString = String(data: jsonData, encoding: .utf8)!
-                    //print("METADATA JSON :: \(jsonString)")
-                    
-                    //let decodedSentences = try JSONDecoder().decode([MetaData].self, from: jsonData)
-                    //print(decodedSentences)
+
                     //multipartFormData.append(jsonData, withName: "metadata", fileName: "metadata.txt", mimeType: "application/json")
                     multipartFormData.append(jsonString.data(using: String.Encoding.utf8, allowLossyConversion: false)!, withName: "metadata", fileName: "metadata.txt", mimeType: "text/plain")
                 } catch {
