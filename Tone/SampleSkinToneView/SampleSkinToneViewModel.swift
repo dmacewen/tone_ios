@@ -178,7 +178,6 @@ class SampleSkinToneViewModel {
             .flatMap { _ in self.cameraState.preparePhotoSettings(numPhotos: 3) }
             .flatMap { _ in self.captureSamplePhotos() }
             .subscribe(onNext: { imageData in
-                //print("Got Sample Photos :: \(photos)")
                 self.sampleState.onNext(.upload(images: imageData))
             }).disposed(by: disposeBag)
         
@@ -219,11 +218,23 @@ class SampleSkinToneViewModel {
             .map { (Camera(cameraState: self.cameraState), $0) }
             .serialMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
             .flatMap { photo in self.getFaceLandmarks(photo: photo) }
-            .map {  photoData in self.getLinearCIImage(photoData: photoData, context: context) }
-            .map { photoData in  createUIImageSet(cameraState: self.cameraState, photoData: photoData)}
-            
-            //.do(onNext: { imageData in UIImageWriteToSavedPhotosAlbum(imageData.image, nil, nil, nil) })
             .toArray()
+            .map { photoData in
+                let imageData = photoData.map { photoDatum -> ImageData in
+                    guard let (_, capturePhoto) = photoDatum else {
+                        fatalError("Did not recieve face data")
+                    }
+                    
+                    let ciImage = CIImage(cgImage: capturePhoto.cgImageRepresentation()!.takeUnretainedValue())
+                    let linearCIImage = convertImageToLinear(ciImage)
+                    let pngData = context.pngRepresentation(of: linearCIImage, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name:  CGColorSpace.sRGB)!, options: [:])
+                    
+                    let metaData = getImageMetadata(cameraState: self.cameraState, photoData: photoDatum)
+                    return ImageData(imageData: pngData!, metaData: metaData)
+                }
+                
+                return imageData
+            }
     }
     
     //Eventually scale exposure to that it doesnt clip in reflection
@@ -285,7 +296,7 @@ class SampleSkinToneViewModel {
                 return (landmarks, photo)
             })
     }
-    
+    /*
     func getLinearCIImage(photoData: (VNFaceLandmarks2D, AVCapturePhoto)?, context: CIContext) -> (VNFaceLandmarks2D, AVCapturePhoto, Data)? {
         guard let (landmarks, capturePhoto) = photoData else {
             return nil
@@ -316,5 +327,6 @@ class SampleSkinToneViewModel {
         
         return (landmarks, capturePhoto, pngData!)
     }
+     */
 }
 

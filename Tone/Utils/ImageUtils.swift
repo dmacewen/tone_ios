@@ -48,18 +48,14 @@ struct ImageData {
     let metaData: MetaData
 }
 
-func createUIImageSet(cameraState: CameraState, photoData: (VNFaceLandmarks2D, AVCapturePhoto, Data)?) -> ImageData {
-    guard let (landmarks, capture, data) = photoData else {
+func getImageMetadata(cameraState: CameraState, photoData: (VNFaceLandmarks2D, AVCapturePhoto)?) -> MetaData {
+    guard let (landmarks, capture) = photoData else {
         fatalError("Could Not Find Landmarks")
     }
-    print("png data :: \(data)")
-    let tempImage = UIImage.init(data: capture.fileDataRepresentation()!)!
-    //let image = UIImage.init(: photo)
-    let landmarkPoints = landmarks.allPoints!.pointsInImage(imageSize: tempImage.size)
-    let metaData = MetaData.getFrom(cameraState: cameraState, capture: capture, faceLandmarks: landmarkPoints)
-
-    //var image = UIImage.init(cgImage: photo.cgImageRepresentation()!.takeUnretainedValue()) //Add orientation if necessary
-    return ImageData(imageData: data, metaData: metaData)
+    
+    let image = UIImage.init(data: capture.fileDataRepresentation()!)!
+    let landmarkPoints = landmarks.allPoints!.pointsInImage(imageSize: image.size)
+    return MetaData.getFrom(cameraState: cameraState, capture: capture, faceLandmarks: landmarkPoints)
 }
 
 func getCheekRatio(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D) -> Float? {
