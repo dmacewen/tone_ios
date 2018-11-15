@@ -159,8 +159,6 @@ class CameraState {
     }
 }
 
-
-
 func getPhotoSettings() -> AVCapturePhotoSettings {
     let photoSettings = AVCapturePhotoSettings.init(format: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
     //photoSettings.processedFileType = AVFileType.tif

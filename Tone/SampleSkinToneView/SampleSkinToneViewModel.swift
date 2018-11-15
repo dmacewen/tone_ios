@@ -7,18 +7,10 @@
 //
 
 import Foundation
-//import Foundation.NSTimer
-
 import RxSwift
-import RxSwiftExt
-
 import AVFoundation
-import UIKit
 import Alamofire
 import Vision
-
-//import RxAlamofire
-//import Compression
 
 class SampleSkinToneViewModel {
     enum Event {
@@ -239,7 +231,7 @@ class SampleSkinToneViewModel {
         let flashSetting = FlashSettings(area: 2, areas: 2)
         
         //.repeatElement When we need more then one?
-        return Observable.once(flashSetting)
+        return Observable.just(flashSetting)
             .observeOn(MainScheduler.instance)
             .map { (Camera(cameraState: self.cameraState), $0) }
             .do(onNext: { _ in self.cameraState.unlockCameraSettings() })

@@ -52,15 +52,13 @@ class SampleSkinToneViewController: UIViewController {
             }).disposed(by: disposeBag)
 
         viewModel.userFaceState
-            //.map { $0.prompt.message }
-            .observeOn(MainScheduler.instance)
+            .asDriver(onErrorJustReturn: .noFaceFound)
             .distinctUntilChanged()
-            .throttle(0.5, scheduler: MainScheduler.instance)
-            .subscribe(onNext: {
+            .throttle(0.5)
+            .drive(onNext:{
                 self.userPrompt.text = $0.prompt.message
                 self.userTip.text = $0.prompt.tip
             })
-            //.bind(to: userPrompt.rx.text)
             .disposed(by: disposeBag)
         
         viewModel.userFaceState
@@ -69,13 +67,13 @@ class SampleSkinToneViewController: UIViewController {
             .disposed(by: disposeBag)
         
         viewModel.sampleState
-            .observeOn(MainScheduler.instance)
+           // .observeOn(MainScheduler.instance)
             .map { if case .previewUser = $0 { return false } else { return true } }
             .bind(to: InteractionLayer.rx.isHidden )
             .disposed(by: disposeBag)
         
         viewModel.sampleState
-            .observeOn(MainScheduler.instance)
+        //    .observeOn(MainScheduler.instance)
             .map { if case .upload = $0 { return false } else { return true } }
             .bind(to: UploadProgessLayer.rx.isHidden )
             .disposed(by: disposeBag)
@@ -139,7 +137,7 @@ class SampleSkinToneViewController: UIViewController {
                 print("Setting Flash! Area: \(area) Areas: \(areas)")
                 
                 let renderer = UIGraphicsImageRenderer(size: CGSize(width: (columns * checkerSize), height: (rows * checkerSize)))
-                
+                //Replace with Checkerboard CIFilter?
                 let img = renderer.image { ctx in
                     ctx.cgContext.setFillColor(UIColor.white.cgColor)
                     ctx.cgContext.fill(CGRect(x: 0, y: 0, width: width, height: height))

@@ -64,16 +64,16 @@ func createUIImageSet(cameraState: CameraState, photoData: (VNFaceLandmarks2D, A
 
 func getCheekRatio(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D) -> Float? {
     CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
+    defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly) }
     
+    let baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer)!
+    let byteBuffer = baseAddress.assumingMemoryBound(to: UInt8.self)
+
     let bufferWidth = CVPixelBufferGetWidth(pixelBuffer)
     let bufferHeight = CVPixelBufferGetHeight(pixelBuffer)
     
     let width = bufferHeight
     let height = bufferWidth
-    
-    let baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer)!
-    
-    let byteBuffer = baseAddress.assumingMemoryBound(to: UInt8.self)
     
     //Indexed from bottom left of screen
     let facePoints = landmarks.faceContour!.pointsInImage(imageSize: CGSize(width: width, height: height))
@@ -81,7 +81,6 @@ func getCheekRatio(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D) -> 
     
     let sampleSquareSideLength = Int((facePoints[1].y - facePoints[2].y))
     if sampleSquareSideLength < 0 {
-        CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
         return nil
     }
     
@@ -90,7 +89,6 @@ func getCheekRatio(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D) -> 
     leftSampleSquareStart.y = CGFloat(height) - leftSampleSquareStart.y
     
     if leftSampleSquareStart.x < 0 || leftSampleSquareStart.y < 0 {
-        CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
         return nil
     }
     
@@ -98,7 +96,6 @@ func getCheekRatio(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D) -> 
     rightSampleSquareStart.y = CGFloat(height) - rightSampleSquareStart.y
     
     if rightSampleSquareStart.x < 0 || rightSampleSquareStart.y < 0 {
-        CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
         return nil
     }
     
@@ -113,7 +110,6 @@ func getCheekRatio(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D) -> 
                 let isOutsideWidth = (i >= bufferWidth) || (i < 0)
                 if isOutsideHeight || isOutsideWidth {
                     //print("\n\nLeft Sample OUT OF BOUNDS\n\n")
-                    CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
                     return 0.0
                 }
                 
@@ -133,7 +129,6 @@ func getCheekRatio(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D) -> 
                 let isOutsideWidth = (i >= bufferWidth) || (i < 0)
                 if isOutsideHeight || isOutsideWidth {
                     //print("\n\nRight Sample OUT OF BOUNDS\n\n")
-                    CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
                     return 0.0
                 }
                 
@@ -150,9 +145,6 @@ func getCheekRatio(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D) -> 
     let leftValueAverage = Float(leftValueSum) / Float(sampleArea)
     
     let cheekRatio = abs((rightValueAverage / 255) - (leftValueAverage / 255))
-    
-    CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
-    
     return cheekRatio
 }
 
@@ -213,10 +205,7 @@ func getFacialLandmarks(cameraState: CameraState, pixelBuffer: CVPixelBuffer) ->
 
 func convertImageToLinear(_ input: CIImage) -> CIImage
 {
-    print("Converting To Linear! \(input)")
     let toLinearFilter = CIFilter(name:"CISRGBToneCurveToLinear")
     toLinearFilter!.setValue(input, forKey: kCIInputImageKey)
-    let linear = toLinearFilter!.outputImage!
-    print("Linear Image :: \(linear)")
-    return linear
+    return toLinearFilter!.outputImage!
 }

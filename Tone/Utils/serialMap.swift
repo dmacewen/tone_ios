@@ -102,4 +102,33 @@ extension ObservableType {
             return subscription
         }
     }
+    /*
+    func serialMap2<R>(_ transform: @escaping (E) -> Observable<R>) -> Observable<R> {
+        print("Setting Up SerialMap2!")
+        
+        return Observable.create { observer in
+            let subscription =
+                self.flatMap()
+                subscribe(onNext: { args in
+                    DispatchQueue.main.sync {
+                        transform(args)
+                            .subscribe(
+                                onNext: {
+                                    print("Test")
+                                    observer.onNext($0)
+                                    observer.onCompleted()
+                            }, onCompleted: {
+                                print("Completed Serial Map 2 task...")
+                            })
+                    }
+                }, onError: { error in
+                    observer.onError(error)
+                }, onCompleted: {
+                    observer.onCompleted()
+                })
+            
+            return subscription
+        }
+    }
+ */
 }
