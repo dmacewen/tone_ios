@@ -42,11 +42,6 @@ struct MetaData : Codable {
         print("ISO :: \(iso) | Exposure Time :: \(exposureTime) | White Balance (x: \(whiteBalance.x), y: \(whiteBalance.y))")
     }
 }
-/*
-struct FaceData {
-    //TODO
-}
-*/
 
 struct ImageData {
     let image: UIImage
@@ -64,4 +59,153 @@ func createUIImageSet(cameraState: CameraState, photoData: (VNFaceLandmarks2D, A
 
     //var image = UIImage.init(cgImage: photo.cgImageRepresentation()!.takeUnretainedValue()) //Add orientation if necessary
     return ImageData(image: image, metaData: metaData)
+}
+
+func getCheekRatio(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D) -> Float? {
+    CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
+    
+    let bufferWidth = CVPixelBufferGetWidth(pixelBuffer)
+    let bufferHeight = CVPixelBufferGetHeight(pixelBuffer)
+    
+    let width = bufferHeight
+    let height = bufferWidth
+    
+    let baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer)!
+    
+    let byteBuffer = baseAddress.assumingMemoryBound(to: UInt8.self)
+    
+    //Indexed from bottom left of screen
+    let facePoints = landmarks.faceContour!.pointsInImage(imageSize: CGSize(width: width, height: height))
+    let count = facePoints.count
+    
+    let sampleSquareSideLength = Int((facePoints[1].y - facePoints[2].y))
+    if sampleSquareSideLength < 0 {
+        CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
+        return nil
+    }
+    
+    let faceStartingPoint = 2
+    var leftSampleSquareStart = facePoints[faceStartingPoint]
+    leftSampleSquareStart.y = CGFloat(height) - leftSampleSquareStart.y
+    
+    if leftSampleSquareStart.x < 0 || leftSampleSquareStart.y < 0 {
+        CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
+        return nil
+    }
+    
+    var rightSampleSquareStart = facePoints[count - (faceStartingPoint + 1)]
+    rightSampleSquareStart.y = CGFloat(height) - rightSampleSquareStart.y
+    
+    if rightSampleSquareStart.x < 0 || rightSampleSquareStart.y < 0 {
+        CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
+        return nil
+    }
+    
+    let fractionOfPixels = 2
+    
+    var leftValueSum = 0
+    for j in Int(leftSampleSquareStart.x) ..< (Int(leftSampleSquareStart.x) + sampleSquareSideLength) {
+        for i in Int(leftSampleSquareStart.y) ..< (Int(leftSampleSquareStart.y) + sampleSquareSideLength) {
+            if (i + j) % fractionOfPixels == 0 {
+                
+                let isOutsideHeight = (j >= bufferHeight) || (j < 0)
+                let isOutsideWidth = (i >= bufferWidth) || (i < 0)
+                if isOutsideHeight || isOutsideWidth {
+                    //print("\n\nLeft Sample OUT OF BOUNDS\n\n")
+                    CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
+                    return 0.0
+                }
+                
+                let index = (j * bufferWidth + i) * 4
+                let value = [byteBuffer[index], byteBuffer[index + 1], byteBuffer[index + 2]].max()!
+                leftValueSum += Int(value)
+            }
+        }
+    }
+    
+    var rightValueSum = 0
+    for j in (Int(rightSampleSquareStart.x) - sampleSquareSideLength) ..< Int(rightSampleSquareStart.x)  {
+        for i in Int(rightSampleSquareStart.y) ..< (Int(rightSampleSquareStart.y) + sampleSquareSideLength) {
+            if (i + j) % fractionOfPixels == 0 {
+                
+                let isOutsideHeight = (j >= bufferHeight) || (j < 0)
+                let isOutsideWidth = (i >= bufferWidth) || (i < 0)
+                if isOutsideHeight || isOutsideWidth {
+                    //print("\n\nRight Sample OUT OF BOUNDS\n\n")
+                    CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
+                    return 0.0
+                }
+                
+                let index = (j * bufferWidth + i) * 4
+                let value = [byteBuffer[index], byteBuffer[index + 1], byteBuffer[index + 2]].max()!
+                rightValueSum += Int(value)
+            }
+        }
+    }
+    
+    let sampleArea = (sampleSquareSideLength * sampleSquareSideLength) / fractionOfPixels
+    
+    let rightValueAverage = Float(rightValueSum) / Float(sampleArea)
+    let leftValueAverage = Float(leftValueSum) / Float(sampleArea)
+    
+    let cheekRatio = abs((rightValueAverage / 255) - (leftValueAverage / 255))
+    
+    CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
+    
+    return cheekRatio
+}
+
+//Error :: 2018-11-14 11:44:19.689414-0800 Tone[32016:9326030] LandmarkDetector error -20:out of bounds in int vision::mod::LandmarkAttributes::computeBlinkFunction(const vImage_Buffer &, const Geometry2D_rect2D &, const std::vector<Geometry2D_point2D> &, vImage_Buffer &, vImage_Buffer &, std::vector<float> &, std::vector<float> &) @ /BuildRoot/Library/Caches/com.apple.xbs/Sources/Vision/Vision-2.0.62/LandmarkDetector/LandmarkDetector_Attributes.mm:535
+
+//Seems to be caused by covering the mouth/face... I.E. When looking at a second computer screen, supporting your face with your hand. Fingers/palm covering mouth and thumb resting on cheekbone... Kinda a weird description... Towards edge of image. Face inside image frame but hand extending out of the frame... Probably not an issue, just something thats come up. Does not change expected functionality
+
+//Was able to replciate just by holding my face towards the edge of the frame looking at a ~45 - 90 degree angle away from the phone (at a second screen in this case...)
+
+func getFacialLandmarks(cameraState: CameraState, pixelBuffer: CVPixelBuffer) -> Observable<(VNFaceLandmarks2D, CVPixelBuffer)?> {
+    return Observable<(VNFaceLandmarks2D, CVPixelBuffer)?>.create { observable in
+        var requestHandlerOptions: [VNImageOption: AnyObject] = [:]
+        
+        let cameraIntrinsicData = CMGetAttachment(pixelBuffer, key: kCMSampleBufferAttachmentKey_CameraIntrinsicMatrix, attachmentModeOut: nil)
+        if cameraIntrinsicData != nil {
+            requestHandlerOptions[VNImageOption.cameraIntrinsics] = cameraIntrinsicData
+        }
+        
+        let exifOrientation = cameraState.exifOrientationForCurrentDeviceOrientation()
+        
+        // Perform face landmark tracking on detected faces.
+        let faceLandmarksRequest = VNDetectFaceLandmarksRequest(completionHandler: { (request, error) in
+            if error != nil {
+                print("FaceLandmarks error: \(String(describing: error)).")
+            }
+            
+            guard let landmarksRequest = request as? VNDetectFaceLandmarksRequest,
+                let results = landmarksRequest.results as? [VNFaceObservation] else {
+                    observable.onNext(nil)
+                    observable.onCompleted()
+                    return
+            }
+            
+            if results.count > 0 {
+                let faceLandmarks = results[0].landmarks!
+                observable.onNext((faceLandmarks, pixelBuffer))
+                observable.onCompleted()
+            } else {
+                observable.onNext(nil)
+                observable.onCompleted()
+            }
+        })
+        
+        let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer,
+                                                        orientation: exifOrientation,
+                                                        options: requestHandlerOptions)
+        
+        do {
+            try imageRequestHandler.perform([faceLandmarksRequest])
+        } catch let error as NSError {
+            NSLog("Failed to perform FaceLandmarkRequest: %@", error)
+            fatalError("Error Landmarking")
+        }
+        
+        return Disposables.create()
+    }
 }

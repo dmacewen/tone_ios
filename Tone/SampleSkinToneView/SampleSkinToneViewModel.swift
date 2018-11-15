@@ -242,7 +242,9 @@ class SampleSkinToneViewModel {
             .serialMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
             //.do { self.cameraState.lockCameraSettings() }
             .toArray()
+            .do(onNext: { _ in print("--> LOCKING Camera Settings...") })
             .flatMap { _ in self.cameraState.lockCameraSettings() }
+            .do(onNext:{ _ in print("--> LOCKED Camera Settings...") })
             .map { _ in true }
     }
     

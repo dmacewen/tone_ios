@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		86131005218B9E0A00BD1305 /* CaptureUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86131004218B9E0A00BD1305 /* CaptureUtils.swift */; };
+		86131005218B9E0A00BD1305 /* CameraState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86131004218B9E0A00BD1305 /* CameraState.swift */; };
 		86193C8B21891B29001F5C4E /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C8A21891B29001F5C4E /* HomeViewModel.swift */; };
 		86193C8D21891B36001F5C4E /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C8C21891B36001F5C4E /* HomeViewController.swift */; };
 		86193C94218945B8001F5C4E /* SampleSkinToneViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C93218945B8001F5C4E /* SampleSkinToneViewModel.swift */; };
@@ -18,6 +18,8 @@
 		8651B60E2187D72200FB7A3A /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8651B60D2187D72200FB7A3A /* LoginViewController.swift */; };
 		866C405D2190CB69007BABDE /* ImageUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866C405C2190CB69007BABDE /* ImageUtils.swift */; };
 		866C405F21911709007BABDE /* ImageDataUpload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866C405E21911709007BABDE /* ImageDataUpload.swift */; };
+		8685ADA5219CA7B900B66F90 /* Camera.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8685ADA4219CA7B900B66F90 /* Camera.swift */; };
+		8685ADA7219CA7EA00B66F90 /* Video.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8685ADA6219CA7EA00B66F90 /* Video.swift */; };
 		8694A07D21878A1B00615BE3 /* Alamofire.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 86F138DB21877F89004C6092 /* Alamofire.framework */; };
 		8694A07F2187BF1A00615BE3 /* RootNavigationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8694A07E2187BF1A00615BE3 /* RootNavigationViewModel.swift */; };
 		8694A0812187BF4300615BE3 /* RootNavigationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8694A0802187BF4300615BE3 /* RootNavigationViewController.swift */; };
@@ -78,7 +80,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		86131004218B9E0A00BD1305 /* CaptureUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureUtils.swift; sourceTree = "<group>"; };
+		86131004218B9E0A00BD1305 /* CameraState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraState.swift; sourceTree = "<group>"; };
 		86193C8A21891B29001F5C4E /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		86193C8C21891B36001F5C4E /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
 		86193C93218945B8001F5C4E /* SampleSkinToneViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleSkinToneViewModel.swift; sourceTree = "<group>"; };
@@ -89,6 +91,8 @@
 		8651B60D2187D72200FB7A3A /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		866C405C2190CB69007BABDE /* ImageUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageUtils.swift; sourceTree = "<group>"; };
 		866C405E21911709007BABDE /* ImageDataUpload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageDataUpload.swift; sourceTree = "<group>"; };
+		8685ADA4219CA7B900B66F90 /* Camera.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Camera.swift; sourceTree = "<group>"; };
+		8685ADA6219CA7EA00B66F90 /* Video.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Video.swift; sourceTree = "<group>"; };
 		8694A07E2187BF1A00615BE3 /* RootNavigationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootNavigationViewModel.swift; sourceTree = "<group>"; };
 		8694A0802187BF4300615BE3 /* RootNavigationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootNavigationViewController.swift; sourceTree = "<group>"; };
 		869FB6D0218D0DDC00B257D2 /* RxSwiftExt.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxSwiftExt.framework; path = Carthage/Build/iOS/RxSwiftExt.framework; sourceTree = "<group>"; };
@@ -178,7 +182,9 @@
 				86213F9A2187F56600A622FB /* KeyboardHeightObservable.swift */,
 				864A580B2187C8EB006FFC1D /* Globals.swift */,
 				86F1BCA9218D219E00A18457 /* serialMap.swift */,
-				86131004218B9E0A00BD1305 /* CaptureUtils.swift */,
+				86131004218B9E0A00BD1305 /* CameraState.swift */,
+				8685ADA4219CA7B900B66F90 /* Camera.swift */,
+				8685ADA6219CA7EA00B66F90 /* Video.swift */,
 				866C405C2190CB69007BABDE /* ImageUtils.swift */,
 				866C405E21911709007BABDE /* ImageDataUpload.swift */,
 			);
@@ -397,6 +403,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8685ADA5219CA7B900B66F90 /* Camera.swift in Sources */,
 				86193C96218945C6001F5C4E /* SampleSkinToneViewController.swift in Sources */,
 				86213F9B2187F56600A622FB /* KeyboardHeightObservable.swift in Sources */,
 				86193C94218945B8001F5C4E /* SampleSkinToneViewModel.swift in Sources */,
@@ -405,8 +412,9 @@
 				86F1BCAA218D219E00A18457 /* serialMap.swift in Sources */,
 				8651B60E2187D72200FB7A3A /* LoginViewController.swift in Sources */,
 				864A580C2187C8EB006FFC1D /* Globals.swift in Sources */,
-				86131005218B9E0A00BD1305 /* CaptureUtils.swift in Sources */,
+				86131005218B9E0A00BD1305 /* CameraState.swift in Sources */,
 				86193C8D21891B36001F5C4E /* HomeViewController.swift in Sources */,
+				8685ADA7219CA7EA00B66F90 /* Video.swift in Sources */,
 				8651B60C2187D6FA00FB7A3A /* LoginViewModel.swift in Sources */,
 				8694A07F2187BF1A00615BE3 /* RootNavigationViewModel.swift in Sources */,
 				8694A0812187BF4300615BE3 /* RootNavigationViewController.swift in Sources */,
