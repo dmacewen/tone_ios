@@ -22,6 +22,7 @@ struct MetaData : Codable {
     let exposureTime: Float64
     let whiteBalance: WhiteBalance
     let faceLandmarks: [CGPoint]
+    let faceLandmarksSource = "apple"
     
     static func getFrom(cameraState: CameraState, capture: AVCapturePhoto, faceLandmarks: [CGPoint]) -> MetaData {
         let meta = capture.metadata
