@@ -199,10 +199,16 @@ func getFacialLandmarks(cameraState: CameraState, pixelBuffer: CVPixelBuffer) ->
         return Disposables.create()
     }
 }
-
-func convertImageToLinear(_ input: CIImage) -> CIImage
-{
+//Needs a context to have been created
+func convertImageToLinear(_ input: CIImage) -> CIImage {
     let toLinearFilter = CIFilter(name:"CISRGBToneCurveToLinear")
     toLinearFilter!.setValue(input, forKey: kCIInputImageKey)
     return toLinearFilter!.outputImage!
+}
+//Needs a context to have been created
+func rotateImage(_ input: CIImage) -> CIImage {
+    let toRotateFilter = CIFilter(name:"CIAffineTransform")
+    let affineRotationTransform = CGAffineTransform.init(rotationAngle: CGFloat.pi/2)
+    toRotateFilter!.setValue(affineRotationTransform, forKey: kCIInputTransformKey)
+    return toRotateFilter!.outputImage!
 }

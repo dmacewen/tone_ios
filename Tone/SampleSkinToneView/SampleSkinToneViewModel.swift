@@ -227,7 +227,8 @@ class SampleSkinToneViewModel {
                     
                     let ciImage = CIImage(cgImage: capturePhoto.cgImageRepresentation()!.takeUnretainedValue())
                     let linearCIImage = convertImageToLinear(ciImage)
-                    let pngData = context.pngRepresentation(of: linearCIImage, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name:  CGColorSpace.sRGB)!, options: [:])
+                    let rotatedCIImage = rotateImage(linearCIImage)
+                    let pngData = context.pngRepresentation(of: rotatedCIImage, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name:  CGColorSpace.sRGB)!, options: [:])
                     
                     let metaData = getImageMetadata(cameraState: self.cameraState, photoData: photoDatum)
                     return ImageData(imageData: pngData!, metaData: metaData)
