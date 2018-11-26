@@ -208,7 +208,8 @@ func convertImageToLinear(_ input: CIImage) -> CIImage {
 //Needs a context to have been created
 func rotateImage(_ input: CIImage) -> CIImage {
     let toRotateFilter = CIFilter(name:"CIAffineTransform")
-    let affineRotationTransform = CGAffineTransform.init(rotationAngle: CGFloat.pi/2)
+    let affineRotationTransform = CGAffineTransform.init(rotationAngle: -CGFloat.pi/2)
     toRotateFilter!.setValue(affineRotationTransform, forKey: kCIInputTransformKey)
+    toRotateFilter!.setValue(input, forKey: kCIInputImageKey)
     return toRotateFilter!.outputImage!
 }
