@@ -59,7 +59,7 @@ func getImageMetadata(cameraState: CameraState, photoData: (VNFaceLandmarks2D, A
     return MetaData.getFrom(cameraState: cameraState, capture: capture, faceLandmarks: landmarkPoints)
 }
 
-func getCheekRatio(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D) -> Float? {
+func getCheekRatio(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D) -> (Float, Bool)? {
     CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
     defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly) }
     
@@ -107,7 +107,7 @@ func getCheekRatio(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D) -> 
                 let isOutsideWidth = (i >= bufferWidth) || (i < 0)
                 if isOutsideHeight || isOutsideWidth {
                     //print("\n\nLeft Sample OUT OF BOUNDS\n\n")
-                    return 0.0
+                    return (0.0, false)
                 }
                 
                 let index = (j * bufferWidth + i) * 4
@@ -126,7 +126,7 @@ func getCheekRatio(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D) -> 
                 let isOutsideWidth = (i >= bufferWidth) || (i < 0)
                 if isOutsideHeight || isOutsideWidth {
                     //print("\n\nRight Sample OUT OF BOUNDS\n\n")
-                    return 0.0
+                    return (0.0, false)
                 }
                 
                 let index = (j * bufferWidth + i) * 4
@@ -140,9 +140,10 @@ func getCheekRatio(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D) -> 
     
     let rightValueAverage = Float(rightValueSum) / Float(sampleArea)
     let leftValueAverage = Float(leftValueSum) / Float(sampleArea)
+    let isRightBrighter = rightValueSum > leftValueSum
     
     let cheekRatio = abs((rightValueAverage / 255) - (leftValueAverage / 255))
-    return cheekRatio
+    return (cheekRatio, isRightBrighter)
 }
 
 //Error :: 2018-11-14 11:44:19.689414-0800 Tone[32016:9326030] LandmarkDetector error -20:out of bounds in int vision::mod::LandmarkAttributes::computeBlinkFunction(const vImage_Buffer &, const Geometry2D_rect2D &, const std::vector<Geometry2D_point2D> &, vImage_Buffer &, vImage_Buffer &, std::vector<float> &, std::vector<float> &) @ /BuildRoot/Library/Caches/com.apple.xbs/Sources/Vision/Vision-2.0.62/LandmarkDetector/LandmarkDetector_Attributes.mm:535

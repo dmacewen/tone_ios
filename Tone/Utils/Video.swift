@@ -14,7 +14,6 @@ import AVKit
 class Video:  NSObject {
     private var cameraState: CameraState
     let faceLandmarks: Observable<RealTimeFaceData?>
-    
     private let pixelBufferSubject = PublishSubject<CVImageBuffer>()
     private let videoDataOutput: AVCaptureVideoDataOutput
     
@@ -27,10 +26,24 @@ class Video:  NSObject {
                 guard let (faceLandmarks, pixelBuffer) = faceLandmarksOptional else {
                     return nil
                 }
-                
-                guard let cheekRatio = getCheekRatio(pixelBuffer: pixelBuffer, landmarks: faceLandmarks) else {
+                                
+                guard let (cheekRatio, isRightCheekBrighter) = getCheekRatio(pixelBuffer: pixelBuffer, landmarks: faceLandmarks) else {
                     return nil
                 }
+                
+                //Points are in portrait, but buffer is in landscape?
+                let bufferHeight = CVPixelBufferGetWidth(pixelBuffer) //Larger than height... Buffer is in landscape
+                let bufferWidth = CVPixelBufferGetHeight(pixelBuffer)
+
+                
+                let size = CGSize.init(width: bufferWidth, height: bufferHeight)
+
+                let exposurePointY = isRightCheekBrighter ? faceLandmarks.allPoints!.pointsInImage(imageSize: size)[64] : faceLandmarks.allPoints!.pointsInImage(imageSize: size)[63]
+                
+                let exposurePointX = faceLandmarks.allPoints!.pointsInImage(imageSize: size)[62]
+
+                //Have to flip axes and origin (Subtract from one and flip x and y)
+                cameraState.exposurePointStream.onNext(CGPoint.init(x: 1 - (exposurePointX.y / CGFloat(bufferHeight)), y: 1 - (exposurePointY.x / CGFloat(bufferWidth))))
                 
                 let exposureDurationValue = Float(cameraState.captureDevice.exposureDuration.value)
                 let exposureDurationTimeScale = Float(cameraState.captureDevice.exposureDuration.timescale)
@@ -39,7 +52,7 @@ class Video:  NSObject {
                 return RealTimeFaceData(landmarks: faceLandmarks, cheekRatio: cheekRatio, iso: cameraState.captureDevice.iso, exposureDuration: exposureDuration)
             })
             .asObservable()
-        
+
         self.videoDataOutput = AVCaptureVideoDataOutput()
         
         super.init()

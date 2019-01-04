@@ -39,6 +39,7 @@ class SampleSkinToneViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Sample Skin Tone"
+        print("Saving Original Screen Brightness!")
         self.viewModel.originalScreenBrightness = UIScreen.main.brightness
         
         cancelButton.rx.tap
@@ -109,10 +110,13 @@ class SampleSkinToneViewController: UIViewController {
             .distinctUntilChanged()
             .subscribe(onNext: { isFlashLayer in
                 if isFlashLayer {
+                    print("Saving Original Screen Brightness!")
                     self.viewModel.originalScreenBrightness = UIScreen.main.brightness
+                    print("Maxing Screen Brightness!")
                     UIScreen.main.brightness = CGFloat(1.0)
                     self.FlashLayer.isHidden = false
                 } else {
+                    print("Setting screen brightness to original value!")
                     UIScreen.main.brightness = self.viewModel.originalScreenBrightness
                     self.FlashLayer.isHidden = true
                 }

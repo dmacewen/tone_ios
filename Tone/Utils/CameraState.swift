@@ -43,6 +43,8 @@ class CameraState {
     let isAdjustingExposure: ConnectableObservable<Bool>//Variable<Bool>
     let isAdjustingWB: ConnectableObservable<Bool>//Variable<Bool>
     let disposeBag = DisposeBag()
+    
+    let exposurePointStream = BehaviorSubject<CGPoint>(value: CGPoint.init(x: 0.5, y: 0.5))
 
     init(flashStream: PublishSubject<FlashSettings>) {
         print("Setting up camera...")
@@ -100,6 +102,12 @@ class CameraState {
         
         _ = isAdjustingWB.connect()
         _ = isAdjustingExposure.connect()
+        
+        exposurePointStream.subscribe(onNext: {  exposurePoint in
+            print("Setting exposure point to \(exposurePoint)")
+            self.captureDevice.exposurePointOfInterest = exposurePoint
+            self.captureDevice.exposureMode = AVCaptureDevice.ExposureMode.autoExpose
+        }).disposed(by: disposeBag)
     }
     
     //Prepares numPhotos prepared settings
@@ -131,8 +139,6 @@ class CameraState {
     }
     
     func unlockCameraSettings() {
-        let middlePoint = CGPoint.init(x: 0.5, y: 0.5)
-        captureDevice.exposurePointOfInterest = middlePoint
         captureDevice.exposureMode = AVCaptureDevice.ExposureMode.continuousAutoExposure
         captureDevice.whiteBalanceMode = AVCaptureDevice.WhiteBalanceMode.continuousAutoWhiteBalance
     }
@@ -155,6 +161,7 @@ class CameraState {
     }
     
     func exifOrientationForCurrentDeviceOrientation() -> CGImagePropertyOrientation {
+        //return UIDeviceOrientation.landscapeLeft
         return exifOrientationForDeviceOrientation(UIDevice.current.orientation)
     }
 }
