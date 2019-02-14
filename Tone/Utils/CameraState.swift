@@ -130,15 +130,40 @@ class CameraState {
 
     func lockCameraSettings() -> Observable<Bool> {
         captureDevice.exposureMode = AVCaptureDevice.ExposureMode.locked
+        print("LOCKING CAMERA SETTINGS")
         return Observable.create { observable in
             self.captureDevice.setWhiteBalanceModeLocked(with: AVCaptureDevice.currentWhiteBalanceGains, completionHandler: { time in
-                observable.onNext(true)
+                
+                var maxExposureDuration = self.captureDevice.activeFormat.maxExposureDuration
+                let minISO = self.captureDevice.activeFormat.minISO
+                
+                maxExposureDuration = maxExposureDuration.convertScale(self.captureDevice.exposureDuration.timescale, method: CMTimeRoundingMethod.default)
+                var exposureRatio = Float64(maxExposureDuration.value) / Float64(self.captureDevice.exposureDuration.value)
+                var isoRatio = Float64(self.captureDevice.iso) / Float64(minISO)
+                
+                if isoRatio < exposureRatio {
+                    exposureRatio = isoRatio
+                } else {
+                    isoRatio = exposureRatio
+                }
+                
+                let targetISO = self.captureDevice.iso / Float(isoRatio)
+                let targetExposureDuration = CMTimeMultiplyByFloat64(self.captureDevice.exposureDuration, multiplier: exposureRatio)
+                
+                print("Min ISO :: \(minISO) | Max Exposure Duration :: \(maxExposureDuration.value)")
+                print("Exposure Duration :: \(self.captureDevice.exposureDuration.value) -> \(targetExposureDuration.value)")
+                print("ISO :: \(self.captureDevice.iso) -> \(targetISO)")
+                
+                self.captureDevice.setExposureModeCustom(duration: targetExposureDuration, iso: targetISO, completionHandler: { time in
+                        observable.onNext(true)
+                })
             })
             return Disposables.create()
         }
     }
     
     func unlockCameraSettings() {
+        print("UNLOCKING CAMERA SETTINGS!")
         captureDevice.exposureMode = AVCaptureDevice.ExposureMode.continuousAutoExposure
         captureDevice.whiteBalanceMode = AVCaptureDevice.WhiteBalanceMode.continuousAutoWhiteBalance
     }
