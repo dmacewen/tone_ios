@@ -263,9 +263,9 @@ class SampleSkinToneViewModel {
         //Mostly to avoid picking up background faces
         if (fractionWidth < 0.20) || (fractionHeight < 0.20) {
             return .noFaceFound
-        } else if (fractionWidth < 0.65) || (fractionHeight < 0.7) {
+        } else if (fractionWidth < 0.55) || (fractionHeight < 0.6) {
             return .faceTooFar
-        } else if (fractionWidth > 0.9) || (fractionHeight > 1.0) {
+        } else if (fractionWidth > 0.7) || (fractionHeight > 0.8) {
             return .faceTooClose
         }
         
