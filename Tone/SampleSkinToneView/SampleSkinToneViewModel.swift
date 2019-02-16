@@ -127,7 +127,7 @@ class SampleSkinToneViewModel {
                     return
                 }
                 
-                if faceData!.cheekRatio > 0.15 {
+                if abs(faceData!.cheekRatio - 1) > 0.15 {
                     self.userFaceState.onNext(.faceGradient)
                     return
                 }

@@ -49,6 +49,64 @@ struct ImageData {
     let metaData: MetaData
 }
 
+struct ImageByteBuffer {
+    private let byteBuffer: UnsafeMutablePointer<UInt8>
+    private let width: Int
+    private let bufferWidth: Int
+    private let height: Int
+    private let bufferHeight: Int
+    private let bytesPerRow: Int
+    private let sampleHalfSideLength: CGFloat = 5.0
+    
+    static func from(_ pixelBuffer: CVImageBuffer) -> ImageByteBuffer {
+        let baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer)!
+        let byteBuffer = baseAddress.assumingMemoryBound(to: UInt8.self)
+        let bufferWidth = CVPixelBufferGetWidth(pixelBuffer)
+        let bufferHeight = CVPixelBufferGetHeight(pixelBuffer)
+        let bytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer)
+        
+        //Buffer is rotated 90 degrees to left
+        return ImageByteBuffer(byteBuffer: byteBuffer, width: bufferHeight, bufferWidth: bufferWidth, height: bufferWidth, bufferHeight: bufferHeight, bytesPerRow: bytesPerRow)
+    }
+    
+    private func validPoint(_ point: CGPoint) -> Bool {
+        return (point.x > 0) && (point.y > 0) && (Int(point.x) < bufferWidth) && (Int(point.y) < bufferHeight)
+    }
+    
+    func size() -> CGSize {
+        return CGSize(width: width, height: height)
+    }
+    
+    //Convert Portait Coordinates from Landmarks to Left Landscape Coordinates of Buffer
+    private func convertPortraitPointToLandscapePoint(point: CGPoint) -> CGPoint {
+        return CGPoint.init(x: CGFloat(height) - point.y, y: point.x)
+    }
+    
+    func sampleLandmarkRegion(landmarkPoint: CGPoint) -> Float? {
+        let point = convertPortraitPointToLandscapePoint(point: landmarkPoint)
+
+        if !validPoint(point) { return nil }
+        
+        let startPoint = CGPoint.init(x: point.x - sampleHalfSideLength, y: point.y - sampleHalfSideLength)
+        let endPoint = CGPoint.init(x: point.x + sampleHalfSideLength, y: point.y + sampleHalfSideLength)
+        
+        if !validPoint(startPoint) || !validPoint(endPoint) { return nil }
+        
+        var sum = 0
+        for y in Int(startPoint.y) ..< Int(endPoint.y) {
+            let bufferRowOffset = y * bytesPerRow
+            for x in Int(startPoint.x) ..< Int(endPoint.x) {
+                let bufferIndex = bufferRowOffset + (x * 4) //Index into the buffer
+                sum += Int(byteBuffer[bufferIndex]) + Int(byteBuffer[bufferIndex + 1]) + Int(byteBuffer[bufferIndex + 2])
+            }
+        }
+        
+        let averageSubpixelValue = Float(sum) / Float(pow((2 * sampleHalfSideLength) + 1, 2)) // Area of the sample x 3 sub pixels each
+
+        return averageSubpixelValue
+    }
+}
+
 func getImageMetadata(cameraState: CameraState, photoData: (VNFaceLandmarks2D, AVCapturePhoto)?) -> MetaData {
     guard let (landmarks, capture) = photoData else {
         fatalError("Could Not Find Landmarks")
@@ -59,91 +117,36 @@ func getImageMetadata(cameraState: CameraState, photoData: (VNFaceLandmarks2D, A
     return MetaData.getFrom(cameraState: cameraState, capture: capture, faceLandmarks: landmarkPoints)
 }
 
+func getRightCheekPoint(landmarks: [CGPoint]) -> CGPoint {
+    let middleRightEye = landmarks[64]
+    let middleNose = landmarks[58]
+    return CGPoint.init(x: middleRightEye.x, y: middleNose.y)
+}
+
+func getLeftCheekPoint(landmarks: [CGPoint]) -> CGPoint {
+    let middleLeftEye = landmarks[63]
+    let middleNose = landmarks[52]
+    return CGPoint.init(x: middleLeftEye.x, y: middleNose.y)
+}
+
 func getCheekRatio(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D) -> (Float, Bool)? {
     CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
     defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly) }
     
-    let baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer)!
-    let byteBuffer = baseAddress.assumingMemoryBound(to: UInt8.self)
-
-    let bufferWidth = CVPixelBufferGetWidth(pixelBuffer)
-    let bufferHeight = CVPixelBufferGetHeight(pixelBuffer)
+    let imageByteBuffer = ImageByteBuffer.from(pixelBuffer)
+    let facePoints = landmarks.allPoints!.pointsInImage(imageSize: imageByteBuffer.size())
     
-    let width = bufferHeight
-    let height = bufferWidth
+    let leftCheekPoint = getLeftCheekPoint(landmarks: facePoints)
+    let rightCheekPoint = getRightCheekPoint(landmarks: facePoints)
     
-    //Indexed from bottom left of screen
-    let facePoints = landmarks.faceContour!.pointsInImage(imageSize: CGSize(width: width, height: height))
-    let count = facePoints.count
+    let leftCheekSample = imageByteBuffer.sampleLandmarkRegion(landmarkPoint: leftCheekPoint)
+    let rightCheekSample = imageByteBuffer.sampleLandmarkRegion(landmarkPoint: rightCheekPoint)
     
-    let sampleSquareSideLength = Int((facePoints[1].y - facePoints[2].y))
-    if sampleSquareSideLength < 0 {
-        return nil
-    }
+    if (leftCheekSample == nil) || (rightCheekSample == nil) { return nil }
     
-    let faceStartingPoint = 2
-    var leftSampleSquareStart = facePoints[faceStartingPoint]
-    leftSampleSquareStart.y = CGFloat(height) - leftSampleSquareStart.y
+    let leftRightRatio = leftCheekSample! / rightCheekSample!
     
-    if leftSampleSquareStart.x < 0 || leftSampleSquareStart.y < 0 {
-        return nil
-    }
-    
-    var rightSampleSquareStart = facePoints[count - (faceStartingPoint + 1)]
-    rightSampleSquareStart.y = CGFloat(height) - rightSampleSquareStart.y
-    
-    if rightSampleSquareStart.x < 0 || rightSampleSquareStart.y < 0 {
-        return nil
-    }
-    
-    let fractionOfPixels = 2
-    
-    var leftValueSum = 0
-    for j in Int(leftSampleSquareStart.x) ..< (Int(leftSampleSquareStart.x) + sampleSquareSideLength) {
-        for i in Int(leftSampleSquareStart.y) ..< (Int(leftSampleSquareStart.y) + sampleSquareSideLength) {
-            if (i + j) % fractionOfPixels == 0 {
-                
-                let isOutsideHeight = (j >= bufferHeight) || (j < 0)
-                let isOutsideWidth = (i >= bufferWidth) || (i < 0)
-                if isOutsideHeight || isOutsideWidth {
-                    //print("\n\nLeft Sample OUT OF BOUNDS\n\n")
-                    return (0.0, false)
-                }
-                
-                let index = (j * bufferWidth + i) * 4
-                let value = [byteBuffer[index], byteBuffer[index + 1], byteBuffer[index + 2]].max()!
-                leftValueSum += Int(value)
-            }
-        }
-    }
-    
-    var rightValueSum = 0
-    for j in (Int(rightSampleSquareStart.x) - sampleSquareSideLength) ..< Int(rightSampleSquareStart.x)  {
-        for i in Int(rightSampleSquareStart.y) ..< (Int(rightSampleSquareStart.y) + sampleSquareSideLength) {
-            if (i + j) % fractionOfPixels == 0 {
-                
-                let isOutsideHeight = (j >= bufferHeight) || (j < 0)
-                let isOutsideWidth = (i >= bufferWidth) || (i < 0)
-                if isOutsideHeight || isOutsideWidth {
-                    //print("\n\nRight Sample OUT OF BOUNDS\n\n")
-                    return (0.0, false)
-                }
-                
-                let index = (j * bufferWidth + i) * 4
-                let value = [byteBuffer[index], byteBuffer[index + 1], byteBuffer[index + 2]].max()!
-                rightValueSum += Int(value)
-            }
-        }
-    }
-    
-    let sampleArea = (sampleSquareSideLength * sampleSquareSideLength) / fractionOfPixels
-    
-    let rightValueAverage = Float(rightValueSum) / Float(sampleArea)
-    let leftValueAverage = Float(leftValueSum) / Float(sampleArea)
-    let isRightBrighter = rightValueSum > leftValueSum
-    
-    let cheekRatio = abs((rightValueAverage / 255) - (leftValueAverage / 255))
-    return (cheekRatio, isRightBrighter)
+    return (leftRightRatio, leftRightRatio < 1)
 }
 
 //Error :: 2018-11-14 11:44:19.689414-0800 Tone[32016:9326030] LandmarkDetector error -20:out of bounds in int vision::mod::LandmarkAttributes::computeBlinkFunction(const vImage_Buffer &, const Geometry2D_rect2D &, const std::vector<Geometry2D_point2D> &, vImage_Buffer &, vImage_Buffer &, std::vector<float> &, std::vector<float> &) @ /BuildRoot/Library/Caches/com.apple.xbs/Sources/Vision/Vision-2.0.62/LandmarkDetector/LandmarkDetector_Attributes.mm:535
