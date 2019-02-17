@@ -117,8 +117,8 @@ class SampleSkinToneViewModel {
                     return
                 }
                 
-                let maxExposureIso: Float = 160.0
-                let maxExposureDuration: Float = 0.05
+                let maxExposureIso: Float = 50.0
+                let maxExposureDuration: Float = 0.50
                 
                 let totalExposureMultiple = (faceData!.iso/maxExposureIso) * (faceData!.exposureDuration/maxExposureDuration)
                 
@@ -297,37 +297,5 @@ class SampleSkinToneViewModel {
                 return (landmarks, photo)
             })
     }
-    /*
-    func getLinearCIImage(photoData: (VNFaceLandmarks2D, AVCapturePhoto)?, context: CIContext) -> (VNFaceLandmarks2D, AVCapturePhoto, Data)? {
-        guard let (landmarks, capturePhoto) = photoData else {
-            return nil
-        }
-        
-        let ciImage = CIImage(cgImage: capturePhoto.cgImageRepresentation()!.takeUnretainedValue())
-        let linearCIImage = convertImageToLinear(ciImage)
-        
-        let pngData = context.pngRepresentation(of: linearCIImage, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name:  CGColorSpace.sRGB)!, options: [:])
-        
-        /*
-        let pngData2 = context.pngRepresentation(of: ciImage, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name:  CGColorSpace.linearSRGB)!, options: [:])
-        
-        let pngData3 = context.pngRepresentation(of: linearCIImage, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name:  CGColorSpace.linearSRGB)!, options: [:])
-        
-        let pngData0 = context.pngRepresentation(of: ciImage, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name:  CGColorSpace.sRGB)!, options: [:])
-        let png1 = UIImage.init(data: pngData!)!
-        let png2 = UIImage.init(data: pngData2!)!
-        let png3 = UIImage.init(data: pngData3!)!
-        let png0 = UIImage.init(data: pngData0!)!
-
-
-        UIImageWriteToSavedPhotosAlbum(png0, nil, nil, nil)
-        UIImageWriteToSavedPhotosAlbum(png1, nil, nil, nil)
-        UIImageWriteToSavedPhotosAlbum(png2, nil, nil, nil)
-        UIImageWriteToSavedPhotosAlbum(png3, nil, nil, nil)
-         */
-        
-        return (landmarks, capturePhoto, pngData!)
-    }
-     */
 }
 
