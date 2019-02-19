@@ -25,7 +25,7 @@ struct FlashSettings {
 
 struct RealTimeFaceData {
     var landmarks: VNFaceLandmarks2D
-    var cheekRatio: Float
+    var isLightingBalanced: Bool
     var iso: Float
     var exposureDuration: Float
 }
@@ -104,7 +104,7 @@ class CameraState {
         _ = isAdjustingExposure.connect()
         
         exposurePointStream.subscribe(onNext: {  exposurePoint in
-            print("Setting exposure point to \(exposurePoint)")
+            //print("Setting exposure point to \(exposurePoint)")
             self.captureDevice.exposurePointOfInterest = exposurePoint
             self.captureDevice.exposureMode = AVCaptureDevice.ExposureMode.autoExpose
         }).disposed(by: disposeBag)

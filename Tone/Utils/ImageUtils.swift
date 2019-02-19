@@ -82,6 +82,11 @@ struct ImageByteBuffer {
         return CGPoint.init(x: CGFloat(height) - point.y, y: point.x)
     }
     
+    func convertPortraitPointToLandscapeRatioPoint(point: CGPoint) -> CGPoint {
+        let landscapePoint = self.convertPortraitPointToLandscapePoint(point: point)
+        return CGPoint.init(x: landscapePoint.x / CGFloat(bufferWidth), y: landscapePoint.y / CGFloat(bufferHeight))
+    }
+    
     func sampleLandmarkRegion(landmarkPoint: CGPoint) -> Float? {
         let point = convertPortraitPointToLandscapePoint(point: landmarkPoint)
 
@@ -129,24 +134,105 @@ func getLeftCheekPoint(landmarks: [CGPoint]) -> CGPoint {
     return CGPoint.init(x: middleLeftEye.x, y: middleNose.y)
 }
 
-func getCheekRatio(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D) -> (Float, Bool)? {
+func getChinPoint(landmarks: [CGPoint]) -> CGPoint {
+    let centerLipBottom = landmarks[31]
+    let centerJawBottom = landmarks[45]
+    return CGPoint.init(x: (centerLipBottom.x + centerJawBottom.x) / 2, y: (centerLipBottom.y + centerJawBottom.y) / 2)
+}
+
+func getForeheadPoint(landmarks: [CGPoint]) -> CGPoint {
+    let leftEyebrowInner = landmarks[3]
+    let rightEyebrowInner = landmarks[4]
+    return CGPoint.init(x: (leftEyebrowInner.x + rightEyebrowInner.x) / 2, y: (leftEyebrowInner.y + rightEyebrowInner.y) / 2)
+}
+
+func getForeheadPair(landmarks: [CGPoint]) -> (CGPoint, CGPoint) {
+    let offset = abs(landmarks[2].x - landmarks[1].x)
+    let leftEyeBrowSample = CGPoint.init(x: landmarks[2].x, y: landmarks[2].y - offset)
+    let rightEyeBrowSample = CGPoint.init(x: landmarks[5].x, y: landmarks[5].y - offset)
+    return (leftEyeBrowSample, rightEyeBrowSample)
+}
+
+func getEyePair(landmarks: [CGPoint]) -> (CGPoint, CGPoint) {
+    return (landmarks[51], landmarks[59])
+}
+
+func getUpperCheekPair(landmarks: [CGPoint]) -> (CGPoint, CGPoint) {
+    let leftUpperCheek = CGPoint.init(x: landmarks[8].x, y: landmarks[55].y)
+    let rightUpperCheek = CGPoint.init(x: landmarks[20].x, y: landmarks[55].y)
+    return (leftUpperCheek, rightUpperCheek)
+}
+
+func getLowerCheekPair(landmarks: [CGPoint]) -> (CGPoint, CGPoint) {
+    let offset = abs(landmarks[26].y - landmarks[35].y)
+    let leftUpperCheek = CGPoint.init(x: landmarks[33].x - offset, y: landmarks[33].y)
+    let rightUpperCheek = CGPoint.init(x: landmarks[29].x + offset, y: landmarks[29].y)
+    return (leftUpperCheek, rightUpperCheek)
+}
+
+func isLightingEqual(points: (CGPoint, CGPoint), imageByteBuffer: ImageByteBuffer) -> Bool? {
+    guard let A = imageByteBuffer.sampleLandmarkRegion(landmarkPoint: points.0) else { return nil }
+    guard let B = imageByteBuffer.sampleLandmarkRegion(landmarkPoint: points.1) else { return nil }
+    
+    if A > 20 && B > 20 {
+        let ratio = abs(A - B) / A
+        if ratio > 0.2 {
+            return false
+        }
+    } else {
+        if abs(A - B) > 4 {
+            return false
+        }
+    }
+    return true
+}
+
+func getExposureInfo(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D) -> (CGPoint, Bool)? {
     CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
     defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly) }
     
     let imageByteBuffer = ImageByteBuffer.from(pixelBuffer)
     let facePoints = landmarks.allPoints!.pointsInImage(imageSize: imageByteBuffer.size())
     
+    //BalanceLightCheckPoints
+    let foreheadPair = getForeheadPair(landmarks: facePoints)
+    let eyePair = getEyePair(landmarks: facePoints)
+    let upperCheekPair = getUpperCheekPair(landmarks: facePoints)
+    let lowerCheekPair = getLowerCheekPair(landmarks: facePoints)
+    
+    guard let isForeheadEqual = isLightingEqual(points: foreheadPair, imageByteBuffer: imageByteBuffer) else { return nil }
+    guard let isEyeEqual = isLightingEqual(points: eyePair, imageByteBuffer: imageByteBuffer) else { return nil }
+    guard let isUpperCheekEqual = isLightingEqual(points: upperCheekPair, imageByteBuffer: imageByteBuffer) else { return nil }
+    guard let isLowerCheekEqual = isLightingEqual(points: lowerCheekPair, imageByteBuffer: imageByteBuffer) else { return nil }
+    
+    //print("FOREHEAD: \(isForeheadEqual) | EYE: \(isEyeEqual) | UPPER CHEEK: \(isUpperCheekEqual) | LOWER CHEEK: \(isLowerCheekEqual)")
+    let isBrightnessBalanced = isForeheadEqual && isEyeEqual && isUpperCheekEqual && isLowerCheekEqual
+
+    //Exposure Points
     let leftCheekPoint = getLeftCheekPoint(landmarks: facePoints)
     let rightCheekPoint = getRightCheekPoint(landmarks: facePoints)
+    let chinPoint = getChinPoint(landmarks: facePoints)
+    let foreheadPoint = getForeheadPoint(landmarks: facePoints)
     
-    let leftCheekSample = imageByteBuffer.sampleLandmarkRegion(landmarkPoint: leftCheekPoint)
-    let rightCheekSample = imageByteBuffer.sampleLandmarkRegion(landmarkPoint: rightCheekPoint)
     
-    if (leftCheekSample == nil) || (rightCheekSample == nil) { return nil }
+    guard let leftCheekSample = imageByteBuffer.sampleLandmarkRegion(landmarkPoint: leftCheekPoint) else { return nil }
+    guard let rightCheekSample = imageByteBuffer.sampleLandmarkRegion(landmarkPoint: rightCheekPoint) else { return nil }
+    guard let chinSample = imageByteBuffer.sampleLandmarkRegion(landmarkPoint: chinPoint) else { return nil }
+    guard let foreheadSample = imageByteBuffer.sampleLandmarkRegion(landmarkPoint: foreheadPoint) else { return nil }
     
-    let leftRightRatio = leftCheekSample! / rightCheekSample!
+    let sortedSamples = [(leftCheekSample, leftCheekPoint), (rightCheekSample, rightCheekPoint), (chinSample, chinPoint), (foreheadSample, foreheadPoint)].sorted { A, B in
+        return A.0 > B.0
+    }
     
-    return (leftRightRatio, leftRightRatio < 1)
+    let brightestPoint = imageByteBuffer.convertPortraitPointToLandscapeRatioPoint(point: sortedSamples.first!.1)
+    /*
+    let brightnessRatio = ((sortedSamples.first!.0 - sortedSamples.last!.0) / sortedSamples.last!.0)
+    print("Brightness Ratio :: \(brightnessRatio)")
+    if brightnessRatio > 0.3 {
+        return (brightestPoint, false)
+    }
+    */
+    return (brightestPoint, isBrightnessBalanced)
 }
 
 //Error :: 2018-11-14 11:44:19.689414-0800 Tone[32016:9326030] LandmarkDetector error -20:out of bounds in int vision::mod::LandmarkAttributes::computeBlinkFunction(const vImage_Buffer &, const Geometry2D_rect2D &, const std::vector<Geometry2D_point2D> &, vImage_Buffer &, vImage_Buffer &, std::vector<float> &, std::vector<float> &) @ /BuildRoot/Library/Caches/com.apple.xbs/Sources/Vision/Vision-2.0.62/LandmarkDetector/LandmarkDetector_Attributes.mm:535

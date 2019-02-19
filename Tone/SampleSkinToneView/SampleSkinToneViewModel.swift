@@ -117,6 +117,11 @@ class SampleSkinToneViewModel {
                     return
                 }
                 
+                if !faceData!.isLightingBalanced {
+                    self.userFaceState.onNext(.faceGradient)
+                    return
+                }
+                
                 let maxExposureIso: Float = 50.0
                 let maxExposureDuration: Float = 0.50
                 
@@ -127,10 +132,6 @@ class SampleSkinToneViewModel {
                     return
                 }
                 
-                if abs(faceData!.cheekRatio - 1) > 0.15 {
-                    self.userFaceState.onNext(.faceGradient)
-                    return
-                }
                 
                 let faceClipState = self.checkFaceClipped(min: min, max: max)
                 
