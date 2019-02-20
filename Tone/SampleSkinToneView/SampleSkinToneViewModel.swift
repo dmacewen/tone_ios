@@ -158,13 +158,13 @@ class SampleSkinToneViewModel {
             .disposed(by: disposeBag)
         
         sampleState
-            .observeOn(MainScheduler.instance)
+            //.observeOn(MainScheduler.instance)
             .filter { if case .previewUser = $0 { return true } else { return false } }
             .subscribe { _ in self.cameraState.unlockCameraSettings() }
             .disposed(by: disposeBag)
             
         sampleState
-            .observeOn(MainScheduler.instance)
+            //.observeOn(MainScheduler.instance)
             .filter { if case .referenceSample = $0 { return true } else { return false } }
             .flatMap { _ in self.captureReferencePhoto() }
             .subscribe { _ in
@@ -174,7 +174,7 @@ class SampleSkinToneViewModel {
             .disposed(by: disposeBag)
         
         sampleState
-            .observeOn(MainScheduler.instance)
+            //.observeOn(MainScheduler.instance)
             .filter { if case .sample = $0 { return true } else { return false } }
             .flatMap { _ in self.cameraState.preparePhotoSettings(numPhotos: 3) }
             .flatMap { _ in self.captureSamplePhotos() }
@@ -183,7 +183,7 @@ class SampleSkinToneViewModel {
             }).disposed(by: disposeBag)
         
         sampleState
-            .observeOn(MainScheduler.instance)
+            //.observeOn(MainScheduler.instance)
             .filter { if case .upload = $0 { return true } else { return false } }
             .subscribe(onNext: {
                 self.uploadProgress.onNext(0.0)
@@ -215,9 +215,9 @@ class SampleSkinToneViewModel {
         let context = CIContext()
         
         return Observable.from(flashSettings)
-            .observeOn(MainScheduler.instance)
+            //.observeOn(MainScheduler.instance)
             .map { (Camera(cameraState: self.cameraState), $0) }
-            .serialMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
+            .serialMap2 { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
             .flatMap { photo in self.getFaceLandmarks(photo: photo) }
             .toArray()
             .map { photoData in
@@ -245,10 +245,10 @@ class SampleSkinToneViewModel {
         
         //.repeatElement When we need more then one?
         return Observable.just(flashSetting)
-            .observeOn(MainScheduler.instance)
+            //.observeOn(MainScheduler.instance)
             .map { (Camera(cameraState: self.cameraState), $0) }
             .do(onNext: { _ in self.cameraState.unlockCameraSettings() })
-            .serialMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
+            .serialMap2 { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
             .toArray()
             .flatMap { _ in self.cameraState.lockCameraSettings() }
             .map { _ in true }

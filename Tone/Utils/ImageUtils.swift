@@ -174,13 +174,19 @@ func isLightingEqual(points: (CGPoint, CGPoint), imageByteBuffer: ImageByteBuffe
     guard let A = imageByteBuffer.sampleLandmarkRegion(landmarkPoint: points.0) else { return nil }
     guard let B = imageByteBuffer.sampleLandmarkRegion(landmarkPoint: points.1) else { return nil }
     
+    //let prod_cutoff = 0.2
+    //let prod_cutoff_low = 4
+
+    let dev_cutoff: Float = 0.6
+    let dev_cutoff_low: Float = 10.0
+    
     if A > 20 && B > 20 {
         let ratio = abs(A - B) / A
-        if ratio > 0.2 {
+        if ratio > dev_cutoff {
             return false
         }
     } else {
-        if abs(A - B) > 4 {
+        if abs(A - B) > dev_cutoff_low {
             return false
         }
     }

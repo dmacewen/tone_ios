@@ -25,7 +25,7 @@ class Camera: NSObject {
         self.cameraState.flashStream.onNext(flashSettings)
         
         Observable.combineLatest(cameraState.isAdjustingExposure, cameraState.isAdjustingWB) { $0 || $1 }
-            .observeOn(MainScheduler.instance)
+            //.observeOn(MainScheduler.instance)
             .filter { !$0 }
             .take(1)
             .subscribe(onNext: { _ in

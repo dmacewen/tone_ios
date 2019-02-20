@@ -131,4 +131,40 @@ extension ObservableType {
         }
     }
  */
+    
+    func serialMap2<R>(_ transform: @escaping (E) -> Observable<R>) -> Observable<R> {
+        print("Setting Up SerialMap2!")
+        let imageCaptureSerialQueue = dispatch_queue_serial_t(label: "com.tone.imageCaptureSerialQueue")
+        //let imageCaptureSerialQueue = dispatch_queue_main_t(label: "com.tone.imageCaptureSerialQueue")
+        let group = DispatchGroup()
+        return Observable.create { observer in
+            let subscription = self.subscribe { e in
+                switch e {
+                case .next(let args):
+                    group.enter()
+                    imageCaptureSerialQueue.async {
+                        let disposeBag = DisposeBag()
+                        transform(args)
+                            .subscribe(onNext: { value in
+                                observer.onNext(value)
+                                group.leave()
+                            }, onError: { error in
+                                observer.onError(error)
+                                group.leave()
+                            }, onCompleted: {
+                                //observer.onCompleted()
+                                //group.leave()
+                            }).disposed(by:disposeBag)
+                    }
+                    group.wait()
+                case .error(let error):
+                    observer.on(.error(error))
+                case .completed:
+                   observer.on(.completed)
+                }
+            }
+            
+            return subscription
+        }
+    }
 }

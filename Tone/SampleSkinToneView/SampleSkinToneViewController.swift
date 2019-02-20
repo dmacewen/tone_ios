@@ -125,8 +125,9 @@ class SampleSkinToneViewController: UIViewController {
 
         viewModel.flashSettings
             .observeOn(MainScheduler.instance)
-            .subscribeOn(MainScheduler.instance)
+           // .subscribeOn(MainScheduler.instance)
             .subscribe(onNext: { flashSetting in
+                print("Setting Flash Settings!")
                 let area = flashSetting.area
                 let areas = flashSetting.areas
                 let screenSize = UIScreen.main.bounds
