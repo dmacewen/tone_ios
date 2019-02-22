@@ -216,6 +216,7 @@ class SampleSkinToneViewModel {
         
         return Observable.from(flashSettings)
             .observeOn(MainScheduler.instance)
+            //.observeOn(SerialDispatchQueueScheduler.init(internalSerialQueueName: "com.tone.imageCaptureQueue"))
             .map { (Camera(cameraState: self.cameraState), $0) }
             .serialMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
             .flatMap { photo in self.getFaceLandmarks(photo: photo) }
@@ -246,6 +247,7 @@ class SampleSkinToneViewModel {
         //.repeatElement When we need more then one?
         return Observable.just(flashSetting)
             .observeOn(MainScheduler.instance)
+            //.observeOn(SerialDispatchQueueScheduler.init(internalSerialQueueName: "com.tone.imageCaptureQueue"))
             .map { (Camera(cameraState: self.cameraState), $0) }
             .do(onNext: { _ in self.cameraState.unlockCameraSettings() })
             .serialMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
