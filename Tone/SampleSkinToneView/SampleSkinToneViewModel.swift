@@ -208,9 +208,9 @@ class SampleSkinToneViewModel {
     
     private func captureSamplePhotos() -> Observable<[ImageData]> {
         let flashSettings = [
-            FlashSettings(area: 2, areas: 2),
-            FlashSettings(area: 1, areas: 2),
-            FlashSettings(area: 0, areas: 2)]
+            FlashSettings(area: 3, areas: 3),
+            FlashSettings(area: 2, areas: 3),
+            FlashSettings(area: 1, areas: 3)]
         
         let context = CIContext()
         
@@ -242,7 +242,7 @@ class SampleSkinToneViewModel {
     
     //Eventually scale exposure to that it doesnt clip in reflection
     private func captureReferencePhoto() -> Observable<Bool> {
-        let flashSetting = FlashSettings(area: 2, areas: 2)
+        let flashSetting = FlashSettings(area: 3, areas: 3)
         
         //.repeatElement When we need more then one?
         return Observable.just(flashSetting)

@@ -147,53 +147,17 @@ class SampleSkinToneViewController: UIViewController {
                     ctx.cgContext.fill(CGRect(x: 0, y: 0, width: width, height: height))
                     
                     ctx.cgContext.setFillColor(UIColor.black.cgColor)
-                    /*
-                    if areas == 2 {
-                        switch area {
-                        case 0:
-                            ctx.cgContext.fill(CGRect(x: 0, y: 0, width: width, height: height))
-                        case 1:
-                            for row in 0 ..< rows {
-                                for column in 0 ..< columns {
-                                    if (row + column) % 2 == 0 {
-                                        ctx.cgContext.fill(CGRect(x: (column * checkerSize), y: (row * checkerSize), width: checkerSize, height: checkerSize))
-                                    }
+
+                    if area != 0 {
+                        for row in 0 ..< rows {
+                            for column in 0 ..< columns {
+                                if ((row + column) % areas) + 1 > area {
+                                    ctx.cgContext.fill(CGRect(x: (column * checkerSize), y: (row * checkerSize), width: checkerSize, height: checkerSize))
                                 }
                             }
-                        case 2:
-                            ctx.cgContext.setFillColor(UIColor.white.cgColor)
-                            ctx.cgContext.fill(CGRect(x: 0, y: 0, width: width, height: height))
-                        default:
-                            fatalError("Flash Not Implemented for area > 2")
-                        }
-                     */
-                    //Triple Flash
-                    if areas == 2 {
-                        switch area {
-                        case 0:
-                            for row in 0 ..< rows {
-                                for column in 0 ..< columns {
-                                    if (row + column) % 3 != 2 {
-                                        ctx.cgContext.fill(CGRect(x: (column * checkerSize), y: (row * checkerSize), width: checkerSize, height: checkerSize))
-                                    }
-                                }
-                            }
-                        case 1:
-                            for row in 0 ..< rows {
-                                for column in 0 ..< columns {
-                                    if (row + column) % 3 == 0 {
-                                        ctx.cgContext.fill(CGRect(x: (column * checkerSize), y: (row * checkerSize), width: checkerSize, height: checkerSize))
-                                    }
-                                }
-                            }
-                        case 2:
-                            ctx.cgContext.setFillColor(UIColor.white.cgColor)
-                            ctx.cgContext.fill(CGRect(x: 0, y: 0, width: width, height: height))
-                        default:
-                            fatalError("Flash Not Implemented for area > 2")
                         }
                     } else {
-                        fatalError("Flash Not Implemented for areas != 2")
+                        ctx.cgContext.fill(CGRect(x: 0, y: 0, width: width, height: height))
                     }
                 }
                 
