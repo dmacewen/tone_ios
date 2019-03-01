@@ -23,8 +23,9 @@ struct MetaData : Codable {
     let whiteBalance: WhiteBalance
     let faceLandmarks: [CGPoint]
     let faceLandmarksSource = "apple"
+    let flashSettings: FlashSettings
     
-    static func getFrom(cameraState: CameraState, capture: AVCapturePhoto, faceLandmarks: [CGPoint]) -> MetaData {
+    static func getFrom(cameraState: CameraState, capture: AVCapturePhoto, faceLandmarks: [CGPoint], flashSetting: FlashSettings) -> MetaData {
         let meta = capture.metadata
         let exif = meta["{Exif}"] as! [String: Any]
         //print("Exif :: \(exif)")
@@ -36,11 +37,11 @@ struct MetaData : Codable {
         
         let faceLandmarksInt = faceLandmarks.map { CGPoint(x: Int($0.x), y: Int($0.y)) }
         
-        return MetaData(iso: iso, exposureTime: exposureTime, whiteBalance: whiteBalance, faceLandmarks: faceLandmarksInt)
+        return MetaData(iso: iso, exposureTime: exposureTime, whiteBalance: whiteBalance, faceLandmarks: faceLandmarksInt, flashSettings: flashSetting)
     }
     
     func prettyPrint() {
-        print("ISO :: \(iso) | Exposure Time :: \(exposureTime) | White Balance (x: \(whiteBalance.x), y: \(whiteBalance.y))")
+        print("ISO :: \(iso) | Exposure Time :: \(exposureTime) | White Balance (x: \(whiteBalance.x), y: \(whiteBalance.y)) | Flash Settings :: \(flashSettings.area)/\(flashSettings.areas)")
     }
 }
 
@@ -112,14 +113,14 @@ struct ImageByteBuffer {
     }
 }
 
-func getImageMetadata(cameraState: CameraState, photoData: (VNFaceLandmarks2D, AVCapturePhoto)?) -> MetaData {
-    guard let (landmarks, capture) = photoData else {
+func getImageMetadata(cameraState: CameraState, photoData: (VNFaceLandmarks2D, AVCapturePhoto, FlashSettings)?) -> MetaData {
+    guard let (landmarks, capture, flashSettings) = photoData else {
         fatalError("Could Not Find Landmarks")
     }
     
     let image = UIImage.init(data: capture.fileDataRepresentation()!)!
     let landmarkPoints = landmarks.allPoints!.pointsInImage(imageSize: image.size)
-    return MetaData.getFrom(cameraState: cameraState, capture: capture, faceLandmarks: landmarkPoints)
+    return MetaData.getFrom(cameraState: cameraState, capture: capture, faceLandmarks: landmarkPoints, flashSetting: flashSettings)
 }
 
 func getRightCheekPoint(landmarks: [CGPoint]) -> CGPoint {

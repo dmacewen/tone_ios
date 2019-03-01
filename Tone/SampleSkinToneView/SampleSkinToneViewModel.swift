@@ -81,7 +81,7 @@ class SampleSkinToneViewModel {
     
     let uploadProgress = BehaviorSubject<Float>(value: 0.0)
     
-    let flashSettings = PublishSubject<FlashSettings>()
+    let flashSettings = BehaviorSubject<FlashSettings>(value: FlashSettings(area: 0, areas: 0))
     
     let events = PublishSubject<Event>()
     
@@ -176,7 +176,7 @@ class SampleSkinToneViewModel {
         sampleState
             .observeOn(MainScheduler.instance)
             .filter { if case .sample = $0 { return true } else { return false } }
-            .flatMap { _ in self.cameraState.preparePhotoSettings(numPhotos: 3) }
+            .flatMap { _ in self.cameraState.preparePhotoSettings(numPhotos: 7) }
             .flatMap { _ in self.captureSamplePhotos() }
             .subscribe(onNext: { imageData in
                 self.sampleState.onNext(.upload(images: imageData))
@@ -208,9 +208,16 @@ class SampleSkinToneViewModel {
     
     private func captureSamplePhotos() -> Observable<[ImageData]> {
         let flashSettings = [
-            FlashSettings(area: 3, areas: 3),
-            FlashSettings(area: 2, areas: 3),
-            FlashSettings(area: 1, areas: 3)]
+            //FlashSettings(area: 9, areas: 9),
+            //FlashSettings(area: 8, areas: 9),
+            //FlashSettings(area: 7, areas: 9),
+            FlashSettings(area: 6, areas: 6),
+            FlashSettings(area: 5, areas: 6),
+            FlashSettings(area: 4, areas: 6),
+            FlashSettings(area: 3, areas: 6),
+            FlashSettings(area: 2, areas: 6),
+            FlashSettings(area: 1, areas: 6),
+            FlashSettings(area: 0, areas: 6)]
         
         let context = CIContext()
         
@@ -219,11 +226,11 @@ class SampleSkinToneViewModel {
             //.observeOn(SerialDispatchQueueScheduler.init(internalSerialQueueName: "com.tone.imageCaptureQueue"))
             .map { (Camera(cameraState: self.cameraState), $0) }
             .serialMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
-            .flatMap { photo in self.getFaceLandmarks(photo: photo) }
+            .flatMap { capture in self.getFaceLandmarks(capture: capture) }
             .toArray()
             .map { photoData in
                 let imageData = photoData.map { photoDatum -> ImageData in
-                    guard let (_, capturePhoto) = photoDatum else {
+                    guard let (_, capturePhoto, _) = photoDatum else {
                         fatalError("Did not recieve face data")
                     }
                     
@@ -231,7 +238,6 @@ class SampleSkinToneViewModel {
                     let linearCIImage = convertImageToLinear(ciImage)
                     let rotatedCIImage = rotateImage(linearCIImage)
                     let pngData = context.pngRepresentation(of: rotatedCIImage, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name:  CGColorSpace.sRGB)!, options: [:])
-
                     let metaData = getImageMetadata(cameraState: self.cameraState, photoData: photoDatum)
                     return ImageData(imageData: pngData!, metaData: metaData)
                 }
@@ -291,13 +297,14 @@ class SampleSkinToneViewModel {
         return .ok
     }
     
-    func getFaceLandmarks(photo: AVCapturePhoto) -> Observable<(VNFaceLandmarks2D, AVCapturePhoto)?> {
+    func getFaceLandmarks(capture: (AVCapturePhoto, FlashSettings)) -> Observable<(VNFaceLandmarks2D, AVCapturePhoto, FlashSettings)?> {
+        let (photo, flashSettings) = capture
         return getFacialLandmarks(cameraState: cameraState, pixelBuffer: photo.pixelBuffer!)
             .map({
                 guard let (landmarks, _) = $0 else {
                     return nil
                 }
-                return (landmarks, photo)
+                return (landmarks, photo, flashSettings)
             })
     }
 }

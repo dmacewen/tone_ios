@@ -127,6 +127,11 @@ class SampleSkinToneViewController: UIViewController {
             .observeOn(MainScheduler.instance)
             .subscribeOn(MainScheduler.instance)
             .subscribe(onNext: { flashSetting in
+                if flashSetting.areas == 0 {
+                    //Return Early if Areas is 0
+                    print("Zero Areas Returning Early")
+                    return
+                }
                 let area = flashSetting.area
                 let areas = flashSetting.areas
                 let screenSize = UIScreen.main.bounds

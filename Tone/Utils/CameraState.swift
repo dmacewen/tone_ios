@@ -18,9 +18,9 @@ struct PhotoSettings {
     var whiteBalance = [0.0, 0.0, 0.0]
 }
 
-struct FlashSettings {
-    var area = 0
-    var areas = 0
+struct FlashSettings: Codable {
+    var area: Int = 0
+    var areas: Int = 0
 }
 
 struct RealTimeFaceData {
@@ -36,7 +36,8 @@ class CameraState {
     var captureDevice: AVCaptureDevice
     var captureSession: AVCaptureSession
     
-    var flashStream: PublishSubject<FlashSettings>
+    //var flashStream: PublishSubject<FlashSettings>
+    var flashStream: BehaviorSubject<FlashSettings>
     var isAvailable =  BehaviorSubject<Bool>(value: true)
     var photoSettingsIndex = 0
     
@@ -46,7 +47,7 @@ class CameraState {
     
     let exposurePointStream = BehaviorSubject<CGPoint>(value: CGPoint.init(x: 0.5, y: 0.5))
 
-    init(flashStream: PublishSubject<FlashSettings>) {
+    init(flashStream: BehaviorSubject<FlashSettings>) {
         print("Setting up camera...")
         self.flashStream = flashStream
 

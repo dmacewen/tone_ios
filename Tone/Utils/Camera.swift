@@ -12,7 +12,7 @@ import RxSwift
 
 class Camera: NSObject {
     private var cameraState: CameraState
-    private let capture = PublishSubject<AVCapturePhoto>()
+    private let capture = PublishSubject<(AVCapturePhoto, FlashSettings)>()
     private let disposeBag = DisposeBag()
     
     init(cameraState: CameraState) {
@@ -20,7 +20,7 @@ class Camera: NSObject {
         self.cameraState = cameraState
     }
     
-    func capturePhoto(_ flashSettings: FlashSettings) -> PublishSubject<AVCapturePhoto> {
+    func capturePhoto(_ flashSettings: FlashSettings) -> PublishSubject<(AVCapturePhoto, FlashSettings)> {
         print("Beginning to capture photo!")
         self.cameraState.flashStream.onNext(flashSettings)
         
@@ -49,8 +49,14 @@ extension Camera: AVCapturePhotoCaptureDelegate {
         guard error == nil else {
             fatalError("Error in capture!")
         }
+        var flashSetting: FlashSettings
+        do {
+            flashSetting = try self.cameraState.flashStream.value()
+        } catch {
+            fatalError("No Flash Setting Found! What flash setting was used?")
+        }
         
-        capture.onNext(photo)
+        capture.onNext((photo, flashSetting))
         capture.onCompleted()
     }
 }
