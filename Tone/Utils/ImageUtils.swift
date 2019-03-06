@@ -17,6 +17,15 @@ struct WhiteBalance : Codable {
     let y: Float
 }
 
+struct ImageTransforms : Codable {
+    var isGammaSBGR = false
+    var isRotated = false
+    
+    func getStringRepresentation() -> String{
+        return "(isGammaSBGR :: \(self.isGammaSBGR) | isRotated :: \(self.isRotated))"
+    }
+}
+
 struct MetaData : Codable {
     let iso: Float
     let exposureTime: Float64
@@ -24,8 +33,9 @@ struct MetaData : Codable {
     let faceLandmarks: [CGPoint]
     let faceLandmarksSource = "apple"
     let flashSettings: FlashSettings
+    let imageTransforms: ImageTransforms
     
-    static func getFrom(cameraState: CameraState, capture: AVCapturePhoto, faceLandmarks: [CGPoint], flashSetting: FlashSettings) -> MetaData {
+    static func getFrom(cameraState: CameraState, capture: AVCapturePhoto, faceLandmarks: [CGPoint], flashSetting: FlashSettings, imageTransforms: ImageTransforms) -> MetaData {
         let meta = capture.metadata
         let exif = meta["{Exif}"] as! [String: Any]
         //print("Exif :: \(exif)")
@@ -37,11 +47,11 @@ struct MetaData : Codable {
         
         let faceLandmarksInt = faceLandmarks.map { CGPoint(x: Int($0.x), y: Int($0.y)) }
         
-        return MetaData(iso: iso, exposureTime: exposureTime, whiteBalance: whiteBalance, faceLandmarks: faceLandmarksInt, flashSettings: flashSetting)
+        return MetaData(iso: iso, exposureTime: exposureTime, whiteBalance: whiteBalance, faceLandmarks: faceLandmarksInt, flashSettings: flashSetting, imageTransforms: imageTransforms)
     }
     
     func prettyPrint() {
-        print("ISO :: \(iso) | Exposure Time :: \(exposureTime) | White Balance (x: \(whiteBalance.x), y: \(whiteBalance.y)) | Flash Settings :: \(flashSettings.area)/\(flashSettings.areas)")
+        print("ISO :: \(iso) | Exposure Time :: \(exposureTime) | White Balance (x: \(whiteBalance.x), y: \(whiteBalance.y)) | Flash Settings :: \(flashSettings.area)/\(flashSettings.areas) | Image Transforms :: \(self.imageTransforms.getStringRepresentation())")
     }
 }
 
@@ -113,14 +123,14 @@ struct ImageByteBuffer {
     }
 }
 
-func getImageMetadata(cameraState: CameraState, photoData: (VNFaceLandmarks2D, AVCapturePhoto, FlashSettings)?) -> MetaData {
+func getImageMetadata(cameraState: CameraState, photoData: (VNFaceLandmarks2D, AVCapturePhoto, FlashSettings)?, imageTransforms: ImageTransforms) -> MetaData {
     guard let (landmarks, capture, flashSettings) = photoData else {
         fatalError("Could Not Find Landmarks")
     }
     
     let image = UIImage.init(data: capture.fileDataRepresentation()!)!
     let landmarkPoints = landmarks.allPoints!.pointsInImage(imageSize: image.size)
-    return MetaData.getFrom(cameraState: cameraState, capture: capture, faceLandmarks: landmarkPoints, flashSetting: flashSettings)
+    return MetaData.getFrom(cameraState: cameraState, capture: capture, faceLandmarks: landmarkPoints, flashSetting: flashSettings, imageTransforms: imageTransforms)
 }
 
 func getRightCheekPoint(landmarks: [CGPoint]) -> CGPoint {
@@ -293,16 +303,18 @@ func getFacialLandmarks(cameraState: CameraState, pixelBuffer: CVPixelBuffer) ->
     }
 }
 //Needs a context to have been created
-func convertImageToLinear(_ input: CIImage) -> CIImage {
+func convertImageToLinear(_ input: CIImage, _ imageTransforms: inout ImageTransforms) -> CIImage {
     let toLinearFilter = CIFilter(name:"CISRGBToneCurveToLinear")
     toLinearFilter!.setValue(input, forKey: kCIInputImageKey)
+    imageTransforms.isGammaSBGR = true
     return toLinearFilter!.outputImage!
 }
 //Needs a context to have been created
-func rotateImage(_ input: CIImage) -> CIImage {
+func rotateImage(_ input: CIImage, _ imageTransforms: inout ImageTransforms) -> CIImage {
     let toRotateFilter = CIFilter(name:"CIAffineTransform")
     let affineRotationTransform = CGAffineTransform.init(rotationAngle: -CGFloat.pi/2)
     toRotateFilter!.setValue(affineRotationTransform, forKey: kCIInputTransformKey)
     toRotateFilter!.setValue(input, forKey: kCIInputImageKey)
+    imageTransforms.isRotated = true
     return toRotateFilter!.outputImage!
 }

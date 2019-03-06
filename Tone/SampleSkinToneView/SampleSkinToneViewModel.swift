@@ -13,6 +13,19 @@ import Alamofire
 import Vision
 
 class SampleSkinToneViewModel {
+    
+    let screenFlashSettings = [
+        //FlashSettings(area: 9, areas: 9),
+        //FlashSettings(area: 8, areas: 9),
+        FlashSettings(area: 7, areas: 7),
+        FlashSettings(area: 6, areas: 7),
+        FlashSettings(area: 5, areas: 7),
+        FlashSettings(area: 4, areas: 7),
+        FlashSettings(area: 3, areas: 7),
+        FlashSettings(area: 2, areas: 7),
+        FlashSettings(area: 1, areas: 7),
+        FlashSettings(area: 0, areas: 7)]
+    
     enum Event {
         case cancel
     }
@@ -176,7 +189,7 @@ class SampleSkinToneViewModel {
         sampleState
             .observeOn(MainScheduler.instance)
             .filter { if case .sample = $0 { return true } else { return false } }
-            .flatMap { _ in self.cameraState.preparePhotoSettings(numPhotos: 7) }
+            .flatMap { _ in self.cameraState.preparePhotoSettings(numPhotos: self.screenFlashSettings.count) }
             .flatMap { _ in self.captureSamplePhotos() }
             .subscribe(onNext: { imageData in
                 self.sampleState.onNext(.upload(images: imageData))
@@ -207,21 +220,9 @@ class SampleSkinToneViewModel {
     }
     
     private func captureSamplePhotos() -> Observable<[ImageData]> {
-        let flashSettings = [
-            //FlashSettings(area: 9, areas: 9),
-            //FlashSettings(area: 8, areas: 9),
-            //FlashSettings(area: 7, areas: 9),
-            FlashSettings(area: 6, areas: 6),
-            FlashSettings(area: 5, areas: 6),
-            FlashSettings(area: 4, areas: 6),
-            FlashSettings(area: 3, areas: 6),
-            FlashSettings(area: 2, areas: 6),
-            FlashSettings(area: 1, areas: 6),
-            FlashSettings(area: 0, areas: 6)]
-        
         let context = CIContext()
         
-        return Observable.from(flashSettings)
+        return Observable.from(screenFlashSettings)
             .observeOn(MainScheduler.instance)
             //.observeOn(SerialDispatchQueueScheduler.init(internalSerialQueueName: "com.tone.imageCaptureQueue"))
             .map { (Camera(cameraState: self.cameraState), $0) }
@@ -235,10 +236,12 @@ class SampleSkinToneViewModel {
                     }
                     
                     let ciImage = CIImage(cgImage: capturePhoto.cgImageRepresentation()!.takeUnretainedValue())
-                    let linearCIImage = convertImageToLinear(ciImage)
-                    let rotatedCIImage = rotateImage(linearCIImage)
+                    var imageTransforms = ImageTransforms()
+                    //let linearCIImage = convertImageToLinear(ciImage, &imageTransforms)
+                    //let rotatedCIImage = rotateImage(linearCIImage, &imageTransforms)
+                    let rotatedCIImage = rotateImage(ciImage, &imageTransforms)
                     let pngData = context.pngRepresentation(of: rotatedCIImage, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name:  CGColorSpace.sRGB)!, options: [:])
-                    let metaData = getImageMetadata(cameraState: self.cameraState, photoData: photoDatum)
+                    let metaData = getImageMetadata(cameraState: self.cameraState, photoData: photoDatum, imageTransforms: imageTransforms)
                     return ImageData(imageData: pngData!, metaData: metaData)
                 }
                 
