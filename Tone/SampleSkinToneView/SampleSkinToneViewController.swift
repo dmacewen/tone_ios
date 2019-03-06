@@ -75,20 +75,32 @@ class SampleSkinToneViewController: UIViewController {
         
         viewModel.sampleState
         //    .observeOn(MainScheduler.instance)
-            .map { if case .upload = $0 { return false } else { return true } }
+            .map { state in
+                if case .upload = state { return false }
+                else if case .process = state { return false }
+                else { return true }
+            }
             .bind(to: UploadProgessLayer.rx.isHidden )
             .disposed(by: disposeBag)
         
+        viewModel.sampleState
+            .filter { if case .process = $0 { return true } else { return false }}
+            .subscribe(onNext: { _ in
+                print("Processing...")
+                self.ProgessLayer.isHidden = false
+                self.UploadLayer.isHidden = true
+                self.ProgessSpinner.startAnimating()
+            }).disposed(by: disposeBag)
+
         viewModel.uploadProgress
             .bind(to: UploadBar.rx.progress)
             .disposed(by: disposeBag)
         
         viewModel.uploadProgress
-            .map { $0 == 1.0 }
+            //.map { $0 == 1.0 }
             .distinctUntilChanged()
-            .subscribe(onNext: { isUploaded in
-                print("isUploaded! :: \(isUploaded)")
-                if isUploaded {
+            .subscribe(onNext: { uploadAmount in
+                if uploadAmount == 1.0 {
                     self.ProgessLayer.isHidden = false
                     self.UploadLayer.isHidden = true
                     self.ProgessSpinner.startAnimating()
@@ -103,7 +115,7 @@ class SampleSkinToneViewController: UIViewController {
             .observeOn(MainScheduler.instance)
             .map { (state) -> Bool in
                 switch(state) {
-                case .previewUser, .upload(_): return false
+                case .previewUser, .process(_), .upload(_): return false
                 case .referenceSample, .sample: return true
                 }
             }
