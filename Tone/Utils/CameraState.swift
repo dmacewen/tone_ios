@@ -128,39 +128,54 @@ class CameraState {
             return Disposables.create()
         }
     }
+    
+    //Minimizes ISO by Maximizing Exposure Duration while targeting the Metered Exposure
+    private func calculateTargetExposure() -> (CMTime, Float) {
+        var maxExposureDuration = self.captureDevice.activeFormat.maxExposureDuration
+        let minISO = self.captureDevice.activeFormat.minISO
+        
+        maxExposureDuration = maxExposureDuration.convertScale(self.captureDevice.exposureDuration.timescale, method: CMTimeRoundingMethod.default)
+        var exposureRatio = Float64(maxExposureDuration.value) / Float64(self.captureDevice.exposureDuration.value)
+        var isoRatio = Float64(self.captureDevice.iso) / Float64(minISO)
+        
+        if isoRatio < exposureRatio {
+            exposureRatio = isoRatio
+        } else {
+            isoRatio = exposureRatio
+        }
+        
+        let targetISO = self.captureDevice.iso / Float(isoRatio)
+        let targetExposureDuration = CMTimeMultiplyByFloat64(self.captureDevice.exposureDuration, multiplier: exposureRatio)
+        
+        print("Min ISO :: \(minISO) | Max Exposure Duration :: \(maxExposureDuration.value)")
+        print("Exposure Duration :: \(self.captureDevice.exposureDuration.value) -> \(targetExposureDuration.value)")
+        print("ISO :: \(self.captureDevice.iso) -> \(targetISO)")
+        
+        return (targetExposureDuration, targetISO)
+    }
 
     func lockCameraSettings() -> Observable<Bool> {
         captureDevice.exposureMode = AVCaptureDevice.ExposureMode.locked
         print("LOCKING CAMERA SETTINGS")
-        return Observable.create { observable in
-            self.captureDevice.setWhiteBalanceModeLocked(with: AVCaptureDevice.currentWhiteBalanceGains, completionHandler: { time in
-                
-                var maxExposureDuration = self.captureDevice.activeFormat.maxExposureDuration
-                let minISO = self.captureDevice.activeFormat.minISO
-                
-                maxExposureDuration = maxExposureDuration.convertScale(self.captureDevice.exposureDuration.timescale, method: CMTimeRoundingMethod.default)
-                var exposureRatio = Float64(maxExposureDuration.value) / Float64(self.captureDevice.exposureDuration.value)
-                var isoRatio = Float64(self.captureDevice.iso) / Float64(minISO)
-                
-                if isoRatio < exposureRatio {
-                    exposureRatio = isoRatio
-                } else {
-                    isoRatio = exposureRatio
+        
+        return Observable.combineLatest(isAdjustingExposure, isAdjustingWB) { $0 || $1 }
+            .observeOn(MainScheduler.instance)
+            .filter { !$0 }
+            .take(1)
+            .flatMap { _ in
+                return Observable.create { observable in
+                    self.captureDevice.setWhiteBalanceModeLocked(with: AVCaptureDevice.currentWhiteBalanceGains, completionHandler: { time in
+                        
+                        let (targetExposureDuration, targetISO) = self.calculateTargetExposure()
+                        
+                        self.captureDevice.setExposureModeCustom(duration: targetExposureDuration, iso: targetISO, completionHandler: { time in
+                                print("LOCKED CAMERA SETTINGS")
+                                observable.onNext(true)
+                        })
+                    })
+                    return Disposables.create()
                 }
-                
-                let targetISO = self.captureDevice.iso / Float(isoRatio)
-                let targetExposureDuration = CMTimeMultiplyByFloat64(self.captureDevice.exposureDuration, multiplier: exposureRatio)
-                
-                print("Min ISO :: \(minISO) | Max Exposure Duration :: \(maxExposureDuration.value)")
-                print("Exposure Duration :: \(self.captureDevice.exposureDuration.value) -> \(targetExposureDuration.value)")
-                print("ISO :: \(self.captureDevice.iso) -> \(targetISO)")
-                
-                self.captureDevice.setExposureModeCustom(duration: targetExposureDuration, iso: targetISO, completionHandler: { time in
-                        observable.onNext(true)
-                })
-            })
-            return Disposables.create()
-        }
+            }
     }
     
     func unlockCameraSettings() {
