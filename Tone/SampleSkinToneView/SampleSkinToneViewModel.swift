@@ -276,14 +276,12 @@ class SampleSkinToneViewModel {
                     }
                     
                     var crop = crops.popLast()!.toInt()
-                    let newX = crop.minY
-                    let newY = crop.minX
-                    let newWidth = crop.height
-                    let newHeight = crop.width
+                    let newX = CGFloat(0)//crop.minX
+                    let newY = crop.minY
+                    let newWidth = CGFloat(bufferWidth)//crop.width
+                    let newHeight = crop.height
                     crop = CGRect(x: newX, y: newY, width: newWidth, height: newHeight)
-                     
-                    print("Crop To :: \(crop)")
-                
+                    
                     var imageTransforms = ImageTransforms()
                     
                     var cgImage = capturePhoto.cgImageRepresentation()!.takeUnretainedValue()
