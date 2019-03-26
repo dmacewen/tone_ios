@@ -245,19 +245,9 @@ class SampleSkinToneViewModel {
     
     private func processSamplePhotos(_ photoData: [(AVCapturePhoto, FlashSettings)?]) -> Observable<[ImageData]> {
         let context = CIContext()
-        /*
-         let allFaceLandmarks = photoData.map { $0!.0 }
         
-        let bufferWidth = CVPixelBufferGetWidth(photoData[0]!.1.pixelBuffer!)
-        let bufferHeight = CVPixelBufferGetHeight(photoData[0]!.1.pixelBuffer!)
-        let bufferSize = CGSize.init(width: bufferWidth, height: bufferHeight)
-        
-        var crops = calculateFaceCrop(faceLandmarks: allFaceLandmarks, imgSize: bufferSize)
-        crops.reverse()
-        */
         return Observable.from(photoData)
             .observeOn(MainScheduler.instance) //Observe on background thread to free up the main thread?
-            //.observeOn(SerialDispatchQueueScheduler.init(internalSerialQueueName: "com.tone.imageCaptureQueue"))
             .flatMap { capture in self.getFaceLandmarks(capture: capture!) }
             .toArray()
             .map { photoData -> [ImageData] in
@@ -271,7 +261,7 @@ class SampleSkinToneViewModel {
                 crops.reverse()
                 
                 return photoData.map { photoDatum -> ImageData in
-                    guard let (_, capturePhoto, _) = photoDatum else {
+                    guard let (faceLandmarks, capturePhoto, flashSettings) = photoDatum else {
                         fatalError("Did not recieve face data")
                     }
                     
@@ -281,6 +271,11 @@ class SampleSkinToneViewModel {
                     let newWidth = CGFloat(bufferWidth)//crop.width
                     let newHeight = crop.height
                     crop = CGRect(x: newX, y: newY, width: newWidth, height: newHeight)
+                    
+                    var faceLandmarkPoints = faceLandmarks.allPoints!.pointsInImage(imageSize: bufferSize)
+                    faceLandmarkPoints = faceLandmarkPoints.map { point in
+                        return CGPoint(x: point.x - newY, y: point.y) //Rotated... Clean up...
+                    }
                     
                     var imageTransforms = ImageTransforms()
                     
@@ -295,7 +290,8 @@ class SampleSkinToneViewModel {
                     //let croppedCIImage = cropImage(ciImage, dimensions: crop, &imageTransforms)
                     let rotatedCIImage = rotateImage(ciImage, &imageTransforms)
                     let pngData = context.pngRepresentation(of: rotatedCIImage, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])
-                    let metaData = getImageMetadata(cameraState: self.cameraState, photoData: photoDatum, imageTransforms: imageTransforms)
+                    let metaData = MetaData.getFrom(cameraState: self.cameraState, captureMetadata: capturePhoto.metadata, faceLandmarks: faceLandmarkPoints, flashSetting: flashSettings, imageTransforms: imageTransforms)
+                    
                     return ImageData(imageData: pngData!, metaData: metaData)
                 }
             }

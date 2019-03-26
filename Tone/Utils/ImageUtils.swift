@@ -102,8 +102,8 @@ struct MetaData : Codable {
     let flashSettings: FlashSettings
     let imageTransforms: ImageTransforms
     
-    static func getFrom(cameraState: CameraState, capture: AVCapturePhoto, faceLandmarks: [CGPoint], flashSetting: FlashSettings, imageTransforms: ImageTransforms) -> MetaData {
-        let meta = capture.metadata
+    static func getFrom(cameraState: CameraState, captureMetadata: [String: Any], faceLandmarks: [CGPoint], flashSetting: FlashSettings, imageTransforms: ImageTransforms) -> MetaData {
+        let meta = captureMetadata
         let exif = meta["{Exif}"] as! [String: Any]
         //print("Exif :: \(exif)")
         
@@ -212,16 +212,6 @@ struct ImageByteBuffer {
         return averageSubpixelValue
     }
  */
-}
-
-func getImageMetadata(cameraState: CameraState, photoData: (VNFaceLandmarks2D, AVCapturePhoto, FlashSettings)?, imageTransforms: ImageTransforms) -> MetaData {
-    guard let (landmarks, capture, flashSettings) = photoData else {
-        fatalError("Could Not Find Landmarks")
-    }
-    
-    let image = UIImage.init(data: capture.fileDataRepresentation()!)!
-    let landmarkPoints = landmarks.allPoints!.pointsInImage(imageSize: image.size)
-    return MetaData.getFrom(cameraState: cameraState, capture: capture, faceLandmarks: landmarkPoints, flashSetting: flashSettings, imageTransforms: imageTransforms)
 }
 
 func getRightEyePoint(landmarks: [CGPoint]) -> CGPoint {
