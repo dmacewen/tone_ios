@@ -10,9 +10,10 @@ import Foundation
 import Alamofire
 import RxSwift
 
-func uploadImageData(imageData: [ImageData], progressBar: BehaviorSubject<Float>) -> Observable<Bool> {
+func uploadImageData(imageData: [ImageData], progressBar: BehaviorSubject<Float>, user: User) -> Observable<Bool> {
     
-    let url = "http://macewen.io/users/doug/selfie"
+    let userid = user.email
+    let url = "http://macewen.io/users/\(userid)/selfie"
     
     let headers: HTTPHeaders = [
         /* "Authorization": "your_access_token",  in case you need authorization header */

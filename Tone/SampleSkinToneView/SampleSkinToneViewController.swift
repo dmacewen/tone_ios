@@ -20,12 +20,13 @@ class SampleSkinToneViewController: UIViewController {
     @IBOutlet weak var UILayer: UIView!
     @IBOutlet weak var InteractionLayer: UIView!
     
-    @IBOutlet weak var UploadProgessLayer: UIView!
-    @IBOutlet weak var ProgessLayer: UIView!
-    @IBOutlet weak var ProgessSpinner: UIActivityIndicatorView!
+    @IBOutlet weak var UploadProgessLayer: UIView! //Layer that holds Upload Progress Bar, Progress Spinner, and Prepping Spinner
     @IBOutlet weak var UploadLayer: UIView!
     @IBOutlet weak var UploadBar: UIProgressView!
-
+    @IBOutlet weak var ProgessLayer: UIView!
+    @IBOutlet weak var ProgessSpinner: UIActivityIndicatorView!
+    @IBOutlet weak var PreppingLayer: UIView!
+    @IBOutlet weak var PreppingSpinner: UIActivityIndicatorView!
     
     @IBOutlet weak var rootView: UIView!
     
@@ -68,28 +69,42 @@ class SampleSkinToneViewController: UIViewController {
             .disposed(by: disposeBag)
         
         viewModel.sampleState
-           // .observeOn(MainScheduler.instance)
+            .observeOn(MainScheduler.instance)
             .map { if case .previewUser = $0 { return false } else { return true } }
             .bind(to: InteractionLayer.rx.isHidden )
             .disposed(by: disposeBag)
         
         viewModel.sampleState
-        //    .observeOn(MainScheduler.instance)
+            .observeOn(MainScheduler.instance)
             .map { state in
                 if case .upload = state { return false }
                 else if case .process = state { return false }
+                else if case .prepping = state { return false }
                 else { return true }
             }
             .bind(to: UploadProgessLayer.rx.isHidden )
             .disposed(by: disposeBag)
         
         viewModel.sampleState
+            .observeOn(MainScheduler.instance)
             .filter { if case .process = $0 { return true } else { return false }}
             .subscribe(onNext: { _ in
                 print("Processing...")
                 self.ProgessLayer.isHidden = false
                 self.UploadLayer.isHidden = true
+                self.PreppingLayer.isHidden = true
                 self.ProgessSpinner.startAnimating()
+            }).disposed(by: disposeBag)
+        
+        viewModel.sampleState
+            .observeOn(MainScheduler.instance)
+            .filter { if case .prepping = $0 { return true } else { return false }}
+            .subscribe(onNext: { _ in
+                print("Prepping...")
+                self.PreppingLayer.isHidden = false
+                self.ProgessLayer.isHidden = true
+                self.UploadLayer.isHidden = true
+                self.PreppingSpinner.startAnimating()
             }).disposed(by: disposeBag)
 
         viewModel.uploadProgress
@@ -100,13 +115,19 @@ class SampleSkinToneViewController: UIViewController {
             //.map { $0 == 1.0 }
             .distinctUntilChanged()
             .subscribe(onNext: { uploadAmount in
-                if uploadAmount == 1.0 {
-                    self.ProgessLayer.isHidden = false
-                    self.UploadLayer.isHidden = true
-                    self.ProgessSpinner.startAnimating()
-                } else {
-                    self.ProgessLayer.isHidden = true
-                    self.UploadLayer.isHidden = false
+                let currentState = try! self.viewModel.sampleState.value()
+                if case .upload(_) = currentState {
+                    if uploadAmount == 1.0 {
+                        print("Upload Done")
+                        self.ProgessLayer.isHidden = false
+                        self.UploadLayer.isHidden = true
+                        self.PreppingLayer.isHidden = true
+                        self.ProgessSpinner.startAnimating()
+                    } else {
+                        self.ProgessLayer.isHidden = true
+                        self.PreppingLayer.isHidden = true
+                        self.UploadLayer.isHidden = false
+                    }
                 }
             }).disposed(by: disposeBag)
 
@@ -115,7 +136,7 @@ class SampleSkinToneViewController: UIViewController {
             .observeOn(MainScheduler.instance)
             .map { (state) -> Bool in
                 switch(state) {
-                case .previewUser, .process(_), .upload(_): return false
+                case .previewUser, .process(_), .upload(_), .prepping: return false
                 case .referenceSample, .sample: return true
                 }
             }

@@ -25,21 +25,21 @@ class RootNavigationViewModel {
         loginViewModel.events
             .subscribe(onNext: { [weak self] event in
                 switch event {
-                case .loggedIn(let email):
-                    self?.loadHome(withEmail: email)
+                case .loggedIn(let user):
+                    self?.loadHome(withUser: user)
                 }
             }).disposed(by: disposeBag)
         
         return loginViewModel
     }
     
-    private func loadHome(withEmail email: String) {
-        print("Launching Tone for user \(email)")
-        navigationStackActions.onNext(.set(viewModels: [self.createHomeViewModel()], animated: false))
+    private func loadHome(withUser user: User) {
+        print("Launching Tone for user \(user.email)")
+        navigationStackActions.onNext(.set(viewModels: [self.createHomeViewModel(withUser: user)], animated: false))
     }
     
-    private func createHomeViewModel() -> HomeViewModel {
-        let homeViewModel = HomeViewModel()
+    private func createHomeViewModel(withUser user: User) -> HomeViewModel {
+        let homeViewModel = HomeViewModel(user: user)
         homeViewModel.events
             .subscribe(onNext: { [weak self] event in //Reference createLoginViewModel for how to reference Self
                 switch event {
@@ -48,7 +48,7 @@ class RootNavigationViewModel {
                     self!.navigationStackActions.onNext(.set(viewModels: [self!.createLoginViewModel()], animated: false))
                 case .sampleSkinTone:
                     print("Sample Skin Tone")
-                    self!.navigationStackActions.onNext(.push(viewModel: self!.createSampleSkinToneViewModel(), animated: false))
+                    self!.navigationStackActions.onNext(.push(viewModel: self!.createSampleSkinToneViewModel(withUser: user), animated: false))
                 case .openSample(let sample):
                     print("Open Sample :: \(sample)")
                 case .openSettings:
@@ -59,8 +59,8 @@ class RootNavigationViewModel {
         return homeViewModel
     }
     
-    private func createSampleSkinToneViewModel() -> SampleSkinToneViewModel {
-        let sampleSkinToneViewModel = SampleSkinToneViewModel()
+    private func createSampleSkinToneViewModel(withUser user: User) -> SampleSkinToneViewModel {
+        let sampleSkinToneViewModel = SampleSkinToneViewModel(user: user)
         sampleSkinToneViewModel.events
             .subscribe(onNext: { [weak self] event in //Reference createLoginViewModel for how to reference Self
                 switch event {

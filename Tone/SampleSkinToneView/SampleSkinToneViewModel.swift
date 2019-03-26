@@ -31,6 +31,7 @@ class SampleSkinToneViewModel {
     }
     
     enum SampleStates {
+        case prepping
         case previewUser
         case referenceSample
         case sample
@@ -85,10 +86,9 @@ class SampleSkinToneViewModel {
             }
         }
     }
-    
-    
+    let user: User
+    let sampleState = BehaviorSubject<SampleStates>(value: .prepping)
     let userFaceState = BehaviorSubject<UserFaceStates>(value: .noFaceFound)
-    let sampleState = BehaviorSubject<SampleStates>(value: .previewUser)
     
     let referencePhotos = PublishSubject<AVCapturePhoto>()
     let samplePhotos = PublishSubject<AVCapturePhoto>()
@@ -106,10 +106,16 @@ class SampleSkinToneViewModel {
     
     let disposeBag = DisposeBag()
     
-    init() {
+    init(user: User) {
+        self.user = user
+        print("STARING PREVIEW SETUP")
+        print("Starting Camera Setup")
         cameraState = CameraState(flashStream: flashSettings)
+        print("Ending Camera Setup")
+        print("Starting Video Setup")
         video = Video(cameraState: cameraState)
-        
+        print("Ending Video Setup")
+
         video.faceLandmarks
             .subscribe(onNext: { faceData in
                 if faceData == nil {
@@ -180,6 +186,7 @@ class SampleSkinToneViewModel {
         sampleState
             .observeOn(MainScheduler.instance)
             .filter { if case .referenceSample = $0 { return true } else { return false } }
+            .flatMap { _ in self.cameraState.preparePhotoSettings(numPhotos: self.screenFlashSettings.count + 1) }
             .flatMap { _ in self.captureReferencePhoto() }
             .subscribe { _ in
                 print("Took Reference Sample!")
@@ -190,7 +197,7 @@ class SampleSkinToneViewModel {
         sampleState
             .observeOn(MainScheduler.instance)
             .filter { if case .sample = $0 { return true } else { return false } }
-            .flatMap { _ in self.cameraState.preparePhotoSettings(numPhotos: self.screenFlashSettings.count) }
+            //.flatMap { _ in self.cameraState.preparePhotoSettings(numPhotos: self.screenFlashSettings.count) }
             .flatMap { _ in self.captureSamplePhotos() }
             .subscribe(onNext: { photoData in
                 self.sampleState.onNext(.process(photoData: photoData))
@@ -220,13 +227,15 @@ class SampleSkinToneViewModel {
                         photo.metaData.prettyPrint()
                     }
                     
-                    uploadImageData(imageData: imageData, progressBar: self.uploadProgress)
+                    uploadImageData(imageData: imageData, progressBar: self.uploadProgress, user: self.user)
                         .subscribe(onNext: { _ in
-                            print("Done Upload")
+                            print("Done Uploading to \(user.email)")
                             self.sampleState.onNext(.previewUser)
                         }).disposed(by: self.disposeBag)
                 }
             }).disposed(by: disposeBag)
+        
+        sampleState.onNext(.previewUser)
     }
     
     func cancel() {
@@ -307,6 +316,7 @@ class SampleSkinToneViewModel {
             //.observeOn(SerialDispatchQueueScheduler.init(internalSerialQueueName: "com.tone.imageCaptureQueue"))
             .map { (Camera(cameraState: self.cameraState), $0) }
             .do(onNext: { _ in self.cameraState.unlockCameraSettings() })
+            //.flatMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
             .serialMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
             //.flatMap { capture in getReflectionBrightness(self.cameraState, capture) }
             .flatMap { _ in self.cameraState.lockCameraSettings() }

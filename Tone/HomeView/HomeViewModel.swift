@@ -18,13 +18,18 @@ class HomeViewModel {
     }
     
     let events = PublishSubject<Event>()
+    let user: User
+    
+    init(user: User) {
+        self.user = user
+    }
     
     func logout() {
         events.onNext(.logOut)
     }
     
     func sampleSkinTone() {
-        print("Starting Sample Skin Tone")
+        print("Starting Sample Skin Tone for \(user.email)")
         events.onNext(.sampleSkinTone)
     }
 }

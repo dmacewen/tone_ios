@@ -13,7 +13,7 @@ import RxSwift
 
 class LoginViewModel {
     enum Event {
-        case loggedIn(email: String)
+        case loggedIn(user: User)
     }
     
     let events = PublishSubject<Event>()
@@ -22,7 +22,23 @@ class LoginViewModel {
     let password = Variable<String?>(nil)
     
     func isEmailValid() -> Bool {
-        guard let email = email.value else { return false }
+        guard var email = email.value else { return false }
+        //REMOVE! THIS IS JUST FOR TESTING CONVENIENCE
+        if email == "D" {
+            self.email.value = "Doug"
+            email = "Doug"
+        }
+        
+        if email == "H" {
+            self.email.value = "Halyna"
+            email = "Halyna"
+        }
+        
+        if email == "J" {
+            self.email.value = "Jenny"
+            email = "Jenny"
+        }
+        
         return ["Doug", "Halyna", "Jenny"].contains(email)
         //return !email.isEmpty && email.contains("@")
     }
@@ -30,6 +46,6 @@ class LoginViewModel {
     func login() {
         print("Trying to log in with email \(email)!")
         guard let validatedEmail = email.value else { return }
-        events.onNext(.loggedIn(email: validatedEmail))
+        events.onNext(.loggedIn(user: User(email: validatedEmail)))
     }
 }

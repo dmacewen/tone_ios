@@ -331,6 +331,31 @@
                                             <constraint firstItem="i2f-IK-4q9" firstAttribute="centerY" secondItem="N68-y1-g3p" secondAttribute="centerY" multiplier="2:3" id="rEK-Sz-g6Z"/>
                                         </constraints>
                                     </view>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="WwU-P4-kM2" userLabel="Preparing">
+                                        <rect key="frame" x="62.666666666666657" y="220.00000000000003" width="249.99999999999997" height="101.33333333333334"/>
+                                        <subviews>
+                                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="HxT-G1-vGI" userLabel="Is Preparing">
+                                                <rect key="frame" x="0.0" y="66" width="250" height="20"/>
+                                            </activityIndicatorView>
+                                            <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Preparing" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="DPH-ZT-p52" userLabel="Preparing Title">
+                                                <rect key="frame" x="13.666666666666657" y="17.666666666666657" width="139" height="32"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="139" id="PtG-fR-RbA"/>
+                                                </constraints>
+                                                <nil key="textColor"/>
+                                                <fontDescription key="fontDescription" type="system" weight="ultraLight" pointSize="26"/>
+                                                <textInputTraits key="textInputTraits"/>
+                                            </textField>
+                                        </subviews>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstItem="HxT-G1-vGI" firstAttribute="centerY" secondItem="WwU-P4-kM2" secondAttribute="centerY" multiplier="3:2" id="9zN-At-dGg"/>
+                                            <constraint firstItem="HxT-G1-vGI" firstAttribute="width" secondItem="WwU-P4-kM2" secondAttribute="width" id="AYO-k5-6NH"/>
+                                            <constraint firstItem="DPH-ZT-p52" firstAttribute="centerY" secondItem="WwU-P4-kM2" secondAttribute="centerY" multiplier="2:3" id="Ixo-p5-D8S"/>
+                                            <constraint firstItem="DPH-ZT-p52" firstAttribute="centerX" secondItem="WwU-P4-kM2" secondAttribute="centerX" multiplier="2:3" id="eMC-Lf-eMH"/>
+                                            <constraint firstItem="HxT-G1-vGI" firstAttribute="centerX" secondItem="WwU-P4-kM2" secondAttribute="centerX" id="tGa-QX-cTD"/>
+                                        </constraints>
+                                    </view>
                                     <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Hold Tight..." minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="oSn-Xp-ukO">
                                         <rect key="frame" x="37.666666666666657" y="124.66666666666669" width="300" height="41"/>
                                         <nil key="textColor"/>
@@ -341,14 +366,18 @@
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstItem="dGy-wn-MWS" firstAttribute="centerX" secondItem="eKA-xe-WhX" secondAttribute="centerX" id="2vR-JP-XT6"/>
+                                    <constraint firstItem="WwU-P4-kM2" firstAttribute="height" secondItem="dGy-wn-MWS" secondAttribute="height" id="4Hc-Sw-UAx"/>
+                                    <constraint firstItem="WwU-P4-kM2" firstAttribute="width" secondItem="dGy-wn-MWS" secondAttribute="width" id="6Zk-Pd-F3o"/>
                                     <constraint firstItem="dGy-wn-MWS" firstAttribute="centerY" secondItem="eKA-xe-WhX" secondAttribute="centerY" multiplier="2:3" id="AyK-0q-z01"/>
                                     <constraint firstItem="dGy-wn-MWS" firstAttribute="height" secondItem="eKA-xe-WhX" secondAttribute="height" multiplier="1:8" id="KYr-au-0Rq"/>
                                     <constraint firstItem="oSn-Xp-ukO" firstAttribute="centerY" secondItem="eKA-xe-WhX" secondAttribute="centerY" multiplier="5:14" id="NG0-wF-851"/>
+                                    <constraint firstItem="WwU-P4-kM2" firstAttribute="centerX" secondItem="eKA-xe-WhX" secondAttribute="centerX" id="V1J-YS-few"/>
                                     <constraint firstItem="dGy-wn-MWS" firstAttribute="height" secondItem="N68-y1-g3p" secondAttribute="height" id="ehc-11-Lf7"/>
                                     <constraint firstItem="dGy-wn-MWS" firstAttribute="width" secondItem="eKA-xe-WhX" secondAttribute="width" multiplier="2:3" id="hN7-gY-dcK"/>
                                     <constraint firstItem="N68-y1-g3p" firstAttribute="centerX" secondItem="eKA-xe-WhX" secondAttribute="centerX" id="hj4-JE-nqV"/>
                                     <constraint firstItem="oSn-Xp-ukO" firstAttribute="width" secondItem="eKA-xe-WhX" secondAttribute="width" multiplier="4:5" id="mc7-N4-wcv"/>
                                     <constraint firstItem="N68-y1-g3p" firstAttribute="centerY" secondItem="eKA-xe-WhX" secondAttribute="centerY" multiplier="2:3" id="quY-gf-oBg"/>
+                                    <constraint firstItem="WwU-P4-kM2" firstAttribute="centerY" secondItem="eKA-xe-WhX" secondAttribute="centerY" multiplier="2:3" id="wcu-g0-3DN"/>
                                     <constraint firstItem="dGy-wn-MWS" firstAttribute="width" secondItem="N68-y1-g3p" secondAttribute="width" id="wlX-sn-egh"/>
                                     <constraint firstItem="oSn-Xp-ukO" firstAttribute="centerX" secondItem="eKA-xe-WhX" secondAttribute="centerX" id="xCd-rL-ux5"/>
                                 </constraints>
@@ -377,6 +406,8 @@
                     <connections>
                         <outlet property="FlashLayer" destination="6mp-Zh-erb" id="AgH-78-f59"/>
                         <outlet property="InteractionLayer" destination="aVh-aI-2c1" id="Mu9-9w-1Y5"/>
+                        <outlet property="PreppingLayer" destination="WwU-P4-kM2" id="6PW-pu-FQI"/>
+                        <outlet property="PreppingSpinner" destination="HxT-G1-vGI" id="ovu-7g-Mxo"/>
                         <outlet property="ProgessLayer" destination="N68-y1-g3p" id="7zd-8g-Sc7"/>
                         <outlet property="ProgessSpinner" destination="Jtg-Os-boB" id="Th4-4k-99y"/>
                         <outlet property="UILayer" destination="edy-f2-1BM" id="hva-Og-wu5"/>

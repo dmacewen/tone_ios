@@ -208,6 +208,7 @@ class CameraState {
 }
 
 func getPhotoSettings() -> AVCapturePhotoSettings {
+    print("GETTING NEW PHOTO SETTINGS")
     let photoSettings = AVCapturePhotoSettings.init(format: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
     //photoSettings.processedFileType = AVFileType.tif
     photoSettings.isAutoStillImageStabilizationEnabled = true

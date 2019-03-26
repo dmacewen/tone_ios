@@ -12,6 +12,7 @@
 		86193C8D21891B36001F5C4E /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C8C21891B36001F5C4E /* HomeViewController.swift */; };
 		86193C94218945B8001F5C4E /* SampleSkinToneViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C93218945B8001F5C4E /* SampleSkinToneViewModel.swift */; };
 		86193C96218945C6001F5C4E /* SampleSkinToneViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C95218945C6001F5C4E /* SampleSkinToneViewController.swift */; };
+		8619E15B224AC96600A6A438 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8619E15A224AC96600A6A438 /* User.swift */; };
 		86213F9B2187F56600A622FB /* KeyboardHeightObservable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86213F9A2187F56600A622FB /* KeyboardHeightObservable.swift */; };
 		864A580C2187C8EB006FFC1D /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 864A580B2187C8EB006FFC1D /* Globals.swift */; };
 		8651B60C2187D6FA00FB7A3A /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8651B60B2187D6FA00FB7A3A /* LoginViewModel.swift */; };
@@ -85,6 +86,7 @@
 		86193C8C21891B36001F5C4E /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
 		86193C93218945B8001F5C4E /* SampleSkinToneViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleSkinToneViewModel.swift; sourceTree = "<group>"; };
 		86193C95218945C6001F5C4E /* SampleSkinToneViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleSkinToneViewController.swift; sourceTree = "<group>"; };
+		8619E15A224AC96600A6A438 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		86213F9A2187F56600A622FB /* KeyboardHeightObservable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardHeightObservable.swift; sourceTree = "<group>"; };
 		864A580B2187C8EB006FFC1D /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
 		8651B60B2187D6FA00FB7A3A /* LoginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
@@ -181,6 +183,7 @@
 			children = (
 				86213F9A2187F56600A622FB /* KeyboardHeightObservable.swift */,
 				864A580B2187C8EB006FFC1D /* Globals.swift */,
+				8619E15A224AC96600A6A438 /* User.swift */,
 				86F1BCA9218D219E00A18457 /* serialMap.swift */,
 				86131004218B9E0A00BD1305 /* CameraState.swift */,
 				8685ADA4219CA7B900B66F90 /* Camera.swift */,
@@ -417,6 +420,7 @@
 				8685ADA7219CA7EA00B66F90 /* Video.swift in Sources */,
 				8651B60C2187D6FA00FB7A3A /* LoginViewModel.swift in Sources */,
 				8694A07F2187BF1A00615BE3 /* RootNavigationViewModel.swift in Sources */,
+				8619E15B224AC96600A6A438 /* User.swift in Sources */,
 				8694A0812187BF4300615BE3 /* RootNavigationViewController.swift in Sources */,
 				866C405F21911709007BABDE /* ImageDataUpload.swift in Sources */,
 				86F138AA218768C2004C6092 /* AppDelegate.swift in Sources */,

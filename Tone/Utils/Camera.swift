@@ -31,7 +31,7 @@ class Camera: NSObject {
             .subscribe(onNext: { _ in
                 print("Captuing Photo with Flash Settings :: \(flashSettings.area) \(flashSettings.areas)")
                 print("Getting Photo Settings!")
-                let photoSettings = self.cameraState.capturePhotoOutput.preparedPhotoSettingsArray.count > self.cameraState.photoSettingsIndex
+                let photoSettings = self.cameraState.capturePhotoOutput.preparedPhotoSettingsArray.count >= self.cameraState.photoSettingsIndex
                     ? self.cameraState.capturePhotoOutput.preparedPhotoSettingsArray[self.cameraState.photoSettingsIndex]
                     : getPhotoSettings()
                 
