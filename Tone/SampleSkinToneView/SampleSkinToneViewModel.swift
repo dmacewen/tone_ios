@@ -34,7 +34,7 @@ class SampleSkinToneViewModel {
         case previewUser
         case referenceSample
         case sample
-        case process(photoData: [(VNFaceLandmarks2D, AVCapturePhoto, FlashSettings)?])
+        case process(photoData: [(AVCapturePhoto, FlashSettings)?])
         case upload(images: [ImageData])
     }
     
@@ -233,20 +233,20 @@ class SampleSkinToneViewModel {
         events.onNext(.cancel)
     }
     
-    private func captureSamplePhotos() -> Observable<[(VNFaceLandmarks2D, AVCapturePhoto, FlashSettings)?]> {
+    private func captureSamplePhotos() -> Observable<[(AVCapturePhoto, FlashSettings)]> {
         return Observable.from(screenFlashSettings)
             .observeOn(MainScheduler.instance)
             //.observeOn(SerialDispatchQueueScheduler.init(internalSerialQueueName: "com.tone.imageCaptureQueue"))
             .map { (Camera(cameraState: self.cameraState), $0) }
             .serialMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
-            .flatMap { capture in self.getFaceLandmarks(capture: capture) }
             .toArray()
     }
     
     
-    private func processSamplePhotos(_ photoData: [(VNFaceLandmarks2D, AVCapturePhoto, FlashSettings)?]) -> Observable<[ImageData]> {
+    private func processSamplePhotos(_ photoData: [(AVCapturePhoto, FlashSettings)?]) -> Observable<[ImageData]> {
         let context = CIContext()
-        let allFaceLandmarks = photoData.map { $0!.0 }
+        /*
+         let allFaceLandmarks = photoData.map { $0!.0 }
         
         let bufferWidth = CVPixelBufferGetWidth(photoData[0]!.1.pixelBuffer!)
         let bufferHeight = CVPixelBufferGetHeight(photoData[0]!.1.pixelBuffer!)
@@ -254,37 +254,53 @@ class SampleSkinToneViewModel {
         
         var crops = calculateFaceCrop(faceLandmarks: allFaceLandmarks, imgSize: bufferSize)
         crops.reverse()
-                          
+        */
         return Observable.from(photoData)
             .observeOn(MainScheduler.instance) //Observe on background thread to free up the main thread?
             //.observeOn(SerialDispatchQueueScheduler.init(internalSerialQueueName: "com.tone.imageCaptureQueue"))
-            .map { photoDatum -> ImageData in
-                guard let (_, capturePhoto, _) = photoDatum else {
-                    fatalError("Did not recieve face data")
+            .flatMap { capture in self.getFaceLandmarks(capture: capture!) }
+            .toArray()
+            .map { photoData -> [ImageData] in
+                let allFaceLandmarks = photoData.map { $0!.0 }
+                
+                let bufferWidth = CVPixelBufferGetWidth(photoData[0]!.1.pixelBuffer!)
+                let bufferHeight = CVPixelBufferGetHeight(photoData[0]!.1.pixelBuffer!)
+                let bufferSize = CGSize.init(width: bufferHeight, height: bufferWidth)
+                
+                var crops = calculateFaceCrop(faceLandmarks: allFaceLandmarks, imgSize: bufferSize)
+                crops.reverse()
+                
+                return photoData.map { photoDatum -> ImageData in
+                    guard let (_, capturePhoto, _) = photoDatum else {
+                        fatalError("Did not recieve face data")
+                    }
+                    
+                    var crop = crops.popLast()!.toInt()
+                    let newX = crop.minY
+                    let newY = crop.minX
+                    let newWidth = crop.height
+                    let newHeight = crop.width
+                    crop = CGRect(x: newX, y: newY, width: newWidth, height: newHeight)
+                     
+                    print("Crop To :: \(crop)")
+                
+                    var imageTransforms = ImageTransforms()
+                    
+                    var cgImage = capturePhoto.cgImageRepresentation()!.takeUnretainedValue()
+                    
+                    cgImage = cgImage.cropping(to: crop)!
+                    imageTransforms.isCropped = true
+                    
+                    let ciImage = CIImage(cgImage: cgImage)
+                    //let linearCIImage = convertImageToLinear(ciImage, &imageTransforms)
+                    //let rotatedCIImage = rotateImage(linearCIImage, &imageTransforms)
+                    //let croppedCIImage = cropImage(ciImage, dimensions: crop, &imageTransforms)
+                    let rotatedCIImage = rotateImage(ciImage, &imageTransforms)
+                    let pngData = context.pngRepresentation(of: rotatedCIImage, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])
+                    let metaData = getImageMetadata(cameraState: self.cameraState, photoData: photoDatum, imageTransforms: imageTransforms)
+                    return ImageData(imageData: pngData!, metaData: metaData)
                 }
-                var crop = crops.popLast()!.toInt()
-                let newX = crop.minX
-                let newY = crop.minY
-                let newWidth = crop.height
-                let newHeight = crop.width
-                crop = CGRect(x: newX, y: newY, width: newWidth, height: newHeight)
- 
-                print("Crop To :: \(crop)")
-                
-                var imageTransforms = ImageTransforms()
-                var cgImage = capturePhoto.cgImageRepresentation()!.takeUnretainedValue()
-                cgImage = cgImage.cropping(to: crop)!
-                imageTransforms.isCropped = true
-                
-                let ciImage = CIImage(cgImage: cgImage)
-                //let linearCIImage = convertImageToLinear(ciImage, &imageTransforms)
-                //let rotatedCIImage = rotateImage(linearCIImage, &imageTransforms)
-                //let croppedCIImage = cropImage(ciImage, dimensions: crop, &imageTransforms)
-                let rotatedCIImage = rotateImage(ciImage, &imageTransforms)
-                let pngData = context.pngRepresentation(of: rotatedCIImage, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])
-                let metaData = getImageMetadata(cameraState: self.cameraState, photoData: photoDatum, imageTransforms: imageTransforms)
-                return ImageData(imageData: pngData!, metaData: metaData)
-            }.toArray()
+            }
     }
     
     //Eventually scale exposure to that it doesnt clip in reflection
