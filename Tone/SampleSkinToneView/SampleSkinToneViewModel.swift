@@ -316,8 +316,9 @@ class SampleSkinToneViewModel {
             //.observeOn(SerialDispatchQueueScheduler.init(internalSerialQueueName: "com.tone.imageCaptureQueue"))
             .map { (Camera(cameraState: self.cameraState), $0) }
             .do(onNext: { _ in self.cameraState.unlockCameraSettings() })
-            //.flatMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
-            .serialMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
+            .flatMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
+            .do { print("MOVING ON!")}
+            //.serialMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
             //.flatMap { capture in getReflectionBrightness(self.cameraState, capture) }
             .flatMap { _ in self.cameraState.lockCameraSettings() }
             .map { _ in true }

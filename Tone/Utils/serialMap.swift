@@ -130,5 +130,39 @@ extension ObservableType {
             return subscription
         }
     }
+ 
+    func serialMap3<R>(_ transform: @escaping (E) -> Observable<R>) -> Observable<R> {
+        print("Setting Up SerialMap3!")
+        var taskQueue: [E] = []
+        
+        return Observable.create { observer in
+            let subscription = self.subscribe { e in
+                switch e {
+                case .next(let value):
+                    taskQueue.append(value)
+                    
+                    if taskQueue.isEmpty() {
+                        
+                    }
+                    addTask(task: value)
+                        .observeOn(MainScheduler.instance)
+                        .subscribeOn(MainScheduler.instance)
+                        .subscribe(onNext: { result in
+                            observer.on(.next(result[0]))
+                            
+                            if taskQueue.isEmpty {
+                                completedCallback.onCompleted()
+                            }
+                        }).disposed(by: disposeBag)
+                case .error(let error):
+                    observer.on(.error(error))
+                case .completed:
+                    completedCallback.subscribe(onCompleted: { observer.on(.completed) }).disposed(by: disposeBag)
+                }
+            }
+            
+            return subscription
+        }
+    }
  */
 }

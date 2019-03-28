@@ -40,6 +40,8 @@ class Camera: NSObject {
                 self.cameraState.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
             }).disposed(by: disposeBag)
         
+        //return capture.take(1)
+        //return capture//.take(1)
         return capture
     }
 }
