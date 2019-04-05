@@ -20,6 +20,10 @@ extension CGPoint {
     static func + (left: CGPoint, right: CGPoint) -> CGPoint {
         return CGPoint(x: left.x + right.x, y: left.y + right.y)
     }
+    
+    func getOffset (_ right: CGPoint) -> CGVector {
+        return CGVector(dx: right.x - self.x, dy: right.y - self.y)
+    }
 }
 
 extension CGRect {
@@ -53,22 +57,26 @@ extension CGRect {
         return CGRect(x: minX, y: minY, width: width, height: height)
     }
     
-    func addPoint(point: CGPoint, imgSize: CGSize) -> CGRect {
-        precondition(self.maxX + point.x < imgSize.width)
-        precondition(self.maxY + point.y < imgSize.height)
+    func addOffsetVector(vector: CGVector, imgSize: CGSize) -> CGRect {
+        let x = self.minX + vector.dx
+        let y = self.minY + vector.dy
         
-        let x = self.minX + point.x
-        let y = self.minY + point.y
+        precondition(x >= 0)
+        precondition(y >= 0)
+        precondition(x < imgSize.width)
+        precondition(y < imgSize.height)
         
         return CGRect(x: x, y: y, width: self.width, height: self.height)
     }
     
-    func subPoint(point: CGPoint) -> CGRect {
-        precondition(self.minX >= point.x)
-        precondition(self.minY >= point.y)
-
-        let x = self.minX - point.x
-        let y = self.minY - point.y
+    func subOffsetVector(vector: CGVector, imgSize: CGSize) -> CGRect {
+        let x = self.minX - vector.dx
+        let y = self.minY - vector.dy
+        
+        precondition(x >= 0)
+        precondition(y >= 0)
+        precondition(x < imgSize.width)
+        precondition(y < imgSize.height)
         
         return CGRect(x: x, y: y, width: self.width, height: self.height)
     }
@@ -416,15 +424,41 @@ func calculateFaceCrop(faceLandmarks: [VNFaceLandmarks2D], imgSize: CGSize) -> [
     let orientedFaceLandmarkPoints = faceLandmarkPoints.map { convertPortraitPointToLandscapePoint(points: $0, imgSize: imgSize)}
     let newImgSize = CGSize(width: imgSize.height, height: imgSize.width)
     
+    //Find the offsets from each images right eye to the target right eye
     let targetPoint = getRightEyePoint(landmarks: orientedFaceLandmarkPoints[0])
-    let offsets = orientedFaceLandmarkPoints.map { getRightEyePoint(landmarks: $0) - targetPoint }
+    let offsets = orientedFaceLandmarkPoints.map { getRightEyePoint(landmarks: $0).getOffset(targetPoint) }
+    
+    //Get All of the Faces Bounding Boxes
     let BBs = orientedFaceLandmarkPoints.map { CGRect.fromPoints(points: $0, imgSize: newImgSize) }
-    let alignedBBs = zip(BBs, offsets).map { $0.0.subPoint(point: $0.1) }
+    
+    //"Align" All of the bounding boxes to the target image by adding the offset vector
+    let alignedBBs = zip(BBs, offsets).map { BB, offset in BB.addOffsetVector(vector: offset, imgSize: newImgSize) }
+    
+    //Create new bounding box that bounds all the aligned images
     let BB = CGRect.fromBoundingBoxes(rectangles: alignedBBs, imgSize: newImgSize)
-    let crops = offsets.map { BB.addPoint(point: $0, imgSize: newImgSize) }
+    
+    //Create the invdividual crops by subtracting the offset vector from the Set BB
+    let crops = offsets.map { offset in BB.subOffsetVector(vector: offset, imgSize: newImgSize) }
     
     return crops
 }
+/*
+func calculateEyeCrops(faceLandmarks: [VNFaceLandmarks2D], imgSize: CGSize) -> [CGRect] {
+     let faceLandmarkPoints = faceLandmarks.map { $0.allPoints!.pointsInImage(imageSize: imgSize) }
+ 
+     let orientedFaceLandmarkPoints = faceLandmarkPoints.map { convertPortraitPointToLandscapePoint(points: $0, imgSize: imgSize)}
+     let newImgSize = CGSize(width: imgSize.height, height: imgSize.width)
+ 
+     let targetPoint = getRightEyePoint(landmarks: orientedFaceLandmarkPoints[0])
+     let offsets = orientedFaceLandmarkPoints.map { getRightEyePoint(landmarks: $0).getOffset(targetPoint) }
+     let BBs = orientedFaceLandmarkPoints.map { CGRect.fromPoints(points: $0, imgSize: newImgSize) }
+     let alignedBBs = zip(BBs, offsets).map { $0.0.addOffsetVector(vector: $0.1, imgSize: newImgSize) }
+     let BB = CGRect.fromBoundingBoxes(rectangles: alignedBBs, imgSize: newImgSize)
+     let crops = offsets.map { BB.addOffsetVector(vector: $0, imgSize: newImgSize) }
+ 
+     return crops
+}
+*/
 
 //Needs a context to have been created
 func cropImage(_ input: CIImage, dimensions: CGRect, _ imageTransforms: inout ImageTransforms) -> CIImage {

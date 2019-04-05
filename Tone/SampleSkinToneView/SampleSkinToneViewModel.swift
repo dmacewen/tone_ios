@@ -277,6 +277,9 @@ class SampleSkinToneViewModel {
                 
                 var crops = calculateFaceCrop(faceLandmarks: allFaceLandmarks, imgSize: bufferSize)
                 crops.reverse()
+                let largestXCoord = crops.max(by: { A, B in A.minX > B.minX })
+                //var eyeCrops = calculateEyeCrops(faceLandmakrs: allFaceLandmarks, imgSize: bufferSize)
+
                 
                 return photoData.map { photoDatum -> ImageData in
                     guard let (faceLandmarks, capturePhoto, flashSettings) = photoDatum else {
@@ -286,13 +289,17 @@ class SampleSkinToneViewModel {
                     var crop = crops.popLast()!.toInt()
                     let newX = CGFloat(0)//crop.minX
                     let newY = crop.minY
-                    let newWidth = CGFloat(bufferWidth)//crop.width
+
+                    var newWidth = CGFloat(largestXCoord!.minX + (1.1 * crop.width)) //New width with a little buffer
+                    if newWidth > CGFloat(bufferWidth) { newWidth = CGFloat(bufferWidth) }
+                    
                     let newHeight = crop.height
                     crop = CGRect(x: newX, y: newY, width: newWidth, height: newHeight)
                     
                     var faceLandmarkPoints = faceLandmarks.allPoints!.pointsInImage(imageSize: bufferSize)
+                    let landmarkYDiff = CGFloat(bufferWidth) - newWidth
                     faceLandmarkPoints = faceLandmarkPoints.map { point in
-                        return CGPoint(x: point.x - newY, y: point.y) //Rotated... Clean up...
+                        return CGPoint(x: point.x - newY, y: point.y - landmarkYDiff) //Rotated... Clean up...
                     }
                     
                     var imageTransforms = ImageTransforms()
