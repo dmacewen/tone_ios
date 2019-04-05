@@ -23,9 +23,8 @@ class Camera: NSObject {
     func capturePhoto(_ flashSettings: FlashSettings) -> PublishSubject<(AVCapturePhoto, FlashSettings)> {
         print("Beginning to capture photo!")
         self.cameraState.flashStream.onNext(flashSettings)
-        
         Observable.combineLatest(cameraState.isAdjustingExposure, cameraState.isAdjustingWB) { $0 || $1 }
-            .observeOn(MainScheduler.instance)
+            //.observeOn(MainScheduler.instance)
             .filter { !$0 }
             .take(1)
             .subscribe(onNext: { _ in
@@ -48,6 +47,7 @@ class Camera: NSObject {
 
 extension Camera: AVCapturePhotoCaptureDelegate {
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+        NSLog("Done Capture and Processing!")
         guard error == nil else {
             fatalError("Error in capture!")
         }

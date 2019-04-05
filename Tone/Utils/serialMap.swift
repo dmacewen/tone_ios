@@ -39,6 +39,7 @@ extension ObservableType {
             .observeOn(MainScheduler.instance)
             .subscribeOn(MainScheduler.instance)
             .subscribe(onNext: { arg in
+                //NSLog("Start")
                 transform(arg)
                     .observeOn(MainScheduler.instance)
                     .subscribeOn(MainScheduler.instance)
@@ -47,6 +48,7 @@ extension ObservableType {
                         onNext: { value in
                             callbackQueue[0].onNext(value)
                         }, onCompleted: {
+                            //NSLog("End")
                             taskQueue.removeFirst()
                             let callback = callbackQueue.removeFirst()
                             if !taskQueue.isEmpty {
@@ -61,6 +63,7 @@ extension ObservableType {
             .observeOn(MainScheduler.instance)
             .subscribeOn(MainScheduler.instance)
             .subscribe(onNext: { arg in
+                //NSLog("Start")
                 transform(arg)
                     .observeOn(MainScheduler.instance)
                     .subscribeOn(MainScheduler.instance)
@@ -68,6 +71,7 @@ extension ObservableType {
                     .subscribe( onNext: { value in
                         callbackQueue[0].onNext(value)
                     }, onCompleted: {
+                        //NSLog("End")
                         taskQueue.removeFirst()
                         let callback = callbackQueue.removeFirst()
                         if !taskQueue.isEmpty {

@@ -131,6 +131,7 @@ class CameraState {
     
     //Minimizes ISO by Maximizing Exposure Duration while targeting the Metered Exposure
     private func calculateTargetExposure() -> (CMTime, Float) {
+        //return (self.captureDevice.exposureDuration, self.captureDevice.iso)
         var maxExposureDuration = self.captureDevice.activeFormat.maxExposureDuration
         let minISO = self.captureDevice.activeFormat.minISO
         
@@ -153,7 +154,7 @@ class CameraState {
         
         return (targetExposureDuration, targetISO)
     }
-
+    
     func lockCameraSettings() -> Observable<Bool> {
         captureDevice.exposureMode = AVCaptureDevice.ExposureMode.locked
         print("LOCKING CAMERA SETTINGS")

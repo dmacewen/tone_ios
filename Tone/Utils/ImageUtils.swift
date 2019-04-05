@@ -272,7 +272,7 @@ func isLightingEqual(points: (CGPoint, CGPoint), imageByteBuffer: ImageByteBuffe
     
     if A > 20 && B > 20 {
         let ratio = abs(A - B) / A
-        print("RATIO :: \(ratio)")
+        //print("RATIO :: \(ratio)")
         if ratio > 0.7 {
         //if ratio > 0.9 {
             return false
