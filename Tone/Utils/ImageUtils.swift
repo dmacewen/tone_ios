@@ -29,8 +29,16 @@ extension CGPoint {
         return CGPoint(x: left.x + right.dx, y: left.y + right.dy)
     }
     
+    static func * (left: CGPoint, right: CGFloat) -> CGPoint {
+        return CGPoint(x: left.x * right, y: left.y * right)
+    }
+    
     func getOffset (_ right: CGPoint) -> CGVector {
         return CGVector(dx: right.x - self.x, dy: right.y - self.y)
+    }
+    
+    func toInt() -> CGPoint {
+        return CGPoint.init(x: Int(self.x), y: Int(self.y))
     }
 }
 

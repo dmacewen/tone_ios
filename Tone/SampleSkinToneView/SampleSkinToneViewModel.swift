@@ -325,6 +325,8 @@ class SampleSkinToneViewModel {
 
                     let longSide = [faceBB.width, faceBB.height].max()!
                     let scaleRatio = 1080 / longSide
+                    
+                    let faceLandmarkPointsScaled = faceLandmarkPoints.map { ($0 * scaleRatio).toInt() }
 
                     let scaledWidth = floor(faceBB.width * scaleRatio)
                     let scaledHeight =  floor(faceBB.height * scaleRatio)
@@ -342,7 +344,9 @@ class SampleSkinToneViewModel {
                     let pngDataRightEye = context.pngRepresentation(of: rotatedCIImageRightEye, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])!
 
                     
-                    let metaData = MetaData.getFrom(cameraState: self.cameraState, captureMetadata: capturePhoto.metadata, faceLandmarks: faceLandmarkPoints, leftEyeBB: leftEyeBBAdjusted, rightEyeBB: rightEyeBBAdjusted, flashSetting: flashSettings, imageTransforms: imageTransforms)
+                    let metaData = MetaData.getFrom(cameraState: self.cameraState, captureMetadata: capturePhoto.metadata, faceLandmarks: faceLandmarkPointsScaled
+                        
+                        , leftEyeBB: leftEyeBBAdjusted, rightEyeBB: rightEyeBBAdjusted, flashSetting: flashSettings, imageTransforms: imageTransforms)
                     
                     return ImageData(faceData: pngDataFace, leftEyeData: pngDataLeftEye, rightEyeData: pngDataRightEye, metaData: metaData)
                 }
