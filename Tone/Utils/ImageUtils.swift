@@ -73,6 +73,10 @@ extension CGRect {
         return CGRect(x: minX, y: minY, width: width, height: height)
     }
     
+    static func * (left: CGRect, right: CGFloat) -> CGRect {
+        return CGRect(x: left.minX * right, y: left.minY * right, width: left.width * right, height: left.height * right)
+    }
+    
     func addOffsetVector(vector: CGVector, imgSize: CGSize) -> CGRect {
         let x = self.minX + vector.dx
         let y = self.minY + vector.dy

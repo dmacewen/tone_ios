@@ -327,7 +327,10 @@ class SampleSkinToneViewModel {
                     let scaleRatio = 1080 / longSide
                     
                     let faceLandmarkPointsScaled = faceLandmarkPoints.map { ($0 * scaleRatio).toInt() }
+                    let leftEyeBBAdjustedScaled = (leftEyeBBAdjusted * scaleRatio)
+                    let rightEyeBBAdjustedScaled = (rightEyeBBAdjusted * scaleRatio)
 
+                    
                     let scaledWidth = floor(faceBB.width * scaleRatio)
                     let scaledHeight =  floor(faceBB.height * scaleRatio)
                     let scaledRect = CGRect.init(x: 0, y: 0, width: scaledWidth, height: scaledHeight) //Eventually use for crop?
@@ -346,7 +349,7 @@ class SampleSkinToneViewModel {
                     
                     let metaData = MetaData.getFrom(cameraState: self.cameraState, captureMetadata: capturePhoto.metadata, faceLandmarks: faceLandmarkPointsScaled
                         
-                        , leftEyeBB: leftEyeBBAdjusted, rightEyeBB: rightEyeBBAdjusted, flashSetting: flashSettings, imageTransforms: imageTransforms)
+                        , leftEyeBB: leftEyeBBAdjustedScaled, rightEyeBB: rightEyeBBAdjustedScaled, flashSetting: flashSettings, imageTransforms: imageTransforms)
                     
                     return ImageData(faceData: pngDataFace, leftEyeData: pngDataLeftEye, rightEyeData: pngDataRightEye, metaData: metaData)
                 }
