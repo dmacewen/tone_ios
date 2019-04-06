@@ -278,7 +278,9 @@ class SampleSkinToneViewModel {
                 var crops = calculateFaceCrop(faceLandmarks: allFaceLandmarks, imgSize: bufferSize)
                 crops.reverse()
                 let largestXCoord = crops.max(by: { A, B in A.minX > B.minX })
-                //var eyeCrops = calculateEyeCrops(faceLandmakrs: allFaceLandmarks, imgSize: bufferSize)
+                
+                var eyeCrops = calculateEyeCrops(faceLandmarks: allFaceLandmarks, imgSize: bufferSize)
+                eyeCrops.reverse()
 
                 
                 return photoData.map { photoDatum -> ImageData in
@@ -286,38 +288,63 @@ class SampleSkinToneViewModel {
                         fatalError("Did not recieve face data")
                     }
                     
-                    var crop = crops.popLast()!.toInt()
+                    var faceBB = crops.popLast()!.toInt()
+                    let (leftEyeBB, rightEyeBB) = eyeCrops.popLast()!
+                    
                     let newX = CGFloat(0)//crop.minX
-                    let newY = crop.minY
+                    let newY = faceBB.minY
 
-                    var newWidth = CGFloat(largestXCoord!.minX + (1.1 * crop.width)) //New width with a little buffer
+                    var newWidth = CGFloat(largestXCoord!.minX + (1.1 * faceBB.width)) //New width with a little buffer
                     if newWidth > CGFloat(bufferWidth) { newWidth = CGFloat(bufferWidth) }
                     
-                    let newHeight = crop.height
-                    crop = CGRect(x: newX, y: newY, width: newWidth, height: newHeight)
+                    let newHeight = faceBB.height
+                    faceBB = CGRect(x: newX, y: newY, width: newWidth, height: newHeight)
+                    
+                    let cropOffset = CGVector.init(dx: newY, dy: CGFloat(bufferWidth) - newWidth)
+                    //let eyeCropOffset = CGVector.init(dx: newX, dy: newY)
                     
                     var faceLandmarkPoints = faceLandmarks.allPoints!.pointsInImage(imageSize: bufferSize)
-                    let landmarkYDiff = CGFloat(bufferWidth) - newWidth
-                    faceLandmarkPoints = faceLandmarkPoints.map { point in
-                        return CGPoint(x: point.x - newY, y: point.y - landmarkYDiff) //Rotated... Clean up...
-                    }
+                    faceLandmarkPoints = faceLandmarkPoints.map { point in point - cropOffset }
+                    
+                    let leftEyeBBAdjusted = leftEyeBB.subOffsetVector(vector: cropOffset, imgSize: bufferSize).toInt()
+                    let rightEyeBBAdjusted = rightEyeBB.subOffsetVector(vector: cropOffset, imgSize: bufferSize).toInt()
                     
                     var imageTransforms = ImageTransforms()
                     
-                    var cgImage = capturePhoto.cgImageRepresentation()!.takeUnretainedValue()
+                    let cgImage = capturePhoto.cgImageRepresentation()!.takeUnretainedValue()
                     
-                    cgImage = cgImage.cropping(to: crop)!
+                    let cgImageFace = cgImage.cropping(to: faceBB)!
+                    let cgImageLeftEye = cgImage.cropping(to: leftEyeBB)!
+                    let cgImageRightEye = cgImage.cropping(to: rightEyeBB)!
+
                     imageTransforms.isCropped = true
                     
-                    let ciImage = CIImage(cgImage: cgImage)
-                    //let linearCIImage = convertImageToLinear(ciImage, &imageTransforms)
-                    //let rotatedCIImage = rotateImage(linearCIImage, &imageTransforms)
-                    //let croppedCIImage = cropImage(ciImage, dimensions: crop, &imageTransforms)
-                    let rotatedCIImage = rotateImage(ciImage, &imageTransforms)
-                    let pngData = context.pngRepresentation(of: rotatedCIImage, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])
-                    let metaData = MetaData.getFrom(cameraState: self.cameraState, captureMetadata: capturePhoto.metadata, faceLandmarks: faceLandmarkPoints, flashSetting: flashSettings, imageTransforms: imageTransforms)
+                    let ciImageFace = CIImage(cgImage: cgImageFace)
+                    let ciImageLeftEye = CIImage(cgImage: cgImageLeftEye)
+                    let ciImageRightEye = CIImage(cgImage: cgImageRightEye)
+
+                    let longSide = [faceBB.width, faceBB.height].max()!
+                    let scaleRatio = 1080 / longSide
+
+                    let scaledWidth = floor(faceBB.width * scaleRatio)
+                    let scaledHeight =  floor(faceBB.height * scaleRatio)
+                    let scaledRect = CGRect.init(x: 0, y: 0, width: scaledWidth, height: scaledHeight) //Eventually use for crop?
+ 
+                    let scaledCIImageFace = scaleImage(ciImageFace, scale: scaleRatio, &imageTransforms).cropped(to: scaledRect)
+                    let rotatedScaledCIImageFace = rotateImage(scaledCIImageFace, &imageTransforms)
+                    let rotatedCIImageLeftEye = rotateImage(ciImageLeftEye, &imageTransforms)
+                    let rotatedCIImageRightEye = rotateImage(ciImageRightEye, &imageTransforms)
+
+                    let pngDataFace = context.pngRepresentation(of: rotatedScaledCIImageFace, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])!
                     
-                    return ImageData(imageData: pngData!, metaData: metaData)
+                    let pngDataLeftEye = context.pngRepresentation(of: rotatedCIImageLeftEye, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])!
+                    
+                    let pngDataRightEye = context.pngRepresentation(of: rotatedCIImageRightEye, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])!
+
+                    
+                    let metaData = MetaData.getFrom(cameraState: self.cameraState, captureMetadata: capturePhoto.metadata, faceLandmarks: faceLandmarkPoints, leftEyeBB: leftEyeBBAdjusted, rightEyeBB: rightEyeBBAdjusted, flashSetting: flashSettings, imageTransforms: imageTransforms)
+                    
+                    return ImageData(faceData: pngDataFace, leftEyeData: pngDataLeftEye, rightEyeData: pngDataRightEye, metaData: metaData)
                 }
             }
     }

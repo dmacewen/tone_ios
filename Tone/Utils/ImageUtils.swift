@@ -21,13 +21,21 @@ extension CGPoint {
         return CGPoint(x: left.x + right.x, y: left.y + right.y)
     }
     
+    static func - (left: CGPoint, right: CGVector) -> CGPoint {
+        return CGPoint(x: left.x - right.dx, y: left.y - right.dy)
+    }
+    
+    static func + (left: CGPoint, right: CGVector) -> CGPoint {
+        return CGPoint(x: left.x + right.dx, y: left.y + right.dy)
+    }
+    
     func getOffset (_ right: CGPoint) -> CGVector {
         return CGVector(dx: right.x - self.x, dy: right.y - self.y)
     }
 }
 
 extension CGRect {
-    static func fromPoints(points: [CGPoint], imgSize: CGSize) -> CGRect {
+    static func fromPoints<T:MutableCollection>(points: T, imgSize: CGSize) -> CGRect where T.Iterator.Element == CGPoint {
         let minX = points.map { $0.x }.min()!
         let maxX = points.map { $0.x }.max()!
         let width = maxX - minX
@@ -42,7 +50,7 @@ extension CGRect {
         return CGRect(x: minX, y: minY, width: width, height: height)
     }
     
-    static func fromBoundingBoxes(rectangles: [CGRect], imgSize: CGSize) -> CGRect {
+    static func fromBoundingBoxes<T:MutableCollection>(rectangles: T, imgSize: CGSize) -> CGRect where T.Iterator.Element == CGRect{
         let minX = rectangles.map { $0.minX }.min()!
         let maxX = rectangles.map { $0.maxX }.max()!
         let width = maxX - minX
@@ -95,9 +103,10 @@ struct ImageTransforms : Codable {
     var isGammaSBGR = false
     var isRotated = false
     var isCropped = false
+    var isScaled = false
     
     func getStringRepresentation() -> String{
-        return "(isGammaSBGR :: \(self.isGammaSBGR) | isRotated :: \(self.isRotated)) | isCropped :: \(self.isCropped))"
+        return "(isGammaSBGR :: \(self.isGammaSBGR) | isRotated :: \(self.isRotated)) | isCropped :: \(self.isCropped) | isScaled :: \(self.isScaled)"
     }
 }
 
@@ -106,11 +115,14 @@ struct MetaData : Codable {
     let exposureTime: Float64
     let whiteBalance: WhiteBalance
     let faceLandmarks: [CGPoint]
+    let leftEyeBB: CGRect
+    let rightEyeBB: CGRect
     let faceLandmarksSource = "apple"
     let flashSettings: FlashSettings
     let imageTransforms: ImageTransforms
     
-    static func getFrom(cameraState: CameraState, captureMetadata: [String: Any], faceLandmarks: [CGPoint], flashSetting: FlashSettings, imageTransforms: ImageTransforms) -> MetaData {
+    
+    static func getFrom(cameraState: CameraState, captureMetadata: [String: Any], faceLandmarks: [CGPoint], leftEyeBB: CGRect, rightEyeBB: CGRect, flashSetting: FlashSettings, imageTransforms: ImageTransforms) -> MetaData {
         let meta = captureMetadata
         let exif = meta["{Exif}"] as! [String: Any]
         //print("Exif :: \(exif)")
@@ -122,7 +134,7 @@ struct MetaData : Codable {
         
         let faceLandmarksInt = faceLandmarks.map { CGPoint(x: Int($0.x), y: Int($0.y)) }
         
-        return MetaData(iso: iso, exposureTime: exposureTime, whiteBalance: whiteBalance, faceLandmarks: faceLandmarksInt, flashSettings: flashSetting, imageTransforms: imageTransforms)
+        return MetaData(iso: iso, exposureTime: exposureTime, whiteBalance: whiteBalance, faceLandmarks: faceLandmarksInt, leftEyeBB: leftEyeBB, rightEyeBB: rightEyeBB, flashSettings: flashSetting, imageTransforms: imageTransforms)
     }
     
     func prettyPrint() {
@@ -131,7 +143,9 @@ struct MetaData : Codable {
 }
 
 struct ImageData {
-    let imageData: Data
+    let faceData: Data
+    let leftEyeData: Data
+    let rightEyeData: Data
     let metaData: MetaData
 }
 
@@ -223,7 +237,43 @@ struct ImageByteBuffer {
 }
 
 func getRightEyePoint(landmarks: [CGPoint]) -> CGPoint {
-    return landmarks[64]
+    return landmarks[16]
+}
+
+func bufferBoundingBox(_ bb: CGRect, imgSize: CGSize, margin: CGFloat = 0.25) -> CGRect {
+    let sizeMultiplier = 1 + (2 * margin)
+    
+    var newX = bb.minX - (margin * bb.width)
+    if newX < 0 {
+        newX = 0
+    }
+    
+    var newY = bb.minY - (margin * bb.height)
+    if newY < 0 {
+        newY = 0
+    }
+    
+    var newWidth = bb.width * sizeMultiplier
+    if newWidth > imgSize.width {
+        newWidth = imgSize.width
+    }
+    
+    var newHeight = bb.height * sizeMultiplier
+    if newHeight > imgSize.height {
+        newHeight = imgSize.height
+    }
+    
+    return CGRect.init(x: newX, y: newY, width: newWidth, height: newHeight)
+}
+
+func getRightEyeBB(landmarks: [CGPoint], imgSize: CGSize) -> CGRect {
+    let eyePoints = landmarks[16...23]
+    return bufferBoundingBox(CGRect.fromPoints(points: eyePoints, imgSize: imgSize), imgSize: imgSize)
+}
+
+func getLeftEyeBB(landmarks: [CGPoint], imgSize: CGSize) -> CGRect {
+    let eyePoints = landmarks[8...15]
+    return bufferBoundingBox(CGRect.fromPoints(points: eyePoints, imgSize: imgSize), imgSize: imgSize)
 }
 
 func getRightCheekPoint(landmarks: [CGPoint]) -> CGPoint {
@@ -442,23 +492,51 @@ func calculateFaceCrop(faceLandmarks: [VNFaceLandmarks2D], imgSize: CGSize) -> [
     
     return crops
 }
-/*
-func calculateEyeCrops(faceLandmarks: [VNFaceLandmarks2D], imgSize: CGSize) -> [CGRect] {
-     let faceLandmarkPoints = faceLandmarks.map { $0.allPoints!.pointsInImage(imageSize: imgSize) }
- 
-     let orientedFaceLandmarkPoints = faceLandmarkPoints.map { convertPortraitPointToLandscapePoint(points: $0, imgSize: imgSize)}
-     let newImgSize = CGSize(width: imgSize.height, height: imgSize.width)
- 
-     let targetPoint = getRightEyePoint(landmarks: orientedFaceLandmarkPoints[0])
-     let offsets = orientedFaceLandmarkPoints.map { getRightEyePoint(landmarks: $0).getOffset(targetPoint) }
-     let BBs = orientedFaceLandmarkPoints.map { CGRect.fromPoints(points: $0, imgSize: newImgSize) }
-     let alignedBBs = zip(BBs, offsets).map { $0.0.addOffsetVector(vector: $0.1, imgSize: newImgSize) }
-     let BB = CGRect.fromBoundingBoxes(rectangles: alignedBBs, imgSize: newImgSize)
-     let crops = offsets.map { BB.addOffsetVector(vector: $0, imgSize: newImgSize) }
- 
-     return crops
+
+func calculateEyeCrops(faceLandmarks: [VNFaceLandmarks2D], imgSize: CGSize) -> [(CGRect, CGRect)] {
+    let faceLandmarkPoints = faceLandmarks.map { $0.allPoints!.pointsInImage(imageSize: imgSize) }
+    
+    let orientedFaceLandmarkPoints = faceLandmarkPoints.map { convertPortraitPointToLandscapePoint(points: $0, imgSize: imgSize)}
+    let newImgSize = CGSize(width: imgSize.height, height: imgSize.width)
+
+    let eyeCrops = orientedFaceLandmarkPoints.map { landmarkPoints -> (CGRect, CGRect) in
+        let leftEyeBB = getLeftEyeBB(landmarks: landmarkPoints, imgSize: newImgSize)
+        let rightEyeBB = getRightEyeBB(landmarks:  landmarkPoints, imgSize: newImgSize)
+        return (leftEyeBB, rightEyeBB)
+    }
+    
+    let maxWidthLeft = eyeCrops
+        .map { LREyeCrops in LREyeCrops.0.width }
+        .max()!
+    
+    let maxHeightLeft = eyeCrops
+        .map { LREyeCrops in LREyeCrops.0.height }
+        .max()!
+    
+    let maxWidthRight = eyeCrops
+        .map { LREyeCrops in LREyeCrops.1.width }
+        .max()!
+    
+    let maxHeightRight = eyeCrops
+        .map { LREyeCrops in LREyeCrops.1.height }
+        .max()!
+
+    let eyeCropsEqualized = eyeCrops.map { LREyeCrop -> (CGRect, CGRect) in
+        let (leftEyeCrop, rightEyeCrop) = LREyeCrop
+        
+        let leftWidthDiff = (maxWidthLeft - leftEyeCrop.width) / 2
+        let leftHeightDiff = (maxHeightLeft - leftEyeCrop.height) / 2
+        let rightWidthDiff = (maxWidthRight - rightEyeCrop.width) / 2
+        let rightHeightDiff = (maxHeightRight - rightEyeCrop.height) / 2
+
+        let leftEyeCropEqualized = CGRect.init(x: leftEyeCrop.minX - leftWidthDiff, y: leftEyeCrop.minY - leftHeightDiff, width: maxWidthLeft, height: maxHeightLeft).toInt()
+        let rightEyeCropEqualized = CGRect.init(x: rightEyeCrop.minX - rightWidthDiff, y: rightEyeCrop.minY - rightHeightDiff, width: maxWidthRight, height: maxHeightRight).toInt()
+        return (leftEyeCropEqualized, rightEyeCropEqualized)
+    }
+    
+    return eyeCropsEqualized
 }
-*/
+
 
 //Needs a context to have been created
 func cropImage(_ input: CIImage, dimensions: CGRect, _ imageTransforms: inout ImageTransforms) -> CIImage {
@@ -486,4 +564,15 @@ func rotateImage(_ input: CIImage, _ imageTransforms: inout ImageTransforms) -> 
     toRotateFilter!.setValue(input, forKey: kCIInputImageKey)
     imageTransforms.isRotated = true
     return toRotateFilter!.outputImage!
+}
+
+//Needs a context to have been created
+func scaleImage(_ input: CIImage, scale: CGFloat, _ imageTransforms: inout ImageTransforms) -> CIImage {
+    let toScaleFilter = CIFilter(name:"CILanczosScaleTransform")
+    toScaleFilter!.setValue(input, forKey: kCIInputImageKey)
+    toScaleFilter!.setValue(scale, forKey: kCIInputScaleKey)
+    toScaleFilter!.setValue(1, forKey: kCIInputAspectRatioKey)
+    
+    imageTransforms.isScaled = true
+    return toScaleFilter!.outputImage!
 }

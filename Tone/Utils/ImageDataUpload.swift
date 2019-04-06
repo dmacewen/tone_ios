@@ -27,9 +27,14 @@ func uploadImageData(imageData: [ImageData], progressBar: BehaviorSubject<Float>
                 let metaData: [MetaData] = imageData.map { $0.metaData }
                 for (index, imageDatum) in imageData.enumerated() {
                     //let pngData = imageDatum.image.pngData()
-                    let pngData = imageDatum.imageData
+                    let pngDataFace = imageDatum.faceData
+                    let pngDataLeftEye = imageDatum.leftEyeData
+                    let pngDataRightEye = imageDatum.rightEyeData
+
                     let imageName = String(index + 1)
-                    multipartFormData.append(pngData, withName: imageName, fileName: "\(imageName).png", mimeType: "image/png")
+                    multipartFormData.append(pngDataFace, withName: imageName, fileName: "\(imageName).png", mimeType: "image/png")
+                    multipartFormData.append(pngDataLeftEye, withName: "\(imageName)_leftEye", fileName: "\(imageName)_leftEye.png", mimeType: "image/png")
+                    multipartFormData.append(pngDataRightEye, withName: "\(imageName)_rightEye", fileName: "\(imageName)_rightEye.png", mimeType: "image/png")
                 }
                 
                 do {
