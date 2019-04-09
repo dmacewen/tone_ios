@@ -325,8 +325,9 @@ class SampleSkinToneViewModel {
 
                     let longSide = [faceBB.width, faceBB.height].max()!
                     let scaleRatio = 1080 / longSide
+                    imageTransforms.scaleRatio = scaleRatio
                     
-                    let faceLandmarkPointsScaled = faceLandmarkPoints.map { ($0 * scaleRatio).toInt() }
+                    let faceLandmarkPointsScaled = faceLandmarkPoints.map { ($0 * scaleRatio) }
                     let leftEyeBBAdjustedScaled = (leftEyeBBAdjusted * scaleRatio)
                     let rightEyeBBAdjustedScaled = (rightEyeBBAdjusted * scaleRatio)
 

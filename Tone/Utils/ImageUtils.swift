@@ -45,7 +45,10 @@ extension CGPoint {
 extension CGRect {
     static func fromPoints<T:MutableCollection>(points: T, imgSize: CGSize) -> CGRect where T.Iterator.Element == CGPoint {
         let minX = points.map { $0.x }.min()!
-        let maxX = points.map { $0.x }.max()!
+        var maxX = points.map { $0.x }.max()!
+        if maxX > imgSize.width {
+            maxX = imgSize.width //Landmarks can sometimes be placed outside image?
+        }
         let width = maxX - minX
 
         let minY = points.map { $0.y }.min()!
@@ -116,9 +119,10 @@ struct ImageTransforms : Codable {
     var isRotated = false
     var isCropped = false
     var isScaled = false
+    var scaleRatio: CGFloat = 1.0
     
     func getStringRepresentation() -> String{
-        return "(isGammaSBGR :: \(self.isGammaSBGR) | isRotated :: \(self.isRotated)) | isCropped :: \(self.isCropped) | isScaled :: \(self.isScaled)"
+        return "(isGammaSBGR :: \(self.isGammaSBGR) | isRotated :: \(self.isRotated)) | isCropped :: \(self.isCropped) | isScaled :: \(self.isScaled) | scaleRatio:: \(self.scaleRatio)"
     }
 }
 
@@ -144,9 +148,9 @@ struct MetaData : Codable {
         let whiteBalanceChromacity = cameraState.captureDevice.chromaticityValues(for: cameraState.captureDevice.deviceWhiteBalanceGains)
         let whiteBalance = WhiteBalance(x: whiteBalanceChromacity.x, y: whiteBalanceChromacity.y)
         
-        let faceLandmarksInt = faceLandmarks.map { CGPoint(x: Int($0.x), y: Int($0.y)) }
+        //let faceLandmarksInt = faceLandmarks.map { CGPoint(x: Int($0.x), y: Int($0.y)) }
         
-        return MetaData(iso: iso, exposureTime: exposureTime, whiteBalance: whiteBalance, faceLandmarks: faceLandmarksInt, leftEyeBB: leftEyeBB, rightEyeBB: rightEyeBB, flashSettings: flashSetting, imageTransforms: imageTransforms)
+        return MetaData(iso: iso, exposureTime: exposureTime, whiteBalance: whiteBalance, faceLandmarks: faceLandmarks, leftEyeBB: leftEyeBB, rightEyeBB: rightEyeBB, flashSettings: flashSetting, imageTransforms: imageTransforms)
     }
     
     func prettyPrint() {
