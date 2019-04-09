@@ -185,17 +185,34 @@ class SampleSkinToneViewController: UIViewController {
                     ctx.cgContext.fill(CGRect(x: 0, y: 0, width: width, height: height))
                     
                     ctx.cgContext.setFillColor(UIColor.black.cgColor)
+                    
+                    let whiteRatio = area
+                    let blackRatio = areas - area
+                    let numLocations = rows * columns
 
-                    if area != 0 {
-                        for row in 0 ..< rows {
-                            for column in 0 ..< columns {
-                                if ((row + column) % areas) + 1 > area {
-                                    ctx.cgContext.fill(CGRect(x: (column * checkerSize), y: (row * checkerSize), width: checkerSize, height: checkerSize))
-                                }
-                            }
+                    var location = 0
+                    var white = whiteRatio
+                    var black = blackRatio
+                    
+                    while location <= numLocations {
+                        if white > 0 {
+                            location += 1
+                            white -= 1
                         }
-                    } else {
-                        ctx.cgContext.fill(CGRect(x: 0, y: 0, width: width, height: height))
+                        
+                        if black > 0 {
+                            let row = location / columns
+                            let column = location % columns
+                            ctx.cgContext.fill(CGRect(x: (column * checkerSize), y: (row * checkerSize), width: checkerSize, height: checkerSize))
+                            
+                            location += 1
+                            black -= 1
+                        }
+                        
+                        if (white == 0) && (black == 0) {
+                            white = whiteRatio
+                            black = blackRatio
+                        }
                     }
                 }
                 

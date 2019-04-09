@@ -340,10 +340,14 @@ func getLowerCheekPair(landmarks: [CGPoint]) -> (CGPoint, CGPoint) {
     return (leftUpperCheek, rightUpperCheek)
 }
 
-func isLightingEqual(points: (CGPoint, CGPoint), imageByteBuffer: ImageByteBuffer) -> Bool? {
+func isLightingEqual(points: (CGPoint, CGPoint), imageByteBuffer: ImageByteBuffer, standardizedExposureData: (Float, Float)) -> Bool? {
     guard let A = imageByteBuffer.sampleLandmarkRegion(landmarkPoint: points.0) else { return nil }
-    guard let B = imageByteBuffer.sampleLandmarkRegion(landmarkPoint: points.1) else { return nil }
+    let A_exposureScore = getExposureScore(intensity: A, standardizedExposureData: standardizedExposureData)
     
+    guard let B = imageByteBuffer.sampleLandmarkRegion(landmarkPoint: points.1) else { return nil }
+    let B_exposureScore = getExposureScore(intensity: B, standardizedExposureData: standardizedExposureData)
+    print("A vs B | \(A_exposureScore) vs \(B_exposureScore)")
+    /*
     if A > 20 && B > 20 {
         let ratio = abs(A - B) / A
         //print("RATIO :: \(ratio)")
@@ -357,12 +361,18 @@ func isLightingEqual(points: (CGPoint, CGPoint), imageByteBuffer: ImageByteBuffe
             return false
         }
     }
+ */
+    if abs(A_exposureScore - B_exposureScore) > 25 {
+        return false
+    }
+    
     return true
 }
 
-func getExposureInfo(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D) -> (CGPoint, Bool)? {
+func getExposureInfo(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D, cameraState: CameraState) -> (CGPoint, Bool, Bool)? {
     CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
     defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly) }
+    let stdExposureData = cameraState.getStandardizedExposureData()
     
     let imageByteBuffer = ImageByteBuffer.from(pixelBuffer)
     let facePoints = landmarks.allPoints!.pointsInImage(imageSize: imageByteBuffer.size())
@@ -373,10 +383,10 @@ func getExposureInfo(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D) -
     let upperCheekPair = getUpperCheekPair(landmarks: facePoints)
     let lowerCheekPair = getLowerCheekPair(landmarks: facePoints)
     
-    guard let isForeheadEqual = isLightingEqual(points: foreheadPair, imageByteBuffer: imageByteBuffer) else { return nil }
-    guard let isEyeEqual = isLightingEqual(points: eyePair, imageByteBuffer: imageByteBuffer) else { return nil }
-    guard let isUpperCheekEqual = isLightingEqual(points: upperCheekPair, imageByteBuffer: imageByteBuffer) else { return nil }
-    guard let isLowerCheekEqual = isLightingEqual(points: lowerCheekPair, imageByteBuffer: imageByteBuffer) else { return nil }
+    guard let isForeheadEqual = isLightingEqual(points: foreheadPair, imageByteBuffer: imageByteBuffer, standardizedExposureData: stdExposureData) else { return nil }
+    guard let isEyeEqual = isLightingEqual(points: eyePair, imageByteBuffer: imageByteBuffer, standardizedExposureData: stdExposureData) else { return nil }
+    guard let isUpperCheekEqual = isLightingEqual(points: upperCheekPair, imageByteBuffer: imageByteBuffer, standardizedExposureData: stdExposureData) else { return nil }
+    guard let isLowerCheekEqual = isLightingEqual(points: lowerCheekPair, imageByteBuffer: imageByteBuffer, standardizedExposureData: stdExposureData) else { return nil }
     
     //print("FOREHEAD: \(isForeheadEqual) | EYE: \(isEyeEqual) | UPPER CHEEK: \(isUpperCheekEqual) | LOWER CHEEK: \(isLowerCheekEqual)")
     let isBrightnessBalanced = isForeheadEqual && isEyeEqual && isUpperCheekEqual && isLowerCheekEqual
@@ -398,6 +408,10 @@ func getExposureInfo(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D) -
     }
     
     let brightestPoint = imageByteBuffer.convertPortraitPointToLandscapeRatioPoint(point: sortedSamples.first!.1)
+    
+    let brightestExposureScore = getExposureScore(intensity: sortedSamples.first!.0, standardizedExposureData: stdExposureData)
+    print("BRIGHTEST EXPOSURE SCORE :: \(brightestExposureScore)")
+    let isTooBright = brightestExposureScore > 100
     /*
     let brightnessRatio = ((sortedSamples.first!.0 - sortedSamples.last!.0) / sortedSamples.last!.0)
     print("Brightness Ratio :: \(brightnessRatio)")
@@ -405,7 +419,7 @@ func getExposureInfo(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D) -
         return (brightestPoint, false)
     }
     */
-    return (brightestPoint, isBrightnessBalanced)
+    return (brightestPoint, isBrightnessBalanced, isTooBright)
 }
 
 //Error :: 2018-11-14 11:44:19.689414-0800 Tone[32016:9326030] LandmarkDetector error -20:out of bounds in int vision::mod::LandmarkAttributes::computeBlinkFunction(const vImage_Buffer &, const Geometry2D_rect2D &, const std::vector<Geometry2D_point2D> &, vImage_Buffer &, vImage_Buffer &, std::vector<float> &, std::vector<float> &) @ /BuildRoot/Library/Caches/com.apple.xbs/Sources/Vision/Vision-2.0.62/LandmarkDetector/LandmarkDetector_Attributes.mm:535
@@ -551,6 +565,10 @@ func calculateEyeCrops(faceLandmarks: [VNFaceLandmarks2D], imgSize: CGSize) -> [
     }
     
     return eyeCropsEqualized
+}
+
+func getExposureScore(intensity: Float, standardizedExposureData: (Float, Float)) -> Float {
+    return (intensity * (1 / standardizedExposureData.0) * (1 / standardizedExposureData.1)) * 100_000
 }
 
 

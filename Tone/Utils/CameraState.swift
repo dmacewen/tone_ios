@@ -26,6 +26,7 @@ struct FlashSettings: Codable {
 struct RealTimeFaceData {
     var landmarks: VNFaceLandmarks2D
     var isLightingBalanced: Bool
+    var isTooBright: Bool
     var iso: Float
     var exposureDuration: Float
 }
@@ -205,6 +206,18 @@ class CameraState {
     func exifOrientationForCurrentDeviceOrientation() -> CGImagePropertyOrientation {
         //return UIDeviceOrientation.landscapeLeft
         return exifOrientationForDeviceOrientation(UIDevice.current.orientation)
+    }
+    
+    func getStandardizedExposureData() -> (Float, Float) {
+        let minExposureDuration = self.captureDevice.activeFormat.minExposureDuration
+        let minISO = self.captureDevice.activeFormat.minISO
+        
+        let currentExposureDuration = self.captureDevice.exposureDuration.convertScale(minExposureDuration.timescale, method: CMTimeRoundingMethod.default)
+        
+        let exposureRatio =  Float(currentExposureDuration.value) / Float(minExposureDuration.value)
+        let isoRatio = Float(self.captureDevice.iso) / Float(minISO)
+        
+        return (exposureRatio, isoRatio)
     }
 }
 

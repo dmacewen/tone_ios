@@ -27,7 +27,7 @@ class Video:  NSObject {
                     return nil
                 }
                 
-                guard let (exposurePoint, isLightingBalanced) = getExposureInfo(pixelBuffer: pixelBuffer, landmarks: faceLandmarks) else {
+                guard let (exposurePoint, isLightingBalanced, isTooBright) = getExposureInfo(pixelBuffer: pixelBuffer, landmarks: faceLandmarks, cameraState: cameraState) else {
                     return nil
                 }
                 
@@ -37,7 +37,7 @@ class Video:  NSObject {
                 let exposureDurationTimeScale = Float(cameraState.captureDevice.exposureDuration.timescale)
                 let exposureDuration = exposureDurationValue / exposureDurationTimeScale
                 
-                return RealTimeFaceData(landmarks: faceLandmarks, isLightingBalanced: isLightingBalanced, iso: cameraState.captureDevice.iso, exposureDuration: exposureDuration)
+                return RealTimeFaceData(landmarks: faceLandmarks, isLightingBalanced: isLightingBalanced, isTooBright: isTooBright, iso: cameraState.captureDevice.iso, exposureDuration: exposureDuration)
             })
             .asObservable()
 

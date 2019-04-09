@@ -13,6 +13,7 @@ import Alamofire
 import Vision
 
 class SampleSkinToneViewModel {
+    /*
     let screenFlashSettings = [
         //FlashSettings(area: 9, areas: 9),
         //FlashSettings(area: 8, areas: 9),
@@ -24,17 +25,18 @@ class SampleSkinToneViewModel {
         FlashSettings(area: 2, areas: 7),
         FlashSettings(area: 1, areas: 7),
         FlashSettings(area: 0, areas: 7)]
-    /*
+ */
+    
     let screenFlashSettings = [
-        FlashSettings(area: 15, areas: 15),
-        FlashSettings(area: 14, areas: 15),
-        FlashSettings(area: 13, areas: 15),
-        FlashSettings(area: 12, areas: 15),
-        FlashSettings(area: 11, areas: 15),
-        FlashSettings(area: 10, areas: 15),
-        FlashSettings(area: 9, areas: 15),
-        FlashSettings(area: 8, areas: 15)]
-    */
+        FlashSettings(area: 14, areas: 14),
+        FlashSettings(area: 13, areas: 14),
+        FlashSettings(area: 12, areas: 14),
+        FlashSettings(area: 11, areas: 14),
+        FlashSettings(area: 10, areas: 14),
+        FlashSettings(area: 9, areas: 14),
+        FlashSettings(area: 8, areas: 14),
+        FlashSettings(area: 7, areas: 14),]
+    
     enum Event {
         case cancel
     }
@@ -146,11 +148,16 @@ class SampleSkinToneViewModel {
                     return
                 }
                 
+                if faceData!.isTooBright {
+                    self.userFaceState.onNext(.tooBright)
+                    return
+                }
+                
                 if !faceData!.isLightingBalanced {
                     self.userFaceState.onNext(.faceGradient)
                     return
                 }
-                
+                /*
                 let maxExposureIso: Float = 50.0
                 let maxExposureDuration: Float = 0.50
                 
@@ -160,7 +167,8 @@ class SampleSkinToneViewModel {
                     self.userFaceState.onNext(.tooBright)
                     return
                 }
-                
+                 */
+            
                 
                 let faceClipState = self.checkFaceClipped(min: min, max: max)
                 
