@@ -106,7 +106,7 @@ class CameraState {
         _ = isAdjustingExposure.connect()
         
         exposurePointStream.subscribe(onNext: {  exposurePoint in
-            //print("Setting exposure point to \(exposurePoint)")
+            print("Setting exposure point to \(exposurePoint)")
             self.captureDevice.exposurePointOfInterest = exposurePoint
             self.captureDevice.exposureMode = AVCaptureDevice.ExposureMode.autoExpose
         }).disposed(by: disposeBag)
@@ -133,7 +133,8 @@ class CameraState {
     //Minimizes ISO by Maximizing Exposure Duration while targeting the Metered Exposure
     private func calculateTargetExposure() -> (CMTime, Float) {
         //return (self.captureDevice.exposureDuration, self.captureDevice.iso)
-        var maxExposureDuration = CMTime.init(value: 1, timescale: 10)//self.captureDevice.activeFormat.maxExposureDuration
+        //var maxExposureDuration = CMTime.init(value: 1, timescale: 10)//self.captureDevice.activeFormat.maxExposureDuration
+        var maxExposureDuration = self.captureDevice.activeFormat.maxExposureDuration
         let minISO = self.captureDevice.activeFormat.minISO
         
         maxExposureDuration = maxExposureDuration.convertScale(self.captureDevice.exposureDuration.timescale, method: CMTimeRoundingMethod.default)
@@ -225,7 +226,7 @@ func getPhotoSettings() -> AVCapturePhotoSettings {
     print("GETTING NEW PHOTO SETTINGS")
     let photoSettings = AVCapturePhotoSettings.init(format: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
     //photoSettings.processedFileType = AVFileType.tif
-    photoSettings.isAutoStillImageStabilizationEnabled = true
+    photoSettings.isAutoStillImageStabilizationEnabled = false
     photoSettings.isHighResolutionPhotoEnabled = true
     photoSettings.flashMode = .off
     return photoSettings
