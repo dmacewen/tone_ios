@@ -184,6 +184,7 @@ class SampleSkinToneViewModel {
             .subscribe(onNext: {
                 switch $0 {
                 case .previewUser:
+                    self.cameraState.resetCameraState()
                     self.video.resumeProcessing()
                 default:
                     self.video.pauseProcessing()

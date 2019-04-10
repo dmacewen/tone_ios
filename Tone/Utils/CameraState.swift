@@ -106,10 +106,16 @@ class CameraState {
         _ = isAdjustingExposure.connect()
         
         exposurePointStream.subscribe(onNext: {  exposurePoint in
-            print("Setting exposure point to \(exposurePoint)")
+            //print("Setting exposure point to \(exposurePoint)")
+            //let manualExposurePoint = CGPoint.init(x: 0.5, y: 0.5)
+            //self.captureDevice.exposurePointOfInterest = manualExposurePoint
             self.captureDevice.exposurePointOfInterest = exposurePoint
             self.captureDevice.exposureMode = AVCaptureDevice.ExposureMode.autoExpose
         }).disposed(by: disposeBag)
+    }
+    
+    func resetCameraState() {
+        self.photoSettingsIndex = 0
     }
     
     //Prepares numPhotos prepared settings
