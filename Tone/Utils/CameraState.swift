@@ -133,8 +133,8 @@ class CameraState {
     //Minimizes ISO by Maximizing Exposure Duration while targeting the Metered Exposure
     private func calculateTargetExposure() -> (CMTime, Float) {
         //return (self.captureDevice.exposureDuration, self.captureDevice.iso)
-        //var maxExposureDuration = CMTime.init(value: 1, timescale: 10)//self.captureDevice.activeFormat.maxExposureDuration
-        var maxExposureDuration = self.captureDevice.activeFormat.maxExposureDuration
+        var maxExposureDuration = CMTime.init(value: 1, timescale: 10)//self.captureDevice.activeFormat.maxExposureDuration
+        //var maxExposureDuration = self.captureDevice.activeFormat.maxExposureDuration
         let minISO = self.captureDevice.activeFormat.minISO
         
         maxExposureDuration = maxExposureDuration.convertScale(self.captureDevice.exposureDuration.timescale, method: CMTimeRoundingMethod.default)
@@ -168,12 +168,13 @@ class CameraState {
             .flatMap { _ in
                 return Observable.create { observable in
                     self.captureDevice.setWhiteBalanceModeLocked(with: AVCaptureDevice.currentWhiteBalanceGains, completionHandler: { time in
-                        
-                        let (targetExposureDuration, targetISO) = self.calculateTargetExposure()
-                        
-                        self.captureDevice.setExposureModeCustom(duration: targetExposureDuration, iso: targetISO, completionHandler: { time in
+                        self.captureDevice.setExposureTargetBias(-0.5, completionHandler: { time in
+                            let (targetExposureDuration, targetISO) = self.calculateTargetExposure()
+                            
+                            self.captureDevice.setExposureModeCustom(duration: targetExposureDuration, iso: targetISO, completionHandler: { time in
                                 print("LOCKED CAMERA SETTINGS")
                                 observable.onNext(true)
+                            })
                         })
                     })
                     return Disposables.create()
@@ -201,8 +202,7 @@ class CameraState {
             
         default:
             return .leftMirrored
-        }
-    }
+        }     }
     
     func exifOrientationForCurrentDeviceOrientation() -> CGImagePropertyOrientation {
         //return UIDeviceOrientation.landscapeLeft
