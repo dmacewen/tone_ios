@@ -345,12 +345,12 @@ func getLowerCheekPair(landmarks: [CGPoint]) -> (CGPoint, CGPoint) {
     return (leftUpperCheek, rightUpperCheek)
 }
 
-func isLightingEqual(points: (CGPoint, CGPoint), imageByteBuffer: ImageByteBuffer, standardizedExposureData: (Float, Float)) -> Bool? {
+func isLightingEqual(points: (CGPoint, CGPoint), imageByteBuffer: ImageByteBuffer, exposureRatios: ExposureRatios) -> Bool? {
     guard let A = imageByteBuffer.sampleLandmarkRegion(landmarkPoint: points.0) else { return nil }
-    let A_exposureScore = getExposureScore(intensity: A, standardizedExposureData: standardizedExposureData)
+    let A_exposureScore = getExposureScore(intensity: A, exposureRatios: exposureRatios)
     
     guard let B = imageByteBuffer.sampleLandmarkRegion(landmarkPoint: points.1) else { return nil }
-    let B_exposureScore = getExposureScore(intensity: B, standardizedExposureData: standardizedExposureData)
+    let B_exposureScore = getExposureScore(intensity: B, exposureRatios: exposureRatios)
     //print("A vs B | \(A_exposureScore) vs \(B_exposureScore)")
     /*
     if A > 20 && B > 20 {
@@ -377,7 +377,7 @@ func isLightingEqual(points: (CGPoint, CGPoint), imageByteBuffer: ImageByteBuffe
 func getExposureInfo(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D, cameraState: CameraState) -> (CGPoint, Bool, Bool)? {
     CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
     defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly) }
-    let stdExposureData = cameraState.getStandardizedExposureData()
+    let exposureRatios = cameraState.getStandardizedExposureData()
     
     let imageByteBuffer = ImageByteBuffer.from(pixelBuffer)
     let facePoints = landmarks.allPoints!.pointsInImage(imageSize: imageByteBuffer.size())
@@ -388,10 +388,10 @@ func getExposureInfo(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D, c
     let upperCheekPair = getUpperCheekPair(landmarks: facePoints)
     let lowerCheekPair = getLowerCheekPair(landmarks: facePoints)
     
-    guard let isForeheadEqual = isLightingEqual(points: foreheadPair, imageByteBuffer: imageByteBuffer, standardizedExposureData: stdExposureData) else { return nil }
-    guard let isEyeEqual = isLightingEqual(points: eyePair, imageByteBuffer: imageByteBuffer, standardizedExposureData: stdExposureData) else { return nil }
-    guard let isUpperCheekEqual = isLightingEqual(points: upperCheekPair, imageByteBuffer: imageByteBuffer, standardizedExposureData: stdExposureData) else { return nil }
-    guard let isLowerCheekEqual = isLightingEqual(points: lowerCheekPair, imageByteBuffer: imageByteBuffer, standardizedExposureData: stdExposureData) else { return nil }
+    guard let isForeheadEqual = isLightingEqual(points: foreheadPair, imageByteBuffer: imageByteBuffer, exposureRatios: exposureRatios) else { return nil }
+    guard let isEyeEqual = isLightingEqual(points: eyePair, imageByteBuffer: imageByteBuffer, exposureRatios: exposureRatios) else { return nil }
+    guard let isUpperCheekEqual = isLightingEqual(points: upperCheekPair, imageByteBuffer: imageByteBuffer, exposureRatios: exposureRatios) else { return nil }
+    guard let isLowerCheekEqual = isLightingEqual(points: lowerCheekPair, imageByteBuffer: imageByteBuffer, exposureRatios: exposureRatios) else { return nil }
     
     //print("FOREHEAD: \(isForeheadEqual) | EYE: \(isEyeEqual) | UPPER CHEEK: \(isUpperCheekEqual) | LOWER CHEEK: \(isLowerCheekEqual)")
     let isBrightnessBalanced = isForeheadEqual && isEyeEqual && isUpperCheekEqual && isLowerCheekEqual
@@ -414,7 +414,7 @@ func getExposureInfo(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D, c
     
     let brightestPoint = imageByteBuffer.convertPortraitPointToLandscapeRatioPoint(point: sortedSamples.first!.1)
     
-    let brightestExposureScore = getExposureScore(intensity: sortedSamples.first!.0, standardizedExposureData: stdExposureData)
+    let brightestExposureScore = getExposureScore(intensity: sortedSamples.first!.0, exposureRatios: exposureRatios)
     //print("BRIGHTEST EXPOSURE SCORE :: \(brightestExposureScore)")
     let isTooBright = brightestExposureScore > 100
     /*
@@ -481,7 +481,7 @@ func getFacialLandmarks(cameraState: CameraState, pixelBuffer: CVPixelBuffer) ->
         return Disposables.create()
     }
 }
-
+/*
 func getReflectionBrightness(_ cameraState: CameraState, _ capture: (AVCapturePhoto, FlashSettings)) -> Observable<Int8> {
     let (photo, flashSettings) = capture
     return getFacialLandmarks(cameraState: cameraState, pixelBuffer: photo.pixelBuffer!)
@@ -498,6 +498,7 @@ func getReflectionBrightness(_ cameraState: CameraState, _ capture: (AVCapturePh
             return 0
         }
 }
+ */
 
 func convertPortraitPointToLandscapePoint(points: [CGPoint], imgSize: CGSize) -> [CGPoint] {
     return points.map { CGPoint.init(x: CGFloat(imgSize.height) - $0.y, y: $0.x) }
@@ -572,8 +573,10 @@ func calculateEyeCrops(faceLandmarks: [VNFaceLandmarks2D], imgSize: CGSize) -> [
     return eyeCropsEqualized
 }
 
-func getExposureScore(intensity: Float, standardizedExposureData: (Float, Float)) -> Float {
-    return (intensity * (1 / standardizedExposureData.0) * (1 / standardizedExposureData.1)) * 100_000
+func getExposureScore(intensity: Float, exposureRatios: ExposureRatios) -> Float64 {
+    let inverseISO = 1 / exposureRatios.iso
+    let inverseExposure = 1 / exposureRatios.exposure
+    return Float64(intensity) * inverseISO * inverseExposure * 100_000
 }
 
 

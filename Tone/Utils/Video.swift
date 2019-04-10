@@ -14,7 +14,7 @@ import AVKit
 class Video:  NSObject {
     private var cameraState: CameraState
     let faceLandmarks: Observable<RealTimeFaceData?>
-    private let pixelBufferSubject = PublishSubject<CVImageBuffer>()
+    private let pixelBufferSubject = PublishSubject<CVPixelBuffer>()
     private let videoDataOutput: AVCaptureVideoDataOutput
     
     init(cameraState: CameraState) {
@@ -33,10 +33,7 @@ class Video:  NSObject {
                 
                 cameraState.exposurePointStream.onNext(exposurePoint)
                 
-                let exposureDurationValue = Float(cameraState.captureDevice.exposureDuration.value)
-                let exposureDurationTimeScale = Float(cameraState.captureDevice.exposureDuration.timescale)
-                let exposureDuration = exposureDurationValue / exposureDurationTimeScale
-                
+                let exposureDuration = CMTimeGetSeconds(cameraState.captureDevice.exposureDuration)
                 return RealTimeFaceData(landmarks: faceLandmarks, isLightingBalanced: isLightingBalanced, isTooBright: isTooBright, iso: cameraState.captureDevice.iso, exposureDuration: exposureDuration)
             })
             .asObservable()
@@ -90,6 +87,6 @@ extension Video: AVCaptureVideoDataOutputSampleBufferDelegate {
             return
         }
         
-        pixelBufferSubject.onNext(pixelBuffer)
+        pixelBufferSubject.onNext(pixelBuffer as CVPixelBuffer)
     }
 }

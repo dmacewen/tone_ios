@@ -23,12 +23,17 @@ struct FlashSettings: Codable {
     var areas: Int = 0
 }
 
+struct ExposureRatios {
+    let iso: Float64
+    let exposure: Float64
+}
+
 struct RealTimeFaceData {
     var landmarks: VNFaceLandmarks2D
     var isLightingBalanced: Bool
     var isTooBright: Bool
     var iso: Float
-    var exposureDuration: Float
+    var exposureDuration: Float64
 }
 
 //Defining a Camera how we want it
@@ -139,12 +144,11 @@ class CameraState {
     //Minimizes ISO by Maximizing Exposure Duration while targeting the Metered Exposure
     private func calculateTargetExposure() -> (CMTime, Float) {
         //return (self.captureDevice.exposureDuration, self.captureDevice.iso)
-        var maxExposureDuration = CMTime.init(value: 1, timescale: 10)//self.captureDevice.activeFormat.maxExposureDuration
         //var maxExposureDuration = self.captureDevice.activeFormat.maxExposureDuration
+        let maxExposureDuration = CMTime.init(value: 1, timescale: 10)//self.captureDevice.activeFormat.maxExposureDuration
         let minISO = self.captureDevice.activeFormat.minISO
         
-        maxExposureDuration = maxExposureDuration.convertScale(self.captureDevice.exposureDuration.timescale, method: CMTimeRoundingMethod.default)
-        var exposureRatio = Float64(maxExposureDuration.value) / Float64(self.captureDevice.exposureDuration.value)
+        var exposureRatio = CMTimeGetSeconds(self.captureDevice.exposureDuration) / CMTimeGetSeconds(maxExposureDuration)
         var isoRatio = Float64(self.captureDevice.iso) / Float64(minISO)
         
         if isoRatio < exposureRatio {
@@ -154,7 +158,7 @@ class CameraState {
         }
         
         let targetISO = self.captureDevice.iso / Float(isoRatio)
-        let targetExposureDuration = CMTimeMultiplyByFloat64(self.captureDevice.exposureDuration, multiplier: exposureRatio)
+        let targetExposureDuration = CMTimeMultiplyByFloat64(self.captureDevice.exposureDuration, multiplier: 1/exposureRatio)
         
         print("Min ISO :: \(minISO) | Max Exposure Duration :: \(maxExposureDuration.value)")
         print("Exposure Duration :: \(self.captureDevice.exposureDuration.value) -> \(targetExposureDuration.value)")
@@ -215,16 +219,14 @@ class CameraState {
         return exifOrientationForDeviceOrientation(UIDevice.current.orientation)
     }
     
-    func getStandardizedExposureData() -> (Float, Float) {
+    func getStandardizedExposureData() -> ExposureRatios {
         let minExposureDuration = self.captureDevice.activeFormat.minExposureDuration
         let minISO = self.captureDevice.activeFormat.minISO
         
-        let currentExposureDuration = self.captureDevice.exposureDuration.convertScale(minExposureDuration.timescale, method: CMTimeRoundingMethod.default)
+        let exposureRatio =  CMTimeGetSeconds(self.captureDevice.exposureDuration) / CMTimeGetSeconds(minExposureDuration)
+        let isoRatio = Float64(self.captureDevice.iso / minISO)
         
-        let exposureRatio =  Float(currentExposureDuration.value) / Float(minExposureDuration.value)
-        let isoRatio = Float(self.captureDevice.iso) / Float(minISO)
-        
-        return (exposureRatio, isoRatio)
+        return ExposureRatios(iso: isoRatio, exposure: exposureRatio)
     }
 }
 
