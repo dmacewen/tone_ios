@@ -44,15 +44,16 @@ extension CGPoint {
 
 extension CGRect {
     static func fromPoints<T:MutableCollection>(points: T, imgSize: CGSize) -> CGRect where T.Iterator.Element == CGPoint {
-        let minX = points.map { $0.x }.min()!
+        var minX = points.map { $0.x }.min()!
+        if minX < 0 { minX = 0 }
         var maxX = points.map { $0.x }.max()!
-        if maxX > imgSize.width {
-            maxX = imgSize.width //Landmarks can sometimes be placed outside image?
-        }
+        if maxX > imgSize.width { maxX = imgSize.width }//Landmarks can sometimes be placed outside image?
         let width = maxX - minX
 
-        let minY = points.map { $0.y }.min()!
-        let maxY = points.map { $0.y }.max()!
+        var minY = points.map { $0.y }.min()!
+        if minY < 0 { minY = 0 }
+        var maxY = points.map { $0.y }.max()!
+        if maxY > imgSize.height { maxY = imgSize.height }
         let height = maxY - minY
         
         precondition(minX + width < imgSize.width)
@@ -62,12 +63,16 @@ extension CGRect {
     }
     
     static func fromBoundingBoxes<T:MutableCollection>(rectangles: T, imgSize: CGSize) -> CGRect where T.Iterator.Element == CGRect{
-        let minX = rectangles.map { $0.minX }.min()!
-        let maxX = rectangles.map { $0.maxX }.max()!
+        var minX = rectangles.map { $0.minX }.min()!
+        if minX < 0 { minX = 0 }
+        var maxX = rectangles.map { $0.maxX }.max()!
+        if maxX > imgSize.width { maxX = imgSize.width }//Landmarks can sometimes be placed outside image?
         let width = maxX - minX
         
-        let minY = rectangles.map { $0.minY }.min()!
-        let maxY = rectangles.map { $0.maxY }.max()!
+        var minY = rectangles.map { $0.minY }.min()!
+        if minY < 0 { minY = 0 }
+        var maxY = rectangles.map { $0.maxY }.max()!
+        if maxY > imgSize.height { maxY = imgSize.height }
         let height = maxY - minY
         
         precondition(minX + width < imgSize.width)
