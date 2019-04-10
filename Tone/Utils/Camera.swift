@@ -20,13 +20,21 @@ class Camera: NSObject {
         self.cameraState = cameraState
     }
     
-    func capturePhoto(_ flashSettings: FlashSettings) -> PublishSubject<(AVCapturePhoto, FlashSettings)> {
+    func capturePhoto(_ flashSettings: FlashSettings, shouldAutoExpose: Bool = false) -> PublishSubject<(AVCapturePhoto, FlashSettings)> {
         print("Beginning to capture photo!")
-        self.cameraState.flashStream.onNext(flashSettings)
-        Observable.combineLatest(cameraState.isAdjustingExposure, cameraState.isAdjustingWB) { $0 || $1 }
-            //.observeOn(MainScheduler.instance)
-            .filter { !$0 }
+            
+        self.cameraState.setFlash(flashSetting: flashSettings)
+            .filter { $0 }
             .take(1)
+            .do { if shouldAutoExpose { self.cameraState.centerExposureTarget() } }
+            .flatMap { _ -> Observable<Bool> in
+                print("Done Exposing For Flash")
+                return Observable
+                    .combineLatest(self.cameraState.isAdjustingExposure, self.cameraState.isAdjustingWB) { $0 || $1 }
+                    //.observeOn(MainScheduler.instance)
+                    .filter { !$0 }
+                    .take(1)
+            }
             .subscribe(onNext: { _ in
                 print("Captuing Photo with Flash Settings :: \(flashSettings.area) \(flashSettings.areas)")
                 print("Getting Photo Settings!")

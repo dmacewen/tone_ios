@@ -153,6 +153,13 @@ struct MetaData : Codable {
         return MetaData(iso: iso, exposureTime: exposureTime, whiteBalance: whiteBalance, faceLandmarks: faceLandmarks, leftEyeBB: leftEyeBB, rightEyeBB: rightEyeBB, flashSettings: flashSetting, imageTransforms: imageTransforms)
     }
     
+    static func printPhotoData(photo: AVCapturePhoto) {
+        let exif = photo.metadata["{Exif}"] as! [String: Any]
+        let iso = (exif["ISOSpeedRatings"] as! Array)[0] as Float
+        let exposureTime = exif["ExposureTime"] as! Float64
+        print("ISO :: \(iso) | Exposure :: \(exposureTime)")
+    }
+    
     func prettyPrint() {
         print("ISO :: \(iso) | Exposure Time :: \(exposureTime) | White Balance (x: \(whiteBalance.x), y: \(whiteBalance.y)) | Flash Settings :: \(flashSettings.area)/\(flashSettings.areas) | Image Transforms :: \(self.imageTransforms.getStringRepresentation())")
     }
@@ -346,7 +353,7 @@ func isLightingEqual(points: (CGPoint, CGPoint), imageByteBuffer: ImageByteBuffe
     
     guard let B = imageByteBuffer.sampleLandmarkRegion(landmarkPoint: points.1) else { return nil }
     let B_exposureScore = getExposureScore(intensity: B, standardizedExposureData: standardizedExposureData)
-    print("A vs B | \(A_exposureScore) vs \(B_exposureScore)")
+    //print("A vs B | \(A_exposureScore) vs \(B_exposureScore)")
     /*
     if A > 20 && B > 20 {
         let ratio = abs(A - B) / A
@@ -410,7 +417,7 @@ func getExposureInfo(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D, c
     let brightestPoint = imageByteBuffer.convertPortraitPointToLandscapeRatioPoint(point: sortedSamples.first!.1)
     
     let brightestExposureScore = getExposureScore(intensity: sortedSamples.first!.0, standardizedExposureData: stdExposureData)
-    print("BRIGHTEST EXPOSURE SCORE :: \(brightestExposureScore)")
+    //print("BRIGHTEST EXPOSURE SCORE :: \(brightestExposureScore)")
     let isTooBright = brightestExposureScore > 100
     /*
     let brightnessRatio = ((sortedSamples.first!.0 - sortedSamples.last!.0) / sortedSamples.last!.0)

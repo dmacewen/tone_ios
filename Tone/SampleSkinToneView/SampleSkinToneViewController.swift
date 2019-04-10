@@ -160,6 +160,10 @@ class SampleSkinToneViewController: UIViewController {
             .observeOn(MainScheduler.instance)
             .subscribeOn(MainScheduler.instance)
             .subscribe(onNext: { flashSetting in
+                self.viewModel.cameraState.flashIsSetStream.onNext(false)
+                defer { self.viewModel.cameraState.flashIsSetStream.onNext(true) }
+
+
                 if flashSetting.areas == 0 {
                     //Return Early if Areas is 0
                     print("Zero Areas Returning Early")
@@ -214,6 +218,7 @@ class SampleSkinToneViewController: UIViewController {
                             black = blackRatio
                         }
                     }
+                    
                 }
                 
                 self.FlashLayer.image = img

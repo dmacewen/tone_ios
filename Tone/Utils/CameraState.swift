@@ -39,6 +39,7 @@ class CameraState {
     
     //var flashStream: PublishSubject<FlashSettings>
     var flashStream: BehaviorSubject<FlashSettings>
+    var flashIsSetStream = PublishSubject<Bool>()
     var isAvailable =  BehaviorSubject<Bool>(value: true)
     var photoSettingsIndex = 0
     
@@ -112,6 +113,11 @@ class CameraState {
         }).disposed(by: disposeBag)
     }
     
+    func setFlash(flashSetting: FlashSettings) -> Observable<Bool> {
+        flashStream.onNext(flashSetting)
+        return flashIsSetStream.asObservable()
+    }
+    
     //Prepares numPhotos prepared settings
     func preparePhotoSettings(numPhotos: Int) -> Observable<Bool> {
         print("Preparing PhotoSettings!")
@@ -133,7 +139,7 @@ class CameraState {
     //Minimizes ISO by Maximizing Exposure Duration while targeting the Metered Exposure
     private func calculateTargetExposure() -> (CMTime, Float) {
         //return (self.captureDevice.exposureDuration, self.captureDevice.iso)
-        var maxExposureDuration = self.captureDevice.activeFormat.maxExposureDuration
+        var maxExposureDuration = CMTime.init(value: 1, timescale: 10)//self.captureDevice.activeFormat.maxExposureDuration
         let minISO = self.captureDevice.activeFormat.minISO
         
         maxExposureDuration = maxExposureDuration.convertScale(self.captureDevice.exposureDuration.timescale, method: CMTimeRoundingMethod.default)
@@ -178,6 +184,11 @@ class CameraState {
                     return Disposables.create()
                 }
             }
+    }
+    
+    func centerExposureTarget() {
+        self.captureDevice.exposurePointOfInterest = CGPoint(x: 0.5, y: 0.5)
+        captureDevice.exposureMode = AVCaptureDevice.ExposureMode.autoExpose
     }
     
     func unlockCameraSettings() {
