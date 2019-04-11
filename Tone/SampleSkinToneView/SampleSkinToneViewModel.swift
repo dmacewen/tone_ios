@@ -128,7 +128,7 @@ class SampleSkinToneViewModel {
         print("Starting Video Setup")
         video = Video(cameraState: cameraState)
         print("Ending Video Setup")
-
+        
         video.faceLandmarks
             .subscribe(onNext: { faceData in
                 if faceData == nil {
@@ -139,6 +139,7 @@ class SampleSkinToneViewModel {
                 let facePoints = faceData!.landmarks.faceContour!.pointsInImage(imageSize: self.videoSize)
                 let xValues = facePoints.map { $0.x }
                 let yValues = facePoints.map { $0.y }
+                self.drawPointsStream.onNext(facePoints)
                 
                 let max = CGPoint.init(x: xValues.max()!, y: yValues.max()!)
                 let min = CGPoint.init(x: xValues.min()!, y: yValues.min()!)

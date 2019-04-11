@@ -212,6 +212,10 @@
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="edy-f2-1BM" userLabel="UI Layer">
                                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                                         <subviews>
+                                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="pB0-0L-GAt" userLabel="Overlay Layer">
+                                                <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            </imageView>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="AcV-DJ-reh" userLabel="Bottom Elements">
                                                 <rect key="frame" x="0.0" y="609" width="375" height="203"/>
                                                 <subviews>
@@ -406,6 +410,7 @@
                     <connections>
                         <outlet property="FlashLayer" destination="6mp-Zh-erb" id="AgH-78-f59"/>
                         <outlet property="InteractionLayer" destination="aVh-aI-2c1" id="Mu9-9w-1Y5"/>
+                        <outlet property="OverlayLayer" destination="pB0-0L-GAt" id="qfe-Mh-tIe"/>
                         <outlet property="PreppingLayer" destination="WwU-P4-kM2" id="6PW-pu-FQI"/>
                         <outlet property="PreppingSpinner" destination="HxT-G1-vGI" id="ovu-7g-Mxo"/>
                         <outlet property="ProgessLayer" destination="N68-y1-g3p" id="7zd-8g-Sc7"/>

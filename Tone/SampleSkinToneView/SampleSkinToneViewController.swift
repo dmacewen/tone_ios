@@ -31,6 +31,7 @@ class SampleSkinToneViewController: UIViewController {
     @IBOutlet weak var rootView: UIView!
     
     @IBOutlet weak var FlashLayer: UIImageView!
+    @IBOutlet weak var OverlayLayer: UIImageView!
     
     @IBOutlet weak var userPrompt: UITextField!
     @IBOutlet weak var userTip: UITextField!
@@ -44,6 +45,8 @@ class SampleSkinToneViewController: UIViewController {
         print("Saving Original Screen Brightness!")
         self.viewModel.originalScreenBrightness = UIScreen.main.brightness
         
+        self.OverlayLayer.isHidden = false
+
         cancelButton.rx.tap
             .single()
             .subscribe(onNext: { _ in self.viewModel.cancel() })
@@ -241,8 +244,8 @@ class SampleSkinToneViewController: UIViewController {
                     }
                 }
                 
-                self.FlashLayer.image = img
-                //self.overlayLayer.image = img
+                //self.FlashLayer.image = img
+                self.OverlayLayer.image = img
             }).disposed(by: disposeBag)
         
         
