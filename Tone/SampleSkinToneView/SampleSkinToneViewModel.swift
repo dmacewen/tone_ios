@@ -105,6 +105,8 @@ class SampleSkinToneViewModel {
     let samplePhotos = PublishSubject<AVCapturePhoto>()
     
     let uploadProgress = BehaviorSubject<Float>(value: 0.0)
+    let videoPreviewLayerStream = BehaviorSubject<AVCaptureVideoPreviewLayer?>(value: nil)
+    let drawPointsStream = BehaviorSubject<[CGPoint]>(value: [])
     
     let flashSettings = BehaviorSubject<FlashSettings>(value: FlashSettings(area: 0, areas: 0))
     

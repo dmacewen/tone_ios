@@ -36,7 +36,8 @@ class SampleSkinToneViewController: UIViewController {
     @IBOutlet weak var userTip: UITextField!
     
     let disposeBag = DisposeBag()
-    
+    let renderer = UIGraphicsImageRenderer(size: UIScreen.main.bounds.size)
+
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Sample Skin Tone"
@@ -178,9 +179,9 @@ class SampleSkinToneViewController: UIViewController {
                 
                 print("Setting Flash! Area: \(area) Areas: \(areas)")
                 
-                let renderer = UIGraphicsImageRenderer(size: CGSize(width: (columns * checkerSize), height: (rows * checkerSize)))
+                //let renderer = UIGraphicsImageRenderer(size: CGSize(width: (columns * checkerSize), height: (rows * checkerSize)))
                 //Replace with Checkerboard CIFilter?
-                let img = renderer.image { ctx in
+                let img = self.renderer.image { ctx in
                     ctx.cgContext.setFillColor(UIColor.white.cgColor)
                     ctx.cgContext.fill(CGRect(x: 0, y: 0, width: width, height: height))
                     
@@ -220,6 +221,29 @@ class SampleSkinToneViewController: UIViewController {
                 print("Done Drawing!")
             }).disposed(by: disposeBag)
         
+        viewModel.drawPointsStream
+            .observeOn(MainScheduler.instance)
+            .subscribeOn(MainScheduler.instance)
+            .distinctUntilChanged()
+            .subscribe(onNext: { points in
+                let size = 5
+                
+                //REUSE THIS!
+                //let renderer = UIGraphicsImageRenderer(size: CGSize(width: width, height: height))
+                
+                //Replace with Checkerboard CIFilter?
+                let img = self.renderer.image { ctx in
+                    
+                    ctx.cgContext.setFillColor(UIColor.red.cgColor)
+                
+                    for point in points {
+                        ctx.cgContext.fill(CGRect(x: Int(point.x), y: Int(point.y), width: size, height: size))
+                    }
+                }
+                
+                self.FlashLayer.image = img
+                //self.overlayLayer.image = img
+            }).disposed(by: disposeBag)
         
         
         viewModel.sampleState
@@ -236,6 +260,9 @@ class SampleSkinToneViewController: UIViewController {
                 
                 //Set Video Preview Layer to Root View
                 self.InteractionLayer.layer.insertSublayer(videoPreviewLayer, below: self.UILayer.layer)
+                
+                //Provide Access to video preview layer for converting between coordinate systems.... there might be a better way?
+                self.viewModel.videoPreviewLayerStream.onNext(videoPreviewLayer)
             }, onError: { error in print(error) } ).disposed(by: disposeBag)
     }
     

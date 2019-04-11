@@ -12,157 +12,6 @@ import RxSwift
 import UIKit
 import Vision
 
-extension CGPoint {
-    static func - (left: CGPoint, right: CGPoint) -> CGPoint {
-        return CGPoint(x: left.x - right.x, y: left.y - right.y)
-    }
-    
-    static func + (left: CGPoint, right: CGPoint) -> CGPoint {
-        return CGPoint(x: left.x + right.x, y: left.y + right.y)
-    }
-    
-    static func - (left: CGPoint, right: CGVector) -> CGPoint {
-        return CGPoint(x: left.x - right.dx, y: left.y - right.dy)
-    }
-    
-    static func + (left: CGPoint, right: CGVector) -> CGPoint {
-        return CGPoint(x: left.x + right.dx, y: left.y + right.dy)
-    }
-    
-    static func * (left: CGPoint, right: CGFloat) -> CGPoint {
-        return CGPoint(x: left.x * right, y: left.y * right)
-    }
-    
-    func getOffset (_ right: CGPoint) -> CGVector {
-        return CGVector(dx: right.x - self.x, dy: right.y - self.y)
-    }
-    
-    func toInt() -> CGPoint {
-        return CGPoint.init(x: Int(self.x), y: Int(self.y))
-    }
-}
-
-extension CGRect {
-    static func fromPoints<T:MutableCollection>(points: T, imgSize: CGSize) -> CGRect where T.Iterator.Element == CGPoint {
-        var minX = points.map { $0.x }.min()!
-        if minX < 0 { minX = 0 }
-        var maxX = points.map { $0.x }.max()!
-        if maxX > imgSize.width { maxX = imgSize.width }//Landmarks can sometimes be placed outside image?
-        let width = maxX - minX
-
-        var minY = points.map { $0.y }.min()!
-        if minY < 0 { minY = 0 }
-        var maxY = points.map { $0.y }.max()!
-        if maxY > imgSize.height { maxY = imgSize.height }
-        let height = maxY - minY
-        
-        precondition(minX + width < imgSize.width)
-        precondition(minY + height < imgSize.height)
-        
-        return CGRect(x: minX, y: minY, width: width, height: height)
-    }
-    
-    static func fromBoundingBoxes<T:MutableCollection>(rectangles: T, imgSize: CGSize) -> CGRect where T.Iterator.Element == CGRect{
-        var minX = rectangles.map { $0.minX }.min()!
-        if minX < 0 { minX = 0 }
-        var maxX = rectangles.map { $0.maxX }.max()!
-        if maxX > imgSize.width { maxX = imgSize.width }//Landmarks can sometimes be placed outside image?
-        let width = maxX - minX
-        
-        var minY = rectangles.map { $0.minY }.min()!
-        if minY < 0 { minY = 0 }
-        var maxY = rectangles.map { $0.maxY }.max()!
-        if maxY > imgSize.height { maxY = imgSize.height }
-        let height = maxY - minY
-        
-        precondition(minX + width < imgSize.width)
-        precondition(minY + height < imgSize.height)
-        
-        return CGRect(x: minX, y: minY, width: width, height: height)
-    }
-    
-    static func * (left: CGRect, right: CGFloat) -> CGRect {
-        return CGRect(x: left.minX * right, y: left.minY * right, width: left.width * right, height: left.height * right)
-    }
-    
-    func addOffsetVector(vector: CGVector, imgSize: CGSize) -> CGRect {
-        let x = self.minX + vector.dx
-        let y = self.minY + vector.dy
-        
-        precondition(x >= 0)
-        precondition(y >= 0)
-        precondition(x < imgSize.width)
-        precondition(y < imgSize.height)
-        
-        return CGRect(x: x, y: y, width: self.width, height: self.height)
-    }
-    
-    func subOffsetVector(vector: CGVector, imgSize: CGSize) -> CGRect {
-        let x = self.minX - vector.dx
-        let y = self.minY - vector.dy
-        
-        precondition(x >= 0)
-        precondition(y >= 0)
-        precondition(x < imgSize.width)
-        precondition(y < imgSize.height)
-        
-        return CGRect(x: x, y: y, width: self.width, height: self.height)
-    }
-    
-    func toInt() -> CGRect {
-        return CGRect(x: Int(self.minX), y: Int(self.minY), width: Int(self.width), height: Int(self.height))
-    }
-}
-
-struct WhiteBalance : Codable {
-    let x: Float
-    let y: Float
-}
-
-struct ImageTransforms : Codable {
-    var isGammaSBGR = false
-    var isRotated = false
-    var isCropped = false
-    var isScaled = false
-    var scaleRatio: CGFloat = 1.0
-    
-    func getStringRepresentation() -> String{
-        return "(isGammaSBGR :: \(self.isGammaSBGR) | isRotated :: \(self.isRotated)) | isCropped :: \(self.isCropped) | isScaled :: \(self.isScaled) | scaleRatio:: \(self.scaleRatio)"
-    }
-}
-
-struct MetaData : Codable {
-    let iso: Float
-    let exposureTime: Float64
-    let whiteBalance: WhiteBalance
-    let faceLandmarks: [CGPoint]
-    let leftEyeBB: CGRect
-    let rightEyeBB: CGRect
-    let faceLandmarksSource = "apple"
-    let flashSettings: FlashSettings
-    let imageTransforms: ImageTransforms
-    
-    
-    static func getFrom(cameraState: CameraState, captureMetadata: [String: Any], faceLandmarks: [CGPoint], leftEyeBB: CGRect, rightEyeBB: CGRect, flashSetting: FlashSettings, imageTransforms: ImageTransforms) -> MetaData {
-        let meta = captureMetadata
-        let exif = meta["{Exif}"] as! [String: Any]
-        //print("Exif :: \(exif)")
-        
-        let iso = (exif["ISOSpeedRatings"] as! Array)[0] as Float
-        let exposureTime = exif["ExposureTime"] as! Float64
-        let whiteBalanceChromacity = cameraState.captureDevice.chromaticityValues(for: cameraState.captureDevice.deviceWhiteBalanceGains)
-        let whiteBalance = WhiteBalance(x: whiteBalanceChromacity.x, y: whiteBalanceChromacity.y)
-        
-        //let faceLandmarksInt = faceLandmarks.map { CGPoint(x: Int($0.x), y: Int($0.y)) }
-        
-        return MetaData(iso: iso, exposureTime: exposureTime, whiteBalance: whiteBalance, faceLandmarks: faceLandmarks, leftEyeBB: leftEyeBB, rightEyeBB: rightEyeBB, flashSettings: flashSetting, imageTransforms: imageTransforms)
-    }
-    
-    func prettyPrint() {
-        print("ISO :: \(iso) | Exposure Time :: \(exposureTime) | White Balance (x: \(whiteBalance.x), y: \(whiteBalance.y)) | Flash Settings :: \(flashSettings.area)/\(flashSettings.areas) | Image Transforms :: \(self.imageTransforms.getStringRepresentation())")
-    }
-}
-
 struct ImageData {
     let faceData: Data
     let leftEyeData: Data
@@ -231,30 +80,6 @@ struct ImageByteBuffer {
 
         return averageSubpixelValue
     }
-    /*
-    func maxLandmarkRegion(landmarkPoint: CGPoint) -> Float? {
-        let point = convertPortraitPointToLandscapePoint(point: landmarkPoint)
-        
-        if !validPoint(point) { return nil }
-        
-        let startPoint = CGPoint.init(x: point.x - sampleHalfSideLength, y: point.y - sampleHalfSideLength)
-        let endPoint = CGPoint.init(x: point.x + sampleHalfSideLength, y: point.y + sampleHalfSideLength)
-        
-        if !validPoint(startPoint) || !validPoint(endPoint) { return nil }
-        
-        var sum = 0
-        for y in Int(startPoint.y) ..< Int(endPoint.y) {
-            let bufferRowOffset = y * bytesPerRow
-            let start = bufferRowOffset + Int(startPoint.x)
-            let end = bufferRowOffset + Int(endPoint.x)
-            self.byteBuffer[start..<end].max()
-        }
-        
-        let averageSubpixelValue = Float(sum) / Float(pow((2 * sampleHalfSideLength) + 1, 2)) // Area of the sample x 3 sub pixels each
-        
-        return averageSubpixelValue
-    }
- */
 }
 
 func getRightEyePoint(landmarks: [CGPoint]) -> CGPoint {
@@ -352,21 +177,7 @@ func isLightingEqual(points: (CGPoint, CGPoint), imageByteBuffer: ImageByteBuffe
     guard let B = imageByteBuffer.sampleLandmarkRegion(landmarkPoint: points.1) else { return nil }
     let B_exposureScore = getExposureScore(intensity: B, exposureRatios: exposureRatios)
     //print("A vs B | \(A_exposureScore) vs \(B_exposureScore)")
-    /*
-    if A > 20 && B > 20 {
-        let ratio = abs(A - B) / A
-        //print("RATIO :: \(ratio)")
-        if ratio > 0.7 {
-        //if ratio > 0.9 {
-            return false
-        }
-    } else {
-        if abs(A - B) > 4 {
-        //if abs(A - B) > 10 {
-            return false
-        }
-    }
- */
+
     if abs(A_exposureScore - B_exposureScore) > 25 {
         return false
     }
@@ -618,3 +429,4 @@ func scaleImage(_ input: CIImage, scale: CGFloat, _ imageTransforms: inout Image
     imageTransforms.isScaled = true
     return toScaleFilter!.outputImage!
 }
+
