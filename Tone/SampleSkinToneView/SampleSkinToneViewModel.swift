@@ -121,13 +121,8 @@ class SampleSkinToneViewModel {
     
     init(user: User) {
         self.user = user
-        print("STARING PREVIEW SETUP")
-        print("Starting Camera Setup")
         cameraState = CameraState(flashStream: flashSettings)
-        print("Ending Camera Setup")
-        print("Starting Video Setup")
         video = Video(cameraState: cameraState)
-        print("Ending Video Setup")
         
         video.faceLandmarks
             .subscribe(onNext: { faceData in
@@ -272,28 +267,48 @@ class SampleSkinToneViewModel {
             .toArray()
     }
     
+    private func getEncapsulatingSize(sizes: [CGSize]) -> CGSize {
+        let maxWidth = sizes.map { $0.width }.max()!
+        let maxHeight = sizes.map { $0.height }.max()!
+        return CGSize.init(width: maxWidth, height: maxHeight)
+    }
+    
     
     private func processSamplePhotos(_ photoData: [(AVCapturePhoto, FlashSettings)?]) -> Observable<[ImageData]> {
         let context = CIContext()
         
         return Observable.from(photoData)
             .observeOn(MainScheduler.instance) //Observe on background thread to free up the main thread?
-            .flatMap { capture in self.getFaceLandmarks(capture: capture!) }
+            .flatMap { photoData -> Observable<FaceCapture?> in
+                let (capturePhoto, flashSettings) = photoData!
+                return FaceCapture.create(pixelBuffer: capturePhoto.pixelBuffer! , orientation: self.cameraState.exifOrientationForCurrentDeviceOrientation(), videoPreviewLayer: try! self.videoPreviewLayerStream.value()!, flashSettings: flashSettings)
+            }
+            .map { $0! } //TODO: Better error handling... All faces must have landmarks
             .toArray()
-            .map { photoData -> [ImageData] in
-                let allFaceLandmarks = photoData.map { $0!.0 }
+            .map { faceCaptures -> [ImageData] in
+                //Find Face Crops and Left, Right Eye Crops
+                //let leftEyeBBs = faceCaptures.map { bufferBoundingBox($0.getLeftEyeImageBB()!, imgSize: $0.imageSize) }
+                let leftEyeSizes = faceCaptures.map { $0.getLeftEyeImageSize()! }
+                let leftEyeCropSize = self.getEncapsulatingSize(sizes: leftEyeSizes) * 1.25 //Add a buffer of 25%
                 
-                let bufferWidth = CVPixelBufferGetWidth(photoData[0]!.1.pixelBuffer!)
-                let bufferHeight = CVPixelBufferGetHeight(photoData[0]!.1.pixelBuffer!)
-                let bufferSize = CGSize.init(width: bufferHeight, height: bufferWidth)
+                let rightEyeSizes = faceCaptures.map { $0.getRightEyeImageSize()! }
+                let rightEyeCropSize = self.getEncapsulatingSize(sizes: rightEyeSizes) * 1.25 //Add a buffer of 25%
                 
-                var crops = calculateFaceCrop(faceLandmarks: allFaceLandmarks, imgSize: bufferSize)
-                crops.reverse()
-                let largestXCoord = crops.max(by: { A, B in A.minX > B.minX })
+                let faceSizes = faceCaptures.map { $0.getAllPointsSize()! }
+                var faceCropSize = self.getEncapsulatingSize(sizes: faceSizes) * 1.10 //Add a buffer of 25%
+                let faceBBs = faceCaptures.map { $0.getAllPointsBB()! }
+                let scaledFaceBBs = faceBBs.map { $0.scaleToSize(size: faceCropSize, imgSize: faceCaptures[0].imageSize) }
+                let encapsulatingMaxY = scaledFaceBBs.map { $0.maxY }.max()!
+                let faceCropHeight = encapsulatingMaxY // We want the largest Y Value after scaling up...
                 
-                var eyeCrops = calculateEyeCrops(faceLandmarks: allFaceLandmarks, imgSize: bufferSize)
-                eyeCrops.reverse()
-
+                return faceCaptures.map { faceCapture -> ImageData in
+                    let leftEyeCrop = faceCapture.getLeftEyeImageBB()!.scaleToSize(size: leftEyeCropSize, imgSize: faceCapture.imageSize)
+                    let rightEyeCrop = faceCapture.getRightEyeImageBB()!.scaleToSize(size: rightEyeCropSize, imgSize: faceCapture.imageSize)
+                    var faceCrop = faceCapture.getAllPointsBB()!.scaleToSize(size: faceCropSize, imgSize: faceCapture.imageSize)
+                    faceCrop = CGRect.init(x: faceCrop.minX, y: 0, width: faceCrop.width, height: faceCropHeight)
+                    
+                    //DONT FORGET TO TRANSFER EYE WIDTH AS WELL!
+                }
                 
                 return photoData.map { photoDatum -> ImageData in
                     guard let (faceLandmarks, capturePhoto, flashSettings) = photoDatum else {

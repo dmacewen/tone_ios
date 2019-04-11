@@ -44,8 +44,6 @@ class SampleSkinToneViewController: UIViewController {
         title = "Sample Skin Tone"
         print("Saving Original Screen Brightness!")
         self.viewModel.originalScreenBrightness = UIScreen.main.brightness
-        
-        self.OverlayLayer.isHidden = false
 
         cancelButton.rx.tap
             .single()

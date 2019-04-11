@@ -77,9 +77,34 @@ extension CGRect {
         
         return CGRect(x: minX, y: minY, width: width, height: height)
     }
+    /*
+    static func from(point: CGPoint, size: CGSize) -> CGRect {
+        return CGRect.init(x: point.x, y: point.y, width: size.width, height: size.height)
+    }
+ */
     
     static func * (left: CGRect, right: CGFloat) -> CGRect {
         return CGRect(x: left.minX * right, y: left.minY * right, width: left.width * right, height: left.height * right)
+    }
+    
+    func scaleToSize(size: CGSize, imgSize: CGSize) -> CGRect {
+        let widthDiff = abs(self.width - size.width)
+        let heightDiff = abs(self.height - size.height)
+        
+        var newX = self.minX - floor(widthDiff / 2)
+        var newY = self.minY - floor(heightDiff / 2)
+        
+        if newX < 0 { newX = 0 }
+        if newY < 0 { newY = 0 }
+        if (newX + size.width) > imgSize.width { newX -= ((newX + size.width) - imgSize.width) }
+        if (newY + size.height) > imgSize.height { newY -= ((newY + size.height) - imgSize.height) }
+        
+        precondition(newX >= 0)
+        precondition(newY >= 0)
+        
+        let origin = CGPoint(x: newX, y: newY)
+        
+        return CGRect.init(origin: origin, size: size)
     }
     
     func addOffsetVector(vector: CGVector, imgSize: CGSize) -> CGRect {
@@ -108,5 +133,15 @@ extension CGRect {
     
     func toInt() -> CGRect {
         return CGRect(x: Int(self.minX), y: Int(self.minY), width: Int(self.width), height: Int(self.height))
+    }
+}
+
+extension CGSize {
+    static func from(rect: CGRect) -> CGSize {
+        return CGSize.init(width: rect.width, height: rect.height)
+    }
+    
+    static func * (left: CGSize, right: CGFloat) -> CGSize {
+        return CGSize(width: left.width * right, height: left.height * right)
     }
 }

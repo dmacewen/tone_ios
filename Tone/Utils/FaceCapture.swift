@@ -13,15 +13,31 @@ import Vision
 
 class FaceCapture {
     let pixelBuffer: CVPixelBuffer
+    private var faceLandmarks: VNFaceLandmarks2D
     let orientation: CGImagePropertyOrientation
-    var faceLandmarks: Observable<VNFaceLandmarks2D?>
     let videoPreviewLayer: AVCaptureVideoPreviewLayer
+    let flashSettings: FlashSettings
+    let imageSize: CGSize
     
-    init(pixelBuffer: CVPixelBuffer, orientation: CGImagePropertyOrientation, videoPreviewLayer: AVCaptureVideoPreviewLayer) {
+    init(pixelBuffer: CVPixelBuffer, faceLandmarks: VNFaceLandmarks2D, orientation: CGImagePropertyOrientation, videoPreviewLayer: AVCaptureVideoPreviewLayer, flashSettings: FlashSettings = FlashSettings()) {
         self.pixelBuffer = pixelBuffer
+        self.faceLandmarks = faceLandmarks
         self.orientation = orientation
-        self.faceLandmarks = FaceCapture.getFaceLandmarks(pixelBuffer, orientation)
         self.videoPreviewLayer = videoPreviewLayer
+        self.flashSettings = flashSettings
+        self.imageSize = CGSize.init(width: CVPixelBufferGetWidth(pixelBuffer), height: CVPixelBufferGetHeight(pixelBuffer))
+    }
+ 
+    
+    static func create(pixelBuffer: CVPixelBuffer, orientation: CGImagePropertyOrientation, videoPreviewLayer: AVCaptureVideoPreviewLayer, flashSettings: FlashSettings = FlashSettings()) -> Observable<FaceCapture?> {
+        
+        return FaceCapture.getFaceLandmarks(pixelBuffer, orientation)
+            .map { faceLandmarks in
+                guard let foundFaceLandmarks = faceLandmarks else { return nil }
+                
+                return FaceCapture(pixelBuffer: pixelBuffer, faceLandmarks: foundFaceLandmarks, orientation: orientation, videoPreviewLayer: videoPreviewLayer, flashSettings: flashSettings)
+            }
+
     }
     
     private static func getFaceLandmarks(_ pixelBuffer: CVPixelBuffer, _ orientation: CGImagePropertyOrientation) -> Observable<VNFaceLandmarks2D?> {
@@ -46,8 +62,7 @@ class FaceCapture {
                 }
                 
                 if results.count > 0 {
-                    let faceLandmarks = results[0].landmarks!
-                    observable.onNext(faceLandmarks)
+                    observable.onNext(results[0].landmarks)
                     observable.onCompleted()
                 } else {
                     observable.onNext(nil)
@@ -70,13 +85,49 @@ class FaceCapture {
         }
     }
     
-    func landmarkToImagePoint(point: vector_float2, faceBB: CGRect) -> CGPoint {
-        return VNImagePointForFaceLandmarkPoint(point, faceBB, CVPixelBufferGetWidth(pixelBuffer), CVPixelBufferGetHeight(pixelBuffer))
+    func getJawDisplayPoints() -> [CGPoint]? {
+        guard let faceContour = self.faceLandmarks.faceContour else { return nil }
+        
+        return faceContour
+            .pointsInImage(imageSize: self.imageSize)
+            .map { self.imagetoDisplayPoint(point: $0) }
     }
     
-    func landmarkToDisplayPoint(point: vector_float2, faceBB: CGRect) -> CGPoint {
-        let imagePoint = landmarkToImagePoint(point: point, faceBB: faceBB)
-        return imagetoDisplayPoint(point: imagePoint)
+    func getAllImagePoints() -> [CGPoint]? {
+        guard let allPoints = self.faceLandmarks.allPoints else { return nil }
+        return allPoints.pointsInImage(imageSize: self.imageSize)
+    }
+    
+    func getAllPointsBB() -> CGRect? {
+        guard let allPoints = self.getAllImagePoints() else { return nil }
+        return CGRect.fromPoints(points: allPoints,  imgSize: self.imageSize)
+    }
+    
+    func getAllPointsSize() -> CGSize? {
+        guard let allPointsBB = self.getAllPointsBB() else { return nil }
+        return CGSize.from(rect: allPointsBB)
+    }
+    
+    func getLeftEyeImageBB() -> CGRect? {
+        guard let leftEye = self.faceLandmarks.leftEye else { return nil }
+        let leftEyePoints = leftEye.pointsInImage(imageSize: self.imageSize)
+        return CGRect.fromPoints(points: leftEyePoints, imgSize: self.imageSize)
+    }
+    
+    func getLeftEyeImageSize() -> CGSize? {
+        guard let leftEyeBB = self.getLeftEyeImageBB() else { return nil }
+        return CGSize.from(rect: leftEyeBB)
+    }
+    
+    func getRightEyeImageBB() -> CGRect? {
+        guard let rightEye = self.faceLandmarks.rightEye else { return nil }
+        let rightEyePoints = rightEye.pointsInImage(imageSize: self.imageSize)
+        return CGRect.fromPoints(points: rightEyePoints, imgSize: self.imageSize)
+    }
+    
+    func getRightEyeImageSize() -> CGSize? {
+        guard let rightEyeBB = self.getRightEyeImageBB() else { return nil }
+        return CGSize.from(rect: rightEyeBB)
     }
     
     func displayToImagePoint(point: CGPoint) -> CGPoint {
@@ -85,5 +136,13 @@ class FaceCapture {
     
     func imagetoDisplayPoint(point: CGPoint) -> CGPoint {
         return videoPreviewLayer.layerPointConverted(fromCaptureDevicePoint: point)
+    }
+    
+    func getCIImage(crop: CGRect?) -> CIImage {
+        let image = CIImage.init(cvImageBuffer: self.pixelBuffer)
+        if crop != nil {
+            return image.cropped(to: crop!)
+        }
+        return image
     }
 }
