@@ -28,6 +28,7 @@
 		86C0B8BA224BFEBB00B6C33F /* Alamofire.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 86F138DB21877F89004C6092 /* Alamofire.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		86C0B8BB224BFEC200B6C33F /* RxBlocking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 86F138D821877F89004C6092 /* RxBlocking.framework */; };
 		86C0B8BC224BFEC200B6C33F /* RxBlocking.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 86F138D821877F89004C6092 /* RxBlocking.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		86ED6FCA22611D7F00124A1F /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86ED6FC922611D7F00124A1F /* Image.swift */; };
 		86F138AA218768C2004C6092 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F138A9218768C2004C6092 /* AppDelegate.swift */; };
 		86F138AF218768C2004C6092 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 86F138AD218768C2004C6092 /* Main.storyboard */; };
 		86F138B1218768C4004C6092 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 86F138B0218768C4004C6092 /* Assets.xcassets */; };
@@ -101,6 +102,7 @@
 		869FB6D0218D0DDC00B257D2 /* RxSwiftExt.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxSwiftExt.framework; path = Carthage/Build/iOS/RxSwiftExt.framework; sourceTree = "<group>"; };
 		86C0B8B5224BFDC500B6C33F /* project.pbxproj */ = {isa = PBXFileReference; lastKnownFileType = text.pbxproject; name = project.pbxproj; path = Tone.xcodeproj/project.pbxproj; sourceTree = "<group>"; };
 		86D5C7452187898000D5E15E /* RxTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxTest.framework; path = Carthage/Build/iOS/RxTest.framework; sourceTree = "<group>"; };
+		86ED6FC922611D7F00124A1F /* Image.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Image.swift; sourceTree = "<group>"; };
 		86F138A6218768C2004C6092 /* Tone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		86F138A9218768C2004C6092 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		86F138AE218768C2004C6092 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -191,6 +193,7 @@
 				86131004218B9E0A00BD1305 /* CameraState.swift */,
 				8685ADA4219CA7B900B66F90 /* Camera.swift */,
 				8685ADA6219CA7EA00B66F90 /* Video.swift */,
+				86ED6FC922611D7F00124A1F /* Image.swift */,
 				866C405C2190CB69007BABDE /* ImageUtils.swift */,
 				866C405E21911709007BABDE /* ImageDataUpload.swift */,
 				86F9E728225E9C5C00E6E52E /* CGExtensions.swift */,
@@ -449,6 +452,7 @@
 				86193C8B21891B29001F5C4E /* HomeViewModel.swift in Sources */,
 				86F1BCAA218D219E00A18457 /* serialMap.swift in Sources */,
 				8651B60E2187D72200FB7A3A /* LoginViewController.swift in Sources */,
+				86ED6FCA22611D7F00124A1F /* Image.swift in Sources */,
 				864A580C2187C8EB006FFC1D /* Globals.swift in Sources */,
 				86131005218B9E0A00BD1305 /* CameraState.swift in Sources */,
 				86193C8D21891B36001F5C4E /* HomeViewController.swift in Sources */,

@@ -13,21 +13,24 @@ import Vision
 
 class FaceCapture {
     let pixelBuffer: CVPixelBuffer
-    private var faceLandmarks: VNFaceLandmarks2D
     let orientation: CGImagePropertyOrientation
     let videoPreviewLayer: AVCaptureVideoPreviewLayer
     let flashSettings: FlashSettings
     let imageSize: CGSize
+    let rawMetadata: [String: Any]
     
-    init(pixelBuffer: CVPixelBuffer, faceLandmarks: VNFaceLandmarks2D, orientation: CGImagePropertyOrientation, videoPreviewLayer: AVCaptureVideoPreviewLayer, flashSettings: FlashSettings = FlashSettings()) {
+    //Keep private to keep us from accessing in its raw form (it can be kind of confusing/messy to interact with)
+    private var faceLandmarks: VNFaceLandmarks2D
+    
+    init(pixelBuffer: CVPixelBuffer, faceLandmarks: VNFaceLandmarks2D, orientation: CGImagePropertyOrientation, videoPreviewLayer: AVCaptureVideoPreviewLayer, flashSettings: FlashSettings = FlashSettings(), rawMetadata: [String: Any]) {
         self.pixelBuffer = pixelBuffer
         self.faceLandmarks = faceLandmarks
         self.orientation = orientation
         self.videoPreviewLayer = videoPreviewLayer
         self.flashSettings = flashSettings
         self.imageSize = CGSize.init(width: CVPixelBufferGetWidth(pixelBuffer), height: CVPixelBufferGetHeight(pixelBuffer))
+        self.rawMetadata = rawMetadata
     }
- 
     
     static func create(pixelBuffer: CVPixelBuffer, orientation: CGImagePropertyOrientation, videoPreviewLayer: AVCaptureVideoPreviewLayer, flashSettings: FlashSettings = FlashSettings()) -> Observable<FaceCapture?> {
         
@@ -35,9 +38,18 @@ class FaceCapture {
             .map { faceLandmarks in
                 guard let foundFaceLandmarks = faceLandmarks else { return nil }
                 
-                return FaceCapture(pixelBuffer: pixelBuffer, faceLandmarks: foundFaceLandmarks, orientation: orientation, videoPreviewLayer: videoPreviewLayer, flashSettings: flashSettings)
+                return FaceCapture(pixelBuffer: pixelBuffer, faceLandmarks: foundFaceLandmarks, orientation: orientation, videoPreviewLayer: videoPreviewLayer, flashSettings: flashSettings, rawMetadata: [:])
             }
-
+    }
+    
+    static func create(capturePhoto: AVCapturePhoto, orientation: CGImagePropertyOrientation, videoPreviewLayer: AVCaptureVideoPreviewLayer, flashSettings: FlashSettings = FlashSettings()) -> Observable<FaceCapture?> {
+        
+        return FaceCapture.getFaceLandmarks(capturePhoto.pixelBuffer!, orientation)
+            .map { faceLandmarks in
+                guard let foundFaceLandmarks = faceLandmarks else { return nil }
+                
+                return FaceCapture(pixelBuffer: capturePhoto.pixelBuffer!, faceLandmarks: foundFaceLandmarks, orientation: orientation, videoPreviewLayer: videoPreviewLayer, flashSettings: flashSettings, rawMetadata: capturePhoto.metadata)
+            }
     }
     
     private static func getFaceLandmarks(_ pixelBuffer: CVPixelBuffer, _ orientation: CGImagePropertyOrientation) -> Observable<VNFaceLandmarks2D?> {
@@ -137,12 +149,19 @@ class FaceCapture {
     func imagetoDisplayPoint(point: CGPoint) -> CGPoint {
         return videoPreviewLayer.layerPointConverted(fromCaptureDevicePoint: point)
     }
-    
-    func getCIImage(crop: CGRect?) -> CIImage {
+    /*
+    private func getCIImage(crop: CGRect?) -> CIImage {
         let image = CIImage.init(cvImageBuffer: self.pixelBuffer)
         if crop != nil {
             return image.cropped(to: crop!)
         }
         return image
+    }
+ */
+    
+    func getImage() -> Image {
+        let image = CIImage.init(cvImageBuffer: self.pixelBuffer)
+        let landmarks = self.getAllImagePoints()!
+        return Image(image: image, landmarks: landmarks)
     }
 }

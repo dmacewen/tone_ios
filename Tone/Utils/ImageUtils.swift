@@ -16,7 +16,7 @@ struct ImageData {
     let faceData: Data
     let leftEyeData: Data
     let rightEyeData: Data
-    let metaData: MetaData
+    let setMetadata: SetMetadata
 }
 
 struct ImageByteBuffer {
