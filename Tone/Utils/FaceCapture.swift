@@ -17,6 +17,7 @@ class FaceCapture {
     let videoPreviewLayer: AVCaptureVideoPreviewLayer
     let flashSettings: FlashSettings
     let imageSize: CGSize
+    let landmarkImageSize: CGSize
     let rawMetadata: [String: Any]
     
     //Keep private to keep us from accessing in its raw form (it can be kind of confusing/messy to interact with)
@@ -29,6 +30,7 @@ class FaceCapture {
         self.videoPreviewLayer = videoPreviewLayer
         self.flashSettings = flashSettings
         self.imageSize = CGSize.init(width: CVPixelBufferGetWidth(pixelBuffer), height: CVPixelBufferGetHeight(pixelBuffer))
+        self.landmarkImageSize = FaceCapture.convertSize(self.imageSize)
         self.rawMetadata = rawMetadata
     }
     
@@ -50,6 +52,16 @@ class FaceCapture {
                 
                 return FaceCapture(pixelBuffer: capturePhoto.pixelBuffer!, faceLandmarks: foundFaceLandmarks, orientation: orientation, videoPreviewLayer: videoPreviewLayer, flashSettings: flashSettings, rawMetadata: capturePhoto.metadata)
             }
+    }
+    
+    private static func convertSize(_ size: CGSize) -> CGSize {
+        return CGSize.init(width: size.height, height: size.width)
+    }
+    
+    private static func convertPoint(_ point: CGPoint, size: CGSize) -> CGPoint {
+        return CGPoint.init(x: size.height - point.y, y: size.width - point.x)
+        //return CGPoint.init(x: point.y, y: size.width - point.x)
+
     }
     
     private static func getFaceLandmarks(_ pixelBuffer: CVPixelBuffer, _ orientation: CGImagePropertyOrientation) -> Observable<VNFaceLandmarks2D?> {
@@ -101,12 +113,14 @@ class FaceCapture {
         guard let faceContour = self.faceLandmarks.faceContour else { return nil }
         
         return faceContour
-            .pointsInImage(imageSize: self.imageSize)
+            .pointsInImage(imageSize: self.landmarkImageSize)
+            .map { FaceCapture.convertPoint($0, size: self.landmarkImageSize) }
             .map { self.imagetoDisplayPoint(point: $0) }
     }
     
     func getAllImagePoints() -> [CGPoint]? {
         guard let allPoints = self.faceLandmarks.allPoints else { return nil }
+        //return allPoints.pointsInImage(imageSize: self.landmarkImageSize).map { FaceCapture.convertPoint($0, size: self.landmarkImageSize) }
         return allPoints.pointsInImage(imageSize: self.imageSize)
     }
     
@@ -122,7 +136,7 @@ class FaceCapture {
     
     func getLeftEyeImageBB() -> CGRect? {
         guard let leftEye = self.faceLandmarks.leftEye else { return nil }
-        let leftEyePoints = leftEye.pointsInImage(imageSize: self.imageSize)
+        let leftEyePoints = leftEye.pointsInImage(imageSize: self.landmarkImageSize).map { FaceCapture.convertPoint($0, size: self.landmarkImageSize) }
         return CGRect.fromPoints(points: leftEyePoints, imgSize: self.imageSize)
     }
     
@@ -133,7 +147,7 @@ class FaceCapture {
     
     func getRightEyeImageBB() -> CGRect? {
         guard let rightEye = self.faceLandmarks.rightEye else { return nil }
-        let rightEyePoints = rightEye.pointsInImage(imageSize: self.imageSize)
+        let rightEyePoints = rightEye.pointsInImage(imageSize: self.landmarkImageSize).map { FaceCapture.convertPoint($0, size: self.landmarkImageSize) }
         return CGRect.fromPoints(points: rightEyePoints, imgSize: self.imageSize)
     }
     

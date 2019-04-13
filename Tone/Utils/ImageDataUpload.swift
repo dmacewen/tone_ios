@@ -24,7 +24,7 @@ func uploadImageData(imageData: [ImageData], progressBar: BehaviorSubject<Float>
         
         Alamofire.upload(
             multipartFormData: { multipartFormData in
-                let metaData: [MetaData] = imageData.map { $0.metaData }
+                let metaData: [SetMetadata] = imageData.map { $0.setMetadata }
                 for (index, imageDatum) in imageData.enumerated() {
                     //let pngData = imageDatum.image.pngData()
                     let pngDataFace = imageDatum.faceData

@@ -53,8 +53,8 @@ extension CGRect {
         if maxY > imgSize.height { maxY = imgSize.height }
         let height = maxY - minY
         
-        precondition(minX + width < imgSize.width)
-        precondition(minY + height < imgSize.height)
+        precondition(floor(minX + width) <= imgSize.width)
+        precondition(floor(minY + height) <= imgSize.height)
         
         return CGRect(x: minX, y: minY, width: width, height: height)
     }

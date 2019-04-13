@@ -240,7 +240,7 @@ class SampleSkinToneViewModel {
                 if case .upload(let imageData) = $0 {
                     print("Uploading Images!")
                     for photo in imageData {
-                        photo.metaData.prettyPrint()
+                        photo.setMetadata.prettyPrint()
                     }
                     
                     uploadImageData(imageData: imageData, progressBar: self.uploadProgress, user: self.user)
@@ -289,10 +289,10 @@ class SampleSkinToneViewModel {
                 //Find Face Crops and Left, Right Eye Crops
                 //let leftEyeBBs = faceCaptures.map { bufferBoundingBox($0.getLeftEyeImageBB()!, imgSize: $0.imageSize) }
                 let leftEyeSizes = faceCaptures.map { $0.getLeftEyeImageSize()! }
-                let leftEyeCropSize = self.getEncapsulatingSize(sizes: leftEyeSizes) * 1.25 //Add a buffer of 25%
+                let leftEyeCropSize = self.getEncapsulatingSize(sizes: leftEyeSizes) * 1.5 //Add a buffer of 25%
                 
                 let rightEyeSizes = faceCaptures.map { $0.getRightEyeImageSize()! }
-                let rightEyeCropSize = self.getEncapsulatingSize(sizes: rightEyeSizes) * 1.25 //Add a buffer of 25%
+                let rightEyeCropSize = self.getEncapsulatingSize(sizes: rightEyeSizes) * 1.5 //Add a buffer of 25%
                 
                 //We ultimately want a crop that crops from the right jaw to the left, top of the image to the bottom of the chin (want hair in image)
                 let faceSizes = faceCaptures.map { $0.getAllPointsSize()! }
@@ -306,24 +306,27 @@ class SampleSkinToneViewModel {
                     let leftEyeCrop = faceCapture.getLeftEyeImageBB()!.scaleToSize(size: leftEyeCropSize, imgSize: faceCapture.imageSize)
                     let rightEyeCrop = faceCapture.getRightEyeImageBB()!.scaleToSize(size: rightEyeCropSize, imgSize: faceCapture.imageSize)
                     var faceCrop = faceCapture.getAllPointsBB()!.scaleToSize(size: faceCropSize, imgSize: faceCapture.imageSize)
-                    faceCrop = CGRect.init(x: faceCrop.minX, y: 0, width: faceCrop.width, height: faceCropHeight)
+                    //faceCrop = CGRect.init(x: faceCrop.minX, y: 0, width: faceCrop.width, height: faceCropHeight)
                     
                     let faceImage = faceCapture.getImage()
-                    let leftEyeImage = Image.from(image: faceImage, crop: leftEyeCrop)
-                    let rightEyeImage = Image.from(image: faceImage, crop: rightEyeCrop)
-                    //faceImage.crop(faceCrop)
-                    //leftEyeImage.updateParentCrop(crop: faceCrop)
-                    //rightEyeImage.updateParentCrop(crop: faceCrop)
+                    let leftEyeImage = Image.from(image: faceImage, crop: leftEyeCrop, landmarks: Array(faceImage.landmarks[8...15]))
+                    let rightEyeImage = Image.from(image: faceImage, crop: rightEyeCrop, landmarks: Array(faceImage.landmarks[16...23]))
+                    faceImage.crop(faceCrop)
+                    leftEyeImage.updateParentBB(parentCrop: faceCrop)
+                    rightEyeImage.updateParentBB(parentCrop: faceCrop)
                     
                     let longSide = [faceCrop.width, faceCrop.height].max()!
                     let scaleRatio = 1080 / longSide
-                    //faceImage.scale(scaleRatio) //Dont forget to scale BB to eventually let you crop after scaling!
-                    //leftEyeImage.updateParentCrop(scale: scaleRatio)
-                    //rightEyeImage.updateParentCrop(scale: scaleRatio)
+                    faceImage.scale(scaleRatio) //Dont forget to scale BB to eventually let you crop after scaling!
+                    //leftEyeImage.updateParentBB(parentScale: scaleRatio)
+                    //rightEyeImage.updateParentBB(parentScale: scaleRatio)
                     
-                    //faceImage.rotate()
-                    //leftEyeImage.rotate()
-                    //rightEyeImage.rotate()
+                    faceImage.rotate()
+                    leftEyeImage.rotate()
+                    rightEyeImage.rotate()
+                    
+                    leftEyeImage.updateParentBB(rotate: true)
+                    rightEyeImage.updateParentBB(rotate: true)
                     
                     
                     

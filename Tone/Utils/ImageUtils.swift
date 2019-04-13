@@ -390,7 +390,7 @@ func getExposureScore(intensity: Float, exposureRatios: ExposureRatios) -> Float
     return Float64(intensity) * inverseISO * inverseExposure * 100_000
 }
 
-
+/*
 //Needs a context to have been created
 func cropImage(_ input: CIImage, dimensions: CGRect, _ imageTransforms: inout ImageTransforms) -> CIImage {
     let toCroppedFilter = CIFilter(name:"CICrop")
@@ -429,4 +429,4 @@ func scaleImage(_ input: CIImage, scale: CGFloat, _ imageTransforms: inout Image
     imageTransforms.isScaled = true
     return toScaleFilter!.outputImage!
 }
-
+*/
