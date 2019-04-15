@@ -22,8 +22,8 @@ class Image {
     
     
     static func from(image: Image, crop: CGRect, landmarks: [CGPoint]) -> Image {
-        let ciImage = image.image.cropped(to: crop)
-        let croppedLandmarks = landmarks.map { CGPoint.init(x: $0.x - crop.minX, y: $0.y - crop.minY) }
+        let ciImage = image.image.cropped(to: crop.toInt())
+        let croppedLandmarks = landmarks.map { CGPoint.init(x: $0.x - crop.toInt().minX, y: $0.y - crop.toInt().minY) }
         let newImage = Image(image: ciImage, landmarks: croppedLandmarks)
         newImage.imageMetadata.isCropped = true
         newImage.imageMetadata.bbInParent = crop
@@ -31,10 +31,10 @@ class Image {
     }
     
     func crop(_ crop: CGRect) {
-        self.image = self.image.cropped(to: crop)
+        self.image = self.image.cropped(to: crop.toInt())
         imageMetadata.isCropped = true
         imageMetadata.bbInParent = crop
-        self.landmarks = self.landmarks.map { CGPoint.init(x: $0.x - crop.minX, y: $0.y - crop.minY) }
+        self.landmarks = self.landmarks.map { CGPoint.init(x: $0.x - crop.toInt().minX, y: $0.y - crop.toInt().minY) }
     }
     
     func scale(_ scale: CGFloat) {
@@ -42,10 +42,13 @@ class Image {
             print("NO BB!")
             return
         }
-        print("Extent vs Crop :: \(image.extent) vs \(imageMetadata.bbInParent!)")
-        let scaledWidth = floor(CGFloat(image.extent.width) * scale)
-        let scaledHeight = floor(CGFloat(image.extent.height) * scale)
-        let scaledRect = CGRect.init(x: 0, y: 0, width: scaledWidth, height: scaledHeight) //Eventually use for crop?
+        //print("Extent vs Crop :: \(image.extent) vs \(imageMetadata.bbInParent!)")
+        let scaledBBX = ceil(bbInParent.minX * scale)
+        let scaledBBY = ceil(bbInParent.minY * scale)
+        let scaledBBWidth = floor(bbInParent.width * scale)
+        let scaledBBHeight = floor(bbInParent.height * scale)
+        let scaledRect = CGRect.init(x: scaledBBX, y: scaledBBY, width: scaledBBWidth, height: scaledBBHeight) //Eventually use for crop?
+        print("Cropping To :: \(scaledRect)")
         
         let toScaleFilter = CIFilter(name:"CILanczosScaleTransform")
         toScaleFilter!.setValue(self.image, forKey: kCIInputImageKey)
@@ -56,11 +59,6 @@ class Image {
         imageMetadata.scaleRatio = scale
         self.image = toScaleFilter!.outputImage!.cropped(to: scaledRect)
         self.landmarks = self.landmarks.map { CGPoint.init(x: $0.x * scale, y: $0.y * scale) }
-        
-        let scaledBBX = floor(bbInParent.minX * scale)
-        let scaledBBY = floor(bbInParent.minY * scale)
-        let scaledBBWidth = floor(bbInParent.width * scale)
-        let scaledBBHeight = floor(bbInParent.height * scale)
         self.imageMetadata.bbInParent = CGRect.init(x: scaledBBX, y: scaledBBY, width: scaledBBWidth, height: scaledBBHeight)
     }
     

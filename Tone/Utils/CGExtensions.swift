@@ -132,7 +132,7 @@ extension CGRect {
     }
     
     func toInt() -> CGRect {
-        return CGRect(x: Int(self.minX), y: Int(self.minY), width: Int(self.width), height: Int(self.height))
+        return CGRect(x: Int(ceil(self.minX)), y: Int(ceil(self.minY)), width: Int(floor(self.width)), height: Int(floor(self.height)))
     }
 }
 

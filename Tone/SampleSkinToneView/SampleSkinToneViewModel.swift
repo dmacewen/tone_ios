@@ -296,17 +296,20 @@ class SampleSkinToneViewModel {
                 
                 //We ultimately want a crop that crops from the right jaw to the left, top of the image to the bottom of the chin (want hair in image)
                 let faceSizes = faceCaptures.map { $0.getAllPointsSize()! }
-                let faceCropSize = self.getEncapsulatingSize(sizes: faceSizes) * 1.10 //Add a buffer of 25%
+                let faceCropSize = self.getEncapsulatingSize(sizes: faceSizes) //* 1.10
                 let faceBBs = faceCaptures.map { $0.getAllPointsBB()! }
                 let scaledFaceBBs = faceBBs.map { $0.scaleToSize(size: faceCropSize, imgSize: faceCaptures[0].imageSize.size) }
-                let encapsulatingMaxY = scaledFaceBBs.map { $0.maxY }.max()!
-                let faceCropHeight = encapsulatingMaxY // We want the largest Y Value after scaling up...
+                //let encapsulatingMaxY = scaledFaceBBs.map { $0.maxY }.max()!
+                let encapsulatingMaxX = scaledFaceBBs.map { $0.maxX }.max()!
+                //let faceCropHeight = encapsulatingMaxY // We want the largest Y Value after scaling up...
+                let faceCropWidth = encapsulatingMaxX
                 
                 return faceCaptures.map { faceCapture -> ImageData in
                     let leftEyeCrop = faceCapture.getLeftEyeImageBB()!.scaleToSize(size: leftEyeCropSize, imgSize: faceCapture.imageSize.size)
                     let rightEyeCrop = faceCapture.getRightEyeImageBB()!.scaleToSize(size: rightEyeCropSize, imgSize: faceCapture.imageSize.size)
                     var faceCrop = faceCapture.getAllPointsBB()!.scaleToSize(size: faceCropSize, imgSize: faceCapture.imageSize.size)
                     //faceCrop = CGRect.init(x: faceCrop.minX, y: 0, width: faceCrop.width, height: faceCropHeight)
+                    faceCrop = CGRect.init(x: 0, y: faceCrop.minY, width: faceCropWidth, height: faceCrop.height)
                     
                     let faceImage = faceCapture.getImage()
                     let leftEyeImage = Image.from(image: faceImage, crop: leftEyeCrop, landmarks: Array(faceImage.landmarks[8...15]))
@@ -321,13 +324,13 @@ class SampleSkinToneViewModel {
                     //leftEyeImage.updateParentBB(parentScale: scaleRatio)
                     //rightEyeImage.updateParentBB(parentScale: scaleRatio)
                     
+
                     faceImage.rotate()
                     leftEyeImage.rotate()
                     rightEyeImage.rotate()
                     
                     leftEyeImage.updateParentBB(rotate: true)
                     rightEyeImage.updateParentBB(rotate: true)
-                    
                     
                     
                     let pngDataFace = context.pngRepresentation(of: faceImage.image, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])!
