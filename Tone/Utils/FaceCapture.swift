@@ -17,11 +17,11 @@ class FaceCapture {
     let videoPreviewLayer: AVCaptureVideoPreviewLayer
     let flashSettings: FlashSettings
     let imageSize: ImageSize
-    //let landmarkImageSize: CGSize
     let rawMetadata: [String: Any]
     
     //Keep private to keep us from accessing in its raw form (it can be kind of confusing/messy to interact with)
     private var faceLandmarks: VNFaceLandmarks2D
+    private let isLocked = false
     
     init(pixelBuffer: CVPixelBuffer, faceLandmarks: VNFaceLandmarks2D, orientation: CGImagePropertyOrientation, videoPreviewLayer: AVCaptureVideoPreviewLayer, flashSettings: FlashSettings = FlashSettings(), rawMetadata: [String: Any]) {
         self.pixelBuffer = pixelBuffer
@@ -30,7 +30,6 @@ class FaceCapture {
         self.videoPreviewLayer = videoPreviewLayer
         self.flashSettings = flashSettings
         self.imageSize = ImageSize(width: CVPixelBufferGetWidth(pixelBuffer), height: CVPixelBufferGetHeight(pixelBuffer))
-        //self.landmarkImageSize = FaceCapture.convertSize(self.imageSize)
         self.rawMetadata = rawMetadata
     }
     
@@ -53,17 +52,7 @@ class FaceCapture {
                 return FaceCapture(pixelBuffer: capturePhoto.pixelBuffer!, faceLandmarks: foundFaceLandmarks, orientation: orientation, videoPreviewLayer: videoPreviewLayer, flashSettings: flashSettings, rawMetadata: capturePhoto.metadata)
             }
     }
-    /*
-    private static func convertSize(_ size: CGSize) -> CGSize {
-        return CGSize.init(width: size.height, height: size.width)
-    }
-    
-    private static func convertPoint(_ point: CGPoint, size: CGSize) -> CGPoint {
-        return CGPoint.init(x: size.height - point.y, y: size.width - point.x)
-        //return CGPoint.init(x: point.y, y: size.width - point.x)
 
-    }
-    */
     private static func getFaceLandmarks(_ pixelBuffer: CVPixelBuffer, _ orientation: CGImagePropertyOrientation) -> Observable<VNFaceLandmarks2D?> {
         return Observable<VNFaceLandmarks2D?>.create { observable in
             var requestHandlerOptions: [VNImageOption: AnyObject] = [:]
@@ -109,8 +98,51 @@ class FaceCapture {
         }
     }
     
-    //Every Coordinate passed out as a CGPoint, CGRect, CGVec, CGSize should be in ImageCood
+    func lock() {
+        precondition(!isLocked)
+        CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
+    }
     
+    func unlock() {
+        precondition(isLocked)
+        CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
+    }
+    
+    //Every Coordinate passed out as a CGPoint, CGRect, CGVec, CGSize should be in ImageCood
+    private func isValidPoint(_ point: ImagePoint) -> Bool {
+        return self.imageSize.size.contains(point: point.point)
+    }
+    
+    func sampleRegion(center: ImagePoint) -> CGFloat? {
+        precondition(isLocked)
+        if !self.isValidPoint(center) { return nil }
+        
+        let sideLength = 15
+        let halfSideLength = floor(CGFloat(sideLength - 1) / 2)
+        
+        let start = ImagePoint.init(x: center.point.x - halfSideLength, y: center.point.y - halfSideLength)
+        let end = ImagePoint.init(x: center.point.x + halfSideLength, y: center.point.y + halfSideLength)
+        
+        if !self.isValidPoint(start) || !self.isValidPoint(end) { return nil }
+        
+        let bytesPerRow = CVPixelBufferGetBytesPerRow(self.pixelBuffer)
+        guard let baseAddress = CVPixelBufferGetBaseAddress(self.pixelBuffer) else { return nil }
+        let byteBuffer = baseAddress.assumingMemoryBound(to: UInt8.self)
+        
+        var sum = 0
+        for y in Int(start.point.y) ..< Int(end.point.y) {
+            let bufferRowOffset = y * bytesPerRow
+            for x in Int(start.point.x) ..< Int(end.point.x) {
+                let bufferIndex = bufferRowOffset + (x * 4) //Index into the buffer
+                sum += Int(byteBuffer[bufferIndex]) + Int(byteBuffer[bufferIndex + 1]) + Int(byteBuffer[bufferIndex + 2])
+            }
+        }
+        
+        let averageSubpixelValue = CGFloat(sum) / CGFloat(pow((2 * halfSideLength) + 1, 2)) // Area of the sample x 3 sub pixels each
+        
+        return averageSubpixelValue
+    }
+
     func getJawDisplayPoints() -> [DisplayPoint]? {
         guard let faceContour = self.faceLandmarks.faceContour else { return nil }
         
@@ -155,25 +187,7 @@ class FaceCapture {
         guard let rightEyeBB = self.getRightEyeImageBB() else { return nil }
         return CGSize.from(rect: rightEyeBB)
     }
-    /*
-    func displayToImagePoint(point: CGPoint) -> CGPoint {
-        return videoPreviewLayer.captureDevicePointConverted(fromLayerPoint: point)
-    }
-    
-    func imagetoDisplayPoint(point: CGPoint) -> CGPoint {
-        return videoPreviewLayer.layerPointConverted(fromCaptureDevicePoint: point)
-    }
- */
-    /*
-    private func getCIImage(crop: CGRect?) -> CIImage {
-        let image = CIImage.init(cvImageBuffer: self.pixelBuffer)
-        if crop != nil {
-            return image.cropped(to: crop!)
-        }
-        return image
-    }
- */
-    
+
     func getImage() -> Image {
         let image = CIImage.init(cvImageBuffer: self.pixelBuffer)
         let landmarks = self.getAllImagePoints()!

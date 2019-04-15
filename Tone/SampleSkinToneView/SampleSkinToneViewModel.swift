@@ -106,7 +106,7 @@ class SampleSkinToneViewModel {
     
     let uploadProgress = BehaviorSubject<Float>(value: 0.0)
     let videoPreviewLayerStream = BehaviorSubject<AVCaptureVideoPreviewLayer?>(value: nil)
-    let drawPointsStream = BehaviorSubject<[CGPoint]>(value: [])
+    let drawPointsStream = BehaviorSubject<[DisplayPoint]>(value: [])
     
     let flashSettings = BehaviorSubject<FlashSettings>(value: FlashSettings(area: 0, areas: 0))
     
@@ -122,19 +122,19 @@ class SampleSkinToneViewModel {
     init(user: User) {
         self.user = user
         cameraState = CameraState(flashStream: flashSettings)
-        video = Video(cameraState: cameraState)
+        video = Video(cameraState: cameraState, videoPreviewLayerStream: videoPreviewLayerStream)
         
         video.faceLandmarks
-            .subscribe(onNext: { faceData in
-                if faceData == nil {
+            .subscribe(onNext: { faceDataOptional in
+                guard let faceData = faceDataOptional else {
                     self.userFaceState.onNext(.noFaceFound)
                     return
                 }
                 
-                let facePoints = faceData!.landmarks.faceContour!.pointsInImage(imageSize: self.videoSize)
-                let xValues = facePoints.map { $0.x }
-                let yValues = facePoints.map { $0.y }
-                self.drawPointsStream.onNext(facePoints)
+                self.drawPointsStream.onNext(faceData.landmarks)
+
+                let xValues = faceData.landmarks.map { $0.point.x }
+                let yValues = faceData.landmarks.map { $0.point.y }
                 
                 let max = CGPoint.init(x: xValues.max()!, y: yValues.max()!)
                 let min = CGPoint.init(x: xValues.min()!, y: yValues.min()!)
@@ -146,7 +146,16 @@ class SampleSkinToneViewModel {
                     return
                 }
                 
+                //cameraState.captureDevice.iso
+                let exposureScore = self.cameraState.getStandardizedExposureScore()
+                /*
                 if faceData!.isTooBright {
+                    self.userFaceState.onNext(.tooBright)
+                    return
+                }
+                 */
+                
+                if exposureScore > 100 {
                     self.userFaceState.onNext(.tooBright)
                     return
                 }

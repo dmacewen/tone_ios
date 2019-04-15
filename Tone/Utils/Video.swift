@@ -17,15 +17,17 @@ class Video:  NSObject {
     private let pixelBufferSubject = PublishSubject<CVPixelBuffer>()
     private let videoDataOutput: AVCaptureVideoDataOutput
     
-    init(cameraState: CameraState) {
+    init(cameraState: CameraState, videoPreviewLayerStream:  BehaviorSubject<AVCaptureVideoPreviewLayer?>) {
         self.cameraState = cameraState
         
         self.faceLandmarks = pixelBufferSubject
-            .flatMap { getFacialLandmarks(cameraState: cameraState, pixelBuffer: $0) }
-            .map({ (faceLandmarksOptional) -> RealTimeFaceData? in
-                guard let (faceLandmarks, pixelBuffer) = faceLandmarksOptional else {
-                    return nil
-                }
+            //.flatMap { getFacialLandmarks(cameraState: cameraState, pixelBuffer: $0) }
+            .flatMap { pixelBuffer -> Observable<FaceCapture?> in
+                guard let videoPreviewLayer = videoPreviewLayerStream.value() else { return Observable.just(nil) }
+                return FaceCapture.create(pixelBuffer: pixelBuffer, orientation: cameraState.exifOrientationForCurrentDeviceOrientation(), videoPreviewLayer: videoPreviewLayer)
+            }
+            .map { faceCaptureOptional? -> RealTimeFaceData? in
+                guard let faceCapture = faceCaptureOptional else { return nil }
                 
                 guard let (exposurePoint, isLightingBalanced, isTooBright) = getExposureInfo(pixelBuffer: pixelBuffer, landmarks: faceLandmarks, cameraState: cameraState) else {
                     return nil
@@ -35,7 +37,7 @@ class Video:  NSObject {
                 
                 let exposureDuration = CMTimeGetSeconds(cameraState.captureDevice.exposureDuration)
                 return RealTimeFaceData(landmarks: faceLandmarks, isLightingBalanced: isLightingBalanced, isTooBright: isTooBright, iso: cameraState.captureDevice.iso, exposureDuration: exposureDuration)
-            })
+            }
             .asObservable()
 
         self.videoDataOutput = AVCaptureVideoDataOutput()

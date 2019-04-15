@@ -29,11 +29,13 @@ struct ExposureRatios {
 }
 
 struct RealTimeFaceData {
-    var landmarks: VNFaceLandmarks2D
+    var landmarks: [DisplayPoint]
     var isLightingBalanced: Bool
     var isTooBright: Bool
-    var iso: Float
+    var iso: Float64
     var exposureDuration: Float64
+    
+    
 }
 
 //Defining a Camera how we want it
@@ -223,10 +225,15 @@ class CameraState {
         let minExposureDuration = self.captureDevice.activeFormat.minExposureDuration
         let minISO = self.captureDevice.activeFormat.minISO
         
-        let exposureRatio =  CMTimeGetSeconds(self.captureDevice.exposureDuration) / CMTimeGetSeconds(minExposureDuration)
+        let exposureRatio =  Float64(CMTimeGetSeconds(self.captureDevice.exposureDuration) / CMTimeGetSeconds(minExposureDuration))
         let isoRatio = Float64(self.captureDevice.iso / minISO)
         
         return ExposureRatios(iso: isoRatio, exposure: exposureRatio)
+    }
+    
+    func getStandardizedExposureScore() -> CGFloat {
+        let exposureData = self.getStandardizedExposureData()
+        return CGFloat(exposureData.iso * exposureData.exposure)
     }
 }
 

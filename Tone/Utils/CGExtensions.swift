@@ -144,4 +144,8 @@ extension CGSize {
     static func * (left: CGSize, right: CGFloat) -> CGSize {
         return CGSize(width: left.width * right, height: left.height * right)
     }
+    
+    func contains(point: CGPoint) -> Bool {
+        return (point.x <= self.width) && (point.y <= self.height)
+    }
 }

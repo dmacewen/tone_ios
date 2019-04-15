@@ -111,72 +111,71 @@ func bufferBoundingBox(_ bb: CGRect, imgSize: CGSize, margin: CGFloat = 0.25) ->
     
     return CGRect.init(x: newX, y: newY, width: newWidth, height: newHeight)
 }
-
-func getRightEyeBB(landmarks: [CGPoint], imgSize: CGSize) -> CGRect {
+/*
+func getRightEyeBB(landmarks: [ImagePoint], imgSize: CGSize) -> CGRect {
     let eyePoints = landmarks[16...23]
     return bufferBoundingBox(CGRect.fromPoints(points: eyePoints, imgSize: imgSize), imgSize: imgSize)
 }
 
-func getLeftEyeBB(landmarks: [CGPoint], imgSize: CGSize) -> CGRect {
+func getLeftEyeBB(landmarks: [ImagePoint], imgSize: CGSize) -> CGRect {
     let eyePoints = landmarks[8...15]
     return bufferBoundingBox(CGRect.fromPoints(points: eyePoints, imgSize: imgSize), imgSize: imgSize)
 }
-
-func getRightCheekPoint(landmarks: [CGPoint]) -> CGPoint {
+*/
+func getRightCheekPoint(landmarks: [ImagePoint]) -> ImagePoint {
     let middleRightEye = landmarks[64]
     let middleNose = landmarks[58]
     return CGPoint.init(x: middleRightEye.x, y: middleNose.y)
 }
 
-func getLeftCheekPoint(landmarks: [CGPoint]) -> CGPoint {
+func getLeftCheekPoint(landmarks: [ImagePoint]) -> ImagePoint {
     let middleLeftEye = landmarks[63]
     let middleNose = landmarks[52]
     return CGPoint.init(x: middleLeftEye.x, y: middleNose.y)
 }
 
-func getChinPoint(landmarks: [CGPoint]) -> CGPoint {
+func getChinPoint(landmarks: [ImagePoint]) -> ImagePoint {
     let centerLipBottom = landmarks[31]
     let centerJawBottom = landmarks[45]
     return CGPoint.init(x: (centerLipBottom.x + centerJawBottom.x) / 2, y: (centerLipBottom.y + centerJawBottom.y) / 2)
 }
 
-func getForeheadPoint(landmarks: [CGPoint]) -> CGPoint {
+func getForeheadPoint(landmarks: [ImagePoint]) -> ImagePoint {
     let leftEyebrowInner = landmarks[3]
     let rightEyebrowInner = landmarks[4]
     return CGPoint.init(x: (leftEyebrowInner.x + rightEyebrowInner.x) / 2, y: (leftEyebrowInner.y + rightEyebrowInner.y) / 2)
 }
 
-func getForeheadPair(landmarks: [CGPoint]) -> (CGPoint, CGPoint) {
+func getForeheadPair(landmarks: [ImagePoint]) -> (ImagePoint, ImagePoint) {
     let offset = abs(landmarks[2].x - landmarks[1].x)
     let leftEyeBrowSample = CGPoint.init(x: landmarks[2].x, y: landmarks[2].y - offset)
     let rightEyeBrowSample = CGPoint.init(x: landmarks[5].x, y: landmarks[5].y - offset)
     return (leftEyeBrowSample, rightEyeBrowSample)
 }
 
-func getEyePair(landmarks: [CGPoint]) -> (CGPoint, CGPoint) {
+func getEyePair(landmarks: [ImagePoint]) -> (ImagePoint, ImagePoint) {
     return (landmarks[51], landmarks[59])
 }
 
-func getUpperCheekPair(landmarks: [CGPoint]) -> (CGPoint, CGPoint) {
+func getUpperCheekPair(landmarks: [ImagePoint]) -> (ImagePoint, ImagePoint) {
     let leftUpperCheek = CGPoint.init(x: landmarks[8].x, y: landmarks[55].y)
     let rightUpperCheek = CGPoint.init(x: landmarks[20].x, y: landmarks[55].y)
     return (leftUpperCheek, rightUpperCheek)
 }
 
-func getLowerCheekPair(landmarks: [CGPoint]) -> (CGPoint, CGPoint) {
-    let offset = abs(landmarks[26].y - landmarks[35].y)
-    let leftUpperCheek = CGPoint.init(x: landmarks[33].x - offset, y: landmarks[33].y)
-    let rightUpperCheek = CGPoint.init(x: landmarks[29].x + offset, y: landmarks[29].y)
+func getLowerCheekPair(landmarks: [ImagePoint]) -> (ImagePoint, ImagePoint) {
+    let offset = abs(landmarks[26].point.y - landmarks[35].point.y)
+    let leftUpperCheek = CGPoint.init(x: landmarks[33].point.x - offset, y: landmarks[33].point.y)
+    let rightUpperCheek = CGPoint.init(x: landmarks[29].point.x + offset, y: landmarks[29].point.y)
     return (leftUpperCheek, rightUpperCheek)
 }
 
-func isLightingEqual(points: (CGPoint, CGPoint), imageByteBuffer: ImageByteBuffer, exposureRatios: ExposureRatios) -> Bool? {
-    guard let A = imageByteBuffer.sampleLandmarkRegion(landmarkPoint: points.0) else { return nil }
+func isLightingEqual(points: (ImagePoint, ImagePoint), faceCapture: FaceCapture, exposureRatios: ExposureRatios) -> Bool? {
+    guard let A = faceCapture.sampleRegion(center: points.0) else { return nil }
     let A_exposureScore = getExposureScore(intensity: A, exposureRatios: exposureRatios)
     
-    guard let B = imageByteBuffer.sampleLandmarkRegion(landmarkPoint: points.1) else { return nil }
+    guard let B = faceCapture.sampleRegion(center: points.1) else { return nil }
     let B_exposureScore = getExposureScore(intensity: B, exposureRatios: exposureRatios)
-    //print("A vs B | \(A_exposureScore) vs \(B_exposureScore)")
 
     if abs(A_exposureScore - B_exposureScore) > 25 {
         return false
@@ -185,24 +184,26 @@ func isLightingEqual(points: (CGPoint, CGPoint), imageByteBuffer: ImageByteBuffe
     return true
 }
 
-func getExposureInfo(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D, cameraState: CameraState) -> (CGPoint, Bool, Bool)? {
-    CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
-    defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly) }
+func getExposureInfo(faceCapture: FaceCapture, cameraState: CameraState) -> (DisplayPoint, Bool, Bool)? {
+    faceCapture.lock()
+    defer { faceCapture.unlock() }
+    
     let exposureRatios = cameraState.getStandardizedExposureData()
     
-    let imageByteBuffer = ImageByteBuffer.from(pixelBuffer)
-    let facePoints = landmarks.allPoints!.pointsInImage(imageSize: imageByteBuffer.size())
+    //let imageByteBuffer = ImageByteBuffer.from(pixelBuffer)
+    //let facePoints = landmarks.allPoints!.pointsInImage(imageSize: imageByteBuffer.size())
     
     //BalanceLightCheckPoints
+    guard let facePoints = faceCapture.getAllImagePoints() else { return nil }
     let foreheadPair = getForeheadPair(landmarks: facePoints)
     let eyePair = getEyePair(landmarks: facePoints)
     let upperCheekPair = getUpperCheekPair(landmarks: facePoints)
     let lowerCheekPair = getLowerCheekPair(landmarks: facePoints)
     
-    guard let isForeheadEqual = isLightingEqual(points: foreheadPair, imageByteBuffer: imageByteBuffer, exposureRatios: exposureRatios) else { return nil }
-    guard let isEyeEqual = isLightingEqual(points: eyePair, imageByteBuffer: imageByteBuffer, exposureRatios: exposureRatios) else { return nil }
-    guard let isUpperCheekEqual = isLightingEqual(points: upperCheekPair, imageByteBuffer: imageByteBuffer, exposureRatios: exposureRatios) else { return nil }
-    guard let isLowerCheekEqual = isLightingEqual(points: lowerCheekPair, imageByteBuffer: imageByteBuffer, exposureRatios: exposureRatios) else { return nil }
+    guard let isForeheadEqual = isLightingEqual(points: foreheadPair, faceCapture: faceCapture, exposureRatios: exposureRatios) else { return nil }
+    guard let isEyeEqual = isLightingEqual(points: eyePair, faceCapture: faceCapture, exposureRatios: exposureRatios) else { return nil }
+    guard let isUpperCheekEqual = isLightingEqual(points: upperCheekPair, faceCapture: faceCapture, exposureRatios: exposureRatios) else { return nil }
+    guard let isLowerCheekEqual = isLightingEqual(points: lowerCheekPair, faceCapture: faceCapture, exposureRatios: exposureRatios) else { return nil }
     
     //print("FOREHEAD: \(isForeheadEqual) | EYE: \(isEyeEqual) | UPPER CHEEK: \(isUpperCheekEqual) | LOWER CHEEK: \(isLowerCheekEqual)")
     let isBrightnessBalanced = isForeheadEqual && isEyeEqual && isUpperCheekEqual && isLowerCheekEqual
@@ -214,28 +215,22 @@ func getExposureInfo(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D, c
     let foreheadPoint = getForeheadPoint(landmarks: facePoints)
     
     
-    guard let leftCheekSample = imageByteBuffer.sampleLandmarkRegion(landmarkPoint: leftCheekPoint) else { return nil }
-    guard let rightCheekSample = imageByteBuffer.sampleLandmarkRegion(landmarkPoint: rightCheekPoint) else { return nil }
-    guard let chinSample = imageByteBuffer.sampleLandmarkRegion(landmarkPoint: chinPoint) else { return nil }
-    guard let foreheadSample = imageByteBuffer.sampleLandmarkRegion(landmarkPoint: foreheadPoint) else { return nil }
+    guard let leftCheekSample = faceCapture.sampleRegion(center: leftCheekPoint) else { return nil }
+    guard let rightCheekSample = faceCapture.sampleRegion(center: rightCheekPoint) else { return nil }
+    guard let chinSample = faceCapture.sampleRegion(center: chinPoint) else { return nil }
+    guard let foreheadSample = faceCapture.sampleRegion(center: foreheadPoint) else { return nil }
     
     let sortedSamples = [(leftCheekSample, leftCheekPoint), (rightCheekSample, rightCheekPoint), (chinSample, chinPoint), (foreheadSample, foreheadPoint)].sorted { A, B in
         return A.0 > B.0
     }
     
-    let brightestPoint = imageByteBuffer.convertPortraitPointToLandscapeRatioPoint(point: sortedSamples.first!.1)
+    let brightestPoint = sortedSamples.first!.1
     
     let brightestExposureScore = getExposureScore(intensity: sortedSamples.first!.0, exposureRatios: exposureRatios)
-    //print("BRIGHTEST EXPOSURE SCORE :: \(brightestExposureScore)")
+    print("BRIGHTEST EXPOSURE SCORE :: \(brightestExposureScore)")
     let isTooBright = brightestExposureScore > 100
-    /*
-    let brightnessRatio = ((sortedSamples.first!.0 - sortedSamples.last!.0) / sortedSamples.last!.0)
-    print("Brightness Ratio :: \(brightnessRatio)")
-    if brightnessRatio > 0.3 {
-        return (brightestPoint, false)
-    }
-    */
-    return (brightestPoint, isBrightnessBalanced, isTooBright)
+    
+    return (brightestPoint.toDisplayPoint(size: faceCapture.imageSize), isBrightnessBalanced, isTooBright)
 }
 
 //Error :: 2018-11-14 11:44:19.689414-0800 Tone[32016:9326030] LandmarkDetector error -20:out of bounds in int vision::mod::LandmarkAttributes::computeBlinkFunction(const vImage_Buffer &, const Geometry2D_rect2D &, const std::vector<Geometry2D_point2D> &, vImage_Buffer &, vImage_Buffer &, std::vector<float> &, std::vector<float> &) @ /BuildRoot/Library/Caches/com.apple.xbs/Sources/Vision/Vision-2.0.62/LandmarkDetector/LandmarkDetector_Attributes.mm:535
@@ -243,7 +238,7 @@ func getExposureInfo(pixelBuffer: CVImageBuffer, landmarks: VNFaceLandmarks2D, c
 //Seems to be caused by covering the mouth/face... I.E. When looking at a second computer screen, supporting your face with your hand. Fingers/palm covering mouth and thumb resting on cheekbone... Kinda a weird description... Towards edge of image. Face inside image frame but hand extending out of the frame... Probably not an issue, just something thats come up. Does not change expected functionality
 
 //Was able to replciate just by holding my face towards the edge of the frame looking at a ~45 - 90 degree angle away from the phone (at a second screen in this case...)
-
+/*
 func getFacialLandmarks(cameraState: CameraState, pixelBuffer: CVPixelBuffer) -> Observable<(VNFaceLandmarks2D, CVPixelBuffer)?> {
     return Observable<(VNFaceLandmarks2D, CVPixelBuffer)?>.create { observable in
         var requestHandlerOptions: [VNImageOption: AnyObject] = [:]
@@ -292,6 +287,7 @@ func getFacialLandmarks(cameraState: CameraState, pixelBuffer: CVPixelBuffer) ->
         return Disposables.create()
     }
 }
+ */
 /*
 func getReflectionBrightness(_ cameraState: CameraState, _ capture: (AVCapturePhoto, FlashSettings)) -> Observable<Int8> {
     let (photo, flashSettings) = capture
@@ -339,7 +335,7 @@ func calculateFaceCrop(faceLandmarks: [VNFaceLandmarks2D], imgSize: CGSize) -> [
     
     return crops
 }
-
+/*
 func calculateEyeCrops(faceLandmarks: [VNFaceLandmarks2D], imgSize: CGSize) -> [(CGRect, CGRect)] {
     let faceLandmarkPoints = faceLandmarks.map { $0.allPoints!.pointsInImage(imageSize: imgSize) }
     
@@ -383,11 +379,12 @@ func calculateEyeCrops(faceLandmarks: [VNFaceLandmarks2D], imgSize: CGSize) -> [
     
     return eyeCropsEqualized
 }
+ */
 
-func getExposureScore(intensity: Float, exposureRatios: ExposureRatios) -> Float64 {
-    let inverseISO = 1 / exposureRatios.iso
-    let inverseExposure = 1 / exposureRatios.exposure
-    return Float64(intensity) * inverseISO * inverseExposure * 100_000
+func getExposureScore(intensity: CGFloat, exposureRatios: ExposureRatios) -> CGFloat {
+    let inverseISO = CGFloat(1 / exposureRatios.iso)
+    let inverseExposure = CGFloat(1 / exposureRatios.exposure)
+    return CGFloat(intensity) * inverseISO * inverseExposure * 100_000
 }
 
 /*
