@@ -16,8 +16,8 @@ class FaceCapture {
     let orientation: CGImagePropertyOrientation
     let videoPreviewLayer: AVCaptureVideoPreviewLayer
     let flashSettings: FlashSettings
-    let imageSize: CGSize
-    let landmarkImageSize: CGSize
+    let imageSize: ImageSize
+    //let landmarkImageSize: CGSize
     let rawMetadata: [String: Any]
     
     //Keep private to keep us from accessing in its raw form (it can be kind of confusing/messy to interact with)
@@ -29,8 +29,8 @@ class FaceCapture {
         self.orientation = orientation
         self.videoPreviewLayer = videoPreviewLayer
         self.flashSettings = flashSettings
-        self.imageSize = CGSize.init(width: CVPixelBufferGetWidth(pixelBuffer), height: CVPixelBufferGetHeight(pixelBuffer))
-        self.landmarkImageSize = FaceCapture.convertSize(self.imageSize)
+        self.imageSize = ImageSize(width: CVPixelBufferGetWidth(pixelBuffer), height: CVPixelBufferGetHeight(pixelBuffer))
+        //self.landmarkImageSize = FaceCapture.convertSize(self.imageSize)
         self.rawMetadata = rawMetadata
     }
     
@@ -53,7 +53,7 @@ class FaceCapture {
                 return FaceCapture(pixelBuffer: capturePhoto.pixelBuffer!, faceLandmarks: foundFaceLandmarks, orientation: orientation, videoPreviewLayer: videoPreviewLayer, flashSettings: flashSettings, rawMetadata: capturePhoto.metadata)
             }
     }
-    
+    /*
     private static func convertSize(_ size: CGSize) -> CGSize {
         return CGSize.init(width: size.height, height: size.width)
     }
@@ -63,7 +63,7 @@ class FaceCapture {
         //return CGPoint.init(x: point.y, y: size.width - point.x)
 
     }
-    
+    */
     private static func getFaceLandmarks(_ pixelBuffer: CVPixelBuffer, _ orientation: CGImagePropertyOrientation) -> Observable<VNFaceLandmarks2D?> {
         return Observable<VNFaceLandmarks2D?>.create { observable in
             var requestHandlerOptions: [VNImageOption: AnyObject] = [:]
@@ -109,24 +109,24 @@ class FaceCapture {
         }
     }
     
-    func getJawDisplayPoints() -> [CGPoint]? {
+    //Every Coordinate passed out as a CGPoint, CGRect, CGVec, CGSize should be in ImageCood
+    
+    func getJawDisplayPoints() -> [DisplayPoint]? {
         guard let faceContour = self.faceLandmarks.faceContour else { return nil }
         
         return faceContour
-            .pointsInImage(imageSize: self.landmarkImageSize)
-            .map { FaceCapture.convertPoint($0, size: self.landmarkImageSize) }
-            .map { self.imagetoDisplayPoint(point: $0) }
+            .pointsInImage(imageSize: self.imageSize.toLandmarkSize().size)
+            .map { LandmarkPoint($0).toDisplayPoint(size: self.imageSize) }
     }
     
-    func getAllImagePoints() -> [CGPoint]? {
+    func getAllImagePoints() -> [ImagePoint]? {
         guard let allPoints = self.faceLandmarks.allPoints else { return nil }
-        //return allPoints.pointsInImage(imageSize: self.landmarkImageSize).map { FaceCapture.convertPoint($0, size: self.landmarkImageSize) }
-        return allPoints.pointsInImage(imageSize: self.imageSize)
+        return allPoints.pointsInImage(imageSize: self.imageSize.toLandmarkSize().size).map { LandmarkPoint($0).toImagePoint(size: self.imageSize) }
     }
     
     func getAllPointsBB() -> CGRect? {
         guard let allPoints = self.getAllImagePoints() else { return nil }
-        return CGRect.fromPoints(points: allPoints,  imgSize: self.imageSize)
+        return CGRect.fromPoints(points: allPoints.map { $0.point },  imgSize: self.imageSize.size)
     }
     
     func getAllPointsSize() -> CGSize? {
@@ -136,8 +136,8 @@ class FaceCapture {
     
     func getLeftEyeImageBB() -> CGRect? {
         guard let leftEye = self.faceLandmarks.leftEye else { return nil }
-        let leftEyePoints = leftEye.pointsInImage(imageSize: self.landmarkImageSize).map { FaceCapture.convertPoint($0, size: self.landmarkImageSize) }
-        return CGRect.fromPoints(points: leftEyePoints, imgSize: self.imageSize)
+        let leftEyePoints = leftEye.pointsInImage(imageSize: self.imageSize.toLandmarkSize().size).map { LandmarkPoint($0).toImagePoint(size: self.imageSize) }
+        return CGRect.fromPoints(points: leftEyePoints.map { $0.point }, imgSize: self.imageSize.size)
     }
     
     func getLeftEyeImageSize() -> CGSize? {
@@ -147,15 +147,15 @@ class FaceCapture {
     
     func getRightEyeImageBB() -> CGRect? {
         guard let rightEye = self.faceLandmarks.rightEye else { return nil }
-        let rightEyePoints = rightEye.pointsInImage(imageSize: self.landmarkImageSize).map { FaceCapture.convertPoint($0, size: self.landmarkImageSize) }
-        return CGRect.fromPoints(points: rightEyePoints, imgSize: self.imageSize)
+        let rightEyePoints = rightEye.pointsInImage(imageSize: self.imageSize.toLandmarkSize().size).map { LandmarkPoint($0).toImagePoint(size: self.imageSize) }
+        return CGRect.fromPoints(points: rightEyePoints.map { $0.point }, imgSize: self.imageSize.size)
     }
     
     func getRightEyeImageSize() -> CGSize? {
         guard let rightEyeBB = self.getRightEyeImageBB() else { return nil }
         return CGSize.from(rect: rightEyeBB)
     }
-    
+    /*
     func displayToImagePoint(point: CGPoint) -> CGPoint {
         return videoPreviewLayer.captureDevicePointConverted(fromLayerPoint: point)
     }
@@ -163,6 +163,7 @@ class FaceCapture {
     func imagetoDisplayPoint(point: CGPoint) -> CGPoint {
         return videoPreviewLayer.layerPointConverted(fromCaptureDevicePoint: point)
     }
+ */
     /*
     private func getCIImage(crop: CGRect?) -> CIImage {
         let image = CIImage.init(cvImageBuffer: self.pixelBuffer)
@@ -176,6 +177,178 @@ class FaceCapture {
     func getImage() -> Image {
         let image = CIImage.init(cvImageBuffer: self.pixelBuffer)
         let landmarks = self.getAllImagePoints()!
-        return Image(image: image, landmarks: landmarks)
+        return Image(image: image, landmarks: landmarks.map { $0.point })
+    }
+}
+
+//3 Coord Systems. Landmark, Display, Buffer/Image
+// - Landmark: Origin at bottom left of Portrait image
+// - Display: Origin at top left of Portrait image
+// - Image/Buffer: Origin at top left of LANDSCAPE iamge
+
+//Points as returned by the landmarking function
+struct LandmarkPoint {
+    let point: CGPoint
+    
+    init(_ point: CGPoint) {
+        self.point = point
+    }
+    
+    init(x: CGFloat, y: CGFloat) {
+        self.point = CGPoint.init(x: x, y: y)
+    }
+    
+    init(x: Int, y: Int) {
+        self.point = CGPoint.init(x: x, y: y)
+    }
+    
+    func toImagePoint(size: ImageSize) -> ImagePoint {
+        let landmarkSize = size.toLandmarkSize()
+        let newX = landmarkSize.size.height - self.point.y
+        let newY = landmarkSize.size.width - self.point.x
+        return ImagePoint(x: newX, y: newY)
+    }
+    
+    func toDisplayPoint(size: ImageSize) -> DisplayPoint {
+        let landmarkSize = size.toLandmarkSize()
+        let newX = self.point.x
+        let newY = landmarkSize.size.height - self.point.y
+        return DisplayPoint(x: newX, y: newY)
+    }
+}
+
+struct LandmarkSize {
+    let size: CGSize
+    
+    init(_ size: CGSize) {
+        self.size = size
+    }
+    
+    init(width: CGFloat, height: CGFloat) {
+        self.size = CGSize.init(width: width, height: height)
+    }
+
+    init(width: Int, height: Int) {
+        self.size = CGSize.init(width: width, height: height)
+    }
+    
+    func toImageSize() -> ImageSize {
+        let newSize = CGSize(width: self.size.height, height: self.size.width)
+        return ImageSize(newSize)
+    }
+    
+    func toDisplaySize() -> DisplaySize {
+        return DisplaySize(self.size)
+    }
+}
+
+//Points in the native image buffer
+struct ImagePoint {
+    let point: CGPoint
+    
+    init(_ point: CGPoint) {
+        self.point = point
+    }
+    
+    init(x: CGFloat, y: CGFloat) {
+        self.point = CGPoint.init(x: x, y: y)
+    }
+    
+    init(x: Int, y: Int) {
+        self.point = CGPoint.init(x: x, y: y)
+    }
+    
+    func toLandmarkPoint(size: ImageSize) -> LandmarkPoint {
+        let newX = size.size.height - self.point.y
+        let newY = size.size.width - self.point.x
+        return LandmarkPoint(x: newX, y: newY)
+    }
+    
+    func toDisplayPoint(size: ImageSize) -> DisplayPoint {
+        let newX = size.size.height - self.point.y
+        let newY = self.point.x
+        return DisplayPoint(x: newX, y: newY)
+    }
+}
+
+struct ImageSize {
+    let size: CGSize
+    
+    init(_ size: CGSize) {
+        self.size = size
+    }
+    
+    init(width: CGFloat, height: CGFloat) {
+        self.size = CGSize.init(width: width, height: height)
+    }
+    
+    init(width: Int, height: Int) {
+        self.size = CGSize.init(width: width, height: height)
+    }
+    
+    func toLandmarkSize() -> LandmarkSize {
+        let newSize = CGSize(width: self.size.height, height: self.size.width)
+        return LandmarkSize(newSize)
+    }
+    
+    func toDisplaySize() -> DisplaySize {
+        let newSize = CGSize(width: self.size.height, height: self.size.width)
+        return DisplaySize(newSize)
+    }
+}
+
+//The orientation (BUT NOT THE CROP RIGHT NOW! of the display orientation)
+struct DisplayPoint {
+    let point: CGPoint
+    
+    init(_ point: CGPoint) {
+        self.point = point
+    }
+    
+    init(x: CGFloat, y: CGFloat) {
+        self.point = CGPoint.init(x: x, y: y)
+    }
+    
+    init(x: Int, y: Int) {
+        self.point = CGPoint.init(x: x, y: y)
+    }
+    
+    func toLandmarkPoint(size: ImageSize) -> DisplayPoint {
+        let displaySize = size.toDisplaySize()
+        let newX = self.point.x
+        let newY = displaySize.size.height - self.point.y
+        return DisplayPoint(x: newX, y: newY)
+    }
+    
+    func toImagePoint(size: ImageSize) -> ImagePoint {
+        let displaySize = size.toDisplaySize()
+        let newX = displaySize.size.height - self.point.y
+        let newY = displaySize.size.width - self.point.x
+        return ImagePoint(x: newX, y: newY)
+    }
+}
+
+struct DisplaySize {
+    let size: CGSize
+    
+    init(_ size: CGSize) {
+        self.size = size
+    }
+    
+    init(width: CGFloat, height: CGFloat) {
+        self.size = CGSize.init(width: width, height: height)
+    }
+    
+    init(width: Int, height: Int) {
+        self.size = CGSize.init(width: width, height: height)
+    }
+    
+    func toLandmarkSize() -> LandmarkSize {
+        return LandmarkSize(self.size)
+    }
+    
+    func toImageSize() -> ImageSize {
+        let newSize = CGSize(width: self.size.height, height: self.size.width)
+        return ImageSize(newSize)
     }
 }

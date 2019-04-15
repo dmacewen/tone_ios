@@ -298,14 +298,14 @@ class SampleSkinToneViewModel {
                 let faceSizes = faceCaptures.map { $0.getAllPointsSize()! }
                 let faceCropSize = self.getEncapsulatingSize(sizes: faceSizes) * 1.10 //Add a buffer of 25%
                 let faceBBs = faceCaptures.map { $0.getAllPointsBB()! }
-                let scaledFaceBBs = faceBBs.map { $0.scaleToSize(size: faceCropSize, imgSize: faceCaptures[0].imageSize) }
+                let scaledFaceBBs = faceBBs.map { $0.scaleToSize(size: faceCropSize, imgSize: faceCaptures[0].imageSize.size) }
                 let encapsulatingMaxY = scaledFaceBBs.map { $0.maxY }.max()!
                 let faceCropHeight = encapsulatingMaxY // We want the largest Y Value after scaling up...
                 
                 return faceCaptures.map { faceCapture -> ImageData in
-                    let leftEyeCrop = faceCapture.getLeftEyeImageBB()!.scaleToSize(size: leftEyeCropSize, imgSize: faceCapture.imageSize)
-                    let rightEyeCrop = faceCapture.getRightEyeImageBB()!.scaleToSize(size: rightEyeCropSize, imgSize: faceCapture.imageSize)
-                    var faceCrop = faceCapture.getAllPointsBB()!.scaleToSize(size: faceCropSize, imgSize: faceCapture.imageSize)
+                    let leftEyeCrop = faceCapture.getLeftEyeImageBB()!.scaleToSize(size: leftEyeCropSize, imgSize: faceCapture.imageSize.size)
+                    let rightEyeCrop = faceCapture.getRightEyeImageBB()!.scaleToSize(size: rightEyeCropSize, imgSize: faceCapture.imageSize.size)
+                    var faceCrop = faceCapture.getAllPointsBB()!.scaleToSize(size: faceCropSize, imgSize: faceCapture.imageSize.size)
                     //faceCrop = CGRect.init(x: faceCrop.minX, y: 0, width: faceCrop.width, height: faceCropHeight)
                     
                     let faceImage = faceCapture.getImage()
