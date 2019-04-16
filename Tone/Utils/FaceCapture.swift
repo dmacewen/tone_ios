@@ -340,7 +340,7 @@ struct ImageSize {
 
 struct DisplayPoint {
     let point: CGPoint
-    var color = UIColor.black.cgColor
+    var color = UIColor.red.cgColor
 
     init(_ point: CGPoint) {
         self.point = point
@@ -368,29 +368,6 @@ struct DisplayPoint {
         self.point = CGPoint.init(x: x, y: y)
         self.color = color
     }
-    /*
-    func toLandmarkPoint(size: ImageSize, videoLayer: AVCaptureVideoPreviewLayer) -> DisplayPoint {
-        let displaySize = size.toDisplaySize(videoLayer: videoLayer)
-        let newX = self.point.x
-        let newY = displaySize.size.height - self.point.y
-        return DisplayPoint(x: newX, y: newY)
-    }
-    
-    func toImagePoint(size: ImageSize, videoLayer: AVCaptureVideoPreviewLayer) -> ImagePoint {
-        let displaySize = size.toDisplaySize(videoLayer: videoLayer)
-        let newX = displaySize.size.height - self.point.y
-        let newY = displaySize.size.width - self.point.x
-        return ImagePoint(x: newX, y: newY)
-    }
- 
-    static func convertToDisplayLayer(point: ImagePoint, videoLayer: AVCaptureVideoPreviewLayer) -> DisplayPoint {
-        return DisplayPoint.init(videoLayer.layerPointConverted(fromCaptureDevicePoint: point.point))
-    }
-    
-    static func convertFromDisplayLayer(point: DisplayPoint, videoLayer: AVCaptureVideoPreviewLayer) -> ImagePoint{
-        return ImagePoint.init(videoLayer.captureDevicePointConverted(fromLayerPoint: point.point))
-    }
- */
 }
 
 struct DisplaySize {
@@ -407,29 +384,4 @@ struct DisplaySize {
     init(width: Int, height: Int) {
         self.size = CGSize.init(width: width, height: height)
     }
-    /*
-    
-    func toLandmarkSize(videoLayer: AVCaptureVideoPreviewLayer) -> LandmarkSize {
-        return LandmarkSize(self.size)
-    }
-    
-    func toImageSize(videoLayer: AVCaptureVideoPreviewLayer) -> ImageSize {
-        let newSize = CGSize(width: self.size.height, height: self.size.width)
-        return ImageSize(newSize)
-    }
- 
-    
-    static func convertToDisplayLayer(size: ImageSize, videoLayer: AVCaptureVideoPreviewLayer) -> DisplaySize {
-        let imageBoundsPoint = CGPoint.init(x: size.size.width, y: size.size.height)
-        let displayBoundsPoint = DisplayPoint.init(videoLayer.layerPointConverted(fromCaptureDevicePoint: imageBoundsPoint))
-        return DisplaySize.init(width: displayBoundsPoint.point.x, height: displayBoundsPoint.point.y)
-    }
-
-    static func convertToImageLayer(size: DisplaySize, videoLayer: AVCaptureVideoPreviewLayer) -> ImageSize {
-        let displayBoundsPoint = CGPoint.init(x: size.size.width, y: size.size.height)
-        let imageBoundsPoint = ImagePoint.init(videoLayer.captureDevicePointConverted(fromLayerPoint: displayBoundsPoint))
-        
-        return ImageSize.init(width: imageBoundsPoint.point.x, height: imageBoundsPoint.point.y)
-    }
- */
 }

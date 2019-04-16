@@ -32,9 +32,7 @@ class Video:  NSObject {
                 guard let (exposurePoint, isLightingBalanced, isTooBright) = getExposureInfo(faceCapture: faceCapture, cameraState: cameraState) else {
                     return nil
                 }
-                
-                //cameraState.exposurePointStream.onNext(exposurePoint)
-                
+                                
                 let exposureDuration = CMTimeGetSeconds(cameraState.captureDevice.exposureDuration)
                 guard let allImagePoints = faceCapture.getAllImagePoints() else { return nil }
                 return RealTimeFaceData(landmarks: allImagePoints, size: faceCapture.imageSize, exposurePoint: exposurePoint, isLightingBalanced: isLightingBalanced, isTooBright: isTooBright, iso: CGFloat(cameraState.captureDevice.iso), exposureDuration: exposureDuration)

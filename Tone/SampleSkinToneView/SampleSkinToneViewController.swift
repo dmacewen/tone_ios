@@ -238,6 +238,7 @@ class SampleSkinToneViewController: UIViewController {
                     ctx.cgContext.setFillColor(UIColor.red.cgColor)
                 
                     for point in points {
+                        ctx.cgContext.setFillColor(point.color)
                         ctx.cgContext.fill(CGRect(x: Int(point.point.x), y: Int(point.point.y), width: size, height: size))
                     }
                 }
