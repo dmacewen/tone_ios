@@ -13,20 +13,6 @@ import Alamofire
 import Vision
 
 class SampleSkinToneViewModel {
-    /*
-    let screenFlashSettings = [
-        //FlashSettings(area: 9, areas: 9),
-        //FlashSettings(area: 8, areas: 9),
-        FlashSettings(area: 7, areas: 7),
-        FlashSettings(area: 6, areas: 7),
-        FlashSettings(area: 5, areas: 7),
-        FlashSettings(area: 4, areas: 7),
-        FlashSettings(area: 3, areas: 7),
-        FlashSettings(area: 2, areas: 7),
-        FlashSettings(area: 1, areas: 7),
-        FlashSettings(area: 0, areas: 7)]
- */
-    
     let screenFlashSettings = [
         FlashSettings(area: 14, areas: 14),
         FlashSettings(area: 13, areas: 14),
@@ -130,59 +116,51 @@ class SampleSkinToneViewModel {
                     self.userFaceState.onNext(.noFaceFound)
                     return
                 }
-                print("VIDEO SIZE :: \(self.videoSize)")
-                let displayPoints = faceData.landmarks.map { $0.toDisplayPoint(size: faceData.size, videoLayer: try! self.videoPreviewLayerStream.value()!) }
-                print("FIRST DISPLAY POINT :: \(displayPoints[0].point)")
+                
+                guard let videoLayer = try! self.videoPreviewLayerStream.value() else {
+                    print("No video preview layer")
+                    self.userFaceState.onNext(.noFaceFound)
+                    return
+                }
+
+                let displayPoints = faceData.landmarks.map { $0.toDisplayPoint(size: faceData.size, videoLayer: videoLayer) }
                 self.drawPointsStream.onNext(displayPoints)
 
-                let xValues = faceData.landmarks.map { $0.point.x }
-                let yValues = faceData.landmarks.map { $0.point.y }
+                let xImageValues = faceData.landmarks.map { $0.point.x }
+                let yImageValues = faceData.landmarks.map { $0.point.y }
                 
-                let max = CGPoint.init(x: xValues.max()!, y: yValues.max()!)
-                let min = CGPoint.init(x: xValues.min()!, y: yValues.min()!)
+                let minImagePoint = ImagePoint.init(x: xImageValues.min()!, y: yImageValues.min()!)
+                let maxImagePoint = ImagePoint.init(x: xImageValues.max()!, y: yImageValues.max()!)
                 
-                let faceSizeState = self.checkFaceSize(min: min, max: max)
-                
+                let faceSizeState = self.checkFaceSize(min: minImagePoint, max: maxImagePoint, imageSize: faceData.size)
                 if faceSizeState != .ok {
                     self.userFaceState.onNext(faceSizeState)
                     return
                 }
                 
+                let xDisplayValues = displayPoints.map { $0.point.x }
+                let yDisplayValues = displayPoints.map { $0.point.y }
+                
+                let minDisplayPoint = DisplayPoint.init(x: xDisplayValues.min()!, y: yDisplayValues.min()!)
+                let maxDisplayPoint = DisplayPoint.init(x: xDisplayValues.max()!, y: yDisplayValues.max()!)
+                
+                let faceClipState = self.checkFaceClipped(min: minDisplayPoint, max: maxDisplayPoint)
+                if faceClipState != .ok {
+                    self.userFaceState.onNext(faceClipState)
+                    return
+                }
+                
+                
                 if faceData.isTooBright {
                     self.userFaceState.onNext(.tooBright)
                     return
                 }
-                /*
-                let exposureScore = self.cameraState.getStandardizedExposureScore()
-                if exposureScore > 100 {
-                    self.userFaceState.onNext(.tooBright)
-                    return
-                }
- */
                 
                 if !faceData.isLightingBalanced {
                     self.userFaceState.onNext(.faceGradient)
                     return
                 }
-                /*
-                let maxExposureIso: Float = 50.0
-                let maxExposureDuration: Float = 0.50
                 
-                let totalExposureMultiple = (faceData!.iso/maxExposureIso) * (faceData!.exposureDuration/maxExposureDuration)
-                
-                if totalExposureMultiple < 1.0 {
-                    self.userFaceState.onNext(.tooBright)
-                    return
-                }
-                 */
-            
-                
-                let faceClipState = self.checkFaceClipped(min: min, max: max)
-                
-                if faceClipState != .ok {
-                    self.userFaceState.onNext(faceClipState)
-                    return
-                }
                 
                 self.userFaceState.onNext(.ok)
             }).disposed(by: disposeBag)
@@ -308,9 +286,7 @@ class SampleSkinToneViewModel {
                 let faceCropSize = self.getEncapsulatingSize(sizes: faceSizes) //* 1.10
                 let faceBBs = faceCaptures.map { $0.getAllPointsBB()! }
                 let scaledFaceBBs = faceBBs.map { $0.scaleToSize(size: faceCropSize, imgSize: faceCaptures[0].imageSize.size) }
-                //let encapsulatingMaxY = scaledFaceBBs.map { $0.maxY }.max()!
                 let encapsulatingMaxX = scaledFaceBBs.map { $0.maxX }.max()!
-                //let faceCropHeight = encapsulatingMaxY // We want the largest Y Value after scaling up...
                 let faceCropWidth = encapsulatingMaxX
                 
                 return faceCaptures.map { faceCapture -> ImageData in
@@ -352,81 +328,7 @@ class SampleSkinToneViewModel {
                 
                     return ImageData(faceData: pngDataFace, leftEyeData: pngDataLeftEye, rightEyeData: pngDataRightEye, setMetadata: setMetadata)
                     //DONT FORGET TO TRANSFER EYE WIDTH AS WELL!
-                    // --> CREATE IMAGE CLASS WITH { CIIMAGE, IMAGE TRANSFORMS, LANDMARKS [CGPoint] <- auto update with transforms?   }?
                 }
-                /*
-                return photoData.map { photoDatum -> ImageData in
-                    guard let (faceLandmarks, capturePhoto, flashSettings) = photoDatum else {
-                        fatalError("Did not recieve face data")
-                    }
-                    
-                    var faceBB = crops.popLast()!.toInt()
-                    let (leftEyeBB, rightEyeBB) = eyeCrops.popLast()!
-                    
-                    let newX = CGFloat(0)//crop.minX
-                    let newY = faceBB.minY
-
-                    var newWidth = CGFloat(largestXCoord!.minX + (1.1 * faceBB.width)) //New width with a little buffer
-                    if newWidth > CGFloat(bufferWidth) { newWidth = CGFloat(bufferWidth) }
-                    
-                    let newHeight = faceBB.height
-                    faceBB = CGRect(x: newX, y: newY, width: newWidth, height: newHeight)
-                    
-                    let cropOffset = CGVector.init(dx: newY, dy: CGFloat(bufferWidth) - newWidth)
-                    //let eyeCropOffset = CGVector.init(dx: newX, dy: newY)
-                    
-                    var faceLandmarkPoints = faceLandmarks.allPoints!.pointsInImage(imageSize: bufferSize)
-                    faceLandmarkPoints = faceLandmarkPoints.map { point in point - cropOffset }
-                    
-                    let leftEyeBBAdjusted = leftEyeBB.subOffsetVector(vector: cropOffset, imgSize: bufferSize).toInt()
-                    let rightEyeBBAdjusted = rightEyeBB.subOffsetVector(vector: cropOffset, imgSize: bufferSize).toInt()
-                    
-                    var imageTransforms = ImageTransforms()
-                    
-                    let cgImage = capturePhoto.cgImageRepresentation()!.takeUnretainedValue()
-                    
-                    let cgImageFace = cgImage.cropping(to: faceBB)!
-                    let cgImageLeftEye = cgImage.cropping(to: leftEyeBB)!
-                    let cgImageRightEye = cgImage.cropping(to: rightEyeBB)!
-
-                    imageTransforms.isCropped = true
-                    
-                    let ciImageFace = CIImage(cgImage: cgImageFace)
-                    let ciImageLeftEye = CIImage(cgImage: cgImageLeftEye)
-                    let ciImageRightEye = CIImage(cgImage: cgImageRightEye)
-
-                    let longSide = [faceBB.width, faceBB.height].max()!
-                    let scaleRatio = 1080 / longSide
-                    imageTransforms.scaleRatio = scaleRatio
-                    
-                    let faceLandmarkPointsScaled = faceLandmarkPoints.map { ($0 * scaleRatio) }
-                    let leftEyeBBAdjustedScaled = (leftEyeBBAdjusted * scaleRatio)
-                    let rightEyeBBAdjustedScaled = (rightEyeBBAdjusted * scaleRatio)
-
-                    
-                    let scaledWidth = floor(faceBB.width * scaleRatio)
-                    let scaledHeight =  floor(faceBB.height * scaleRatio)
-                    let scaledRect = CGRect.init(x: 0, y: 0, width: scaledWidth, height: scaledHeight) //Eventually use for crop?
- 
-                    let scaledCIImageFace = scaleImage(ciImageFace, scale: scaleRatio, &imageTransforms).cropped(to: scaledRect)
-                    let rotatedScaledCIImageFace = rotateImage(scaledCIImageFace, &imageTransforms)
-                    let rotatedCIImageLeftEye = rotateImage(ciImageLeftEye, &imageTransforms)
-                    let rotatedCIImageRightEye = rotateImage(ciImageRightEye, &imageTransforms)
-
-                    let pngDataFace = context.pngRepresentation(of: rotatedScaledCIImageFace, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])!
-                    
-                    let pngDataLeftEye = context.pngRepresentation(of: rotatedCIImageLeftEye, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])!
-                    
-                    let pngDataRightEye = context.pngRepresentation(of: rotatedCIImageRightEye, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])!
-
-                    
-                    let metaData = MetaData.getFrom(cameraState: self.cameraState, captureMetadata: capturePhoto.metadata, faceLandmarks: faceLandmarkPointsScaled
-                        
-                        , leftEyeBB: leftEyeBBAdjustedScaled, rightEyeBB: rightEyeBBAdjustedScaled, flashSetting: flashSettings, imageTransforms: imageTransforms)
-                    
-                    return ImageData(faceData: pngDataFace, leftEyeData: pngDataLeftEye, rightEyeData: pngDataRightEye, metaData: metaData)
-                }
- */
             }
     }
     
@@ -434,65 +336,49 @@ class SampleSkinToneViewModel {
     private func captureReferencePhoto() -> Observable<Bool> {
         let flashSetting = FlashSettings(area: 1, areas: 1)
         
-        //.repeatElement When we need more then one?
         return Observable.just(flashSetting)
             .observeOn(MainScheduler.instance)
-            //.observeOn(SerialDispatchQueueScheduler.init(internalSerialQueueName: "com.tone.imageCaptureQueue"))
             .map { (Camera(cameraState: self.cameraState), $0) }
             .do(onNext: { _ in self.cameraState.unlockCameraSettings() })
             .serialMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
-            //.do { print("MOVING ON!")}
-            //.serialMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
-            //.flatMap { capture in getReflectionBrightness(self.cameraState, capture) }
             .flatMap { _ in self.cameraState.lockCameraSettings() }
             .map { _ in true }
     }
     
-    private func checkFaceSize(min: CGPoint, max: CGPoint) -> UserFaceStates {
-        let width = max.x - min.x
-        let height = 1.65 * (max.y - min.y)
+    private func checkFaceSize(min: ImagePoint, max: ImagePoint, imageSize: ImageSize) -> UserFaceStates {
+        let width = max.point.x - min.point.x
+        let height = 1.5 * (max.point.y - min.point.y) //1.65 is just a ~random value approximate where the top of the head is since points only cover up to the eyebrows
         
-        let fractionWidth = width / self.videoSize.width
-        let fractionHeight = height / self.videoSize.height
+        let fractionWidth = width / imageSize.size.width
+        let fractionHeight = height / imageSize.size.height
         
         //Mostly to avoid picking up background faces
         if (fractionWidth < 0.20) || (fractionHeight < 0.20) {
             return .noFaceFound
-        } else if (fractionWidth < 0.55) || (fractionHeight < 0.6) {
+        } else if (fractionWidth < 0.3) || (fractionHeight < 0.6) {
             return .faceTooFar
-        } else if (fractionWidth > 0.7) || (fractionHeight > 0.8) {
+        } else if (fractionWidth > 0.7) || (fractionHeight > 0.9) {
             return .faceTooClose
         }
         
         return .ok
     }
     
-    private func checkFaceClipped(min: CGPoint, max: CGPoint) -> UserFaceStates {
-        let height = 1.65 * (max.y - min.y)
-
-        if min.x < 0 {
+    private func checkFaceClipped(min: DisplayPoint, max: DisplayPoint) -> UserFaceStates {
+        let height = 1.5 * (max.point.y - min.point.y)
+        print("Min :: \(min.point) | Max :: \(max.point) | Height :: \(height)")
+        print("Video Height :: \(self.videoSize.height)")
+        if min.point.x < -10 {
             return .faceTooFarLeft
-        } else if max.x > self.videoSize.width {
+        } else if max.point.x > self.videoSize.width + 10 {
             return .faceTooFarRight
-        } else if min.y < -10 {
+        } else if max.point.y > self.videoSize.height + 10 {
             return .faceTooFarDown
-        } else if (min.y + height) > self.videoSize.height {
+        } else if (max.point.y - height) < -10 {
             return .faceTooFarUp
         }
         
         return .ok
     }
-    /*
-    func getFaceLandmarks(capture: (AVCapturePhoto, FlashSettings)) -> Observable<(VNFaceLandmarks2D, AVCapturePhoto, FlashSettings)?> {
-        let (photo, flashSettings) = capture
-        return getFacialLandmarks(cameraState: cameraState, pixelBuffer: photo.pixelBuffer!)
-            .map({
-                guard let (landmarks, _) = $0 else {
-                    return nil
-                }
-                return (landmarks, photo, flashSettings)
-            })
-    }
- */
 }
 
