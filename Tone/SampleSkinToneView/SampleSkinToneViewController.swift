@@ -225,7 +225,7 @@ class SampleSkinToneViewController: UIViewController {
         viewModel.drawPointsStream
             .observeOn(MainScheduler.instance)
             .subscribeOn(MainScheduler.instance)
-            .distinctUntilChanged()
+            //.distinctUntilChanged()
             .subscribe(onNext: { points in
                 let size = 5
                 
@@ -238,7 +238,7 @@ class SampleSkinToneViewController: UIViewController {
                     ctx.cgContext.setFillColor(UIColor.red.cgColor)
                 
                     for point in points {
-                        ctx.cgContext.fill(CGRect(x: Int(point.x), y: Int(point.y), width: size, height: size))
+                        ctx.cgContext.fill(CGRect(x: Int(point.point.x), y: Int(point.point.y), width: size, height: size))
                     }
                 }
                 

@@ -130,8 +130,10 @@ class SampleSkinToneViewModel {
                     self.userFaceState.onNext(.noFaceFound)
                     return
                 }
-                
-                self.drawPointsStream.onNext(faceData.landmarks)
+                print("VIDEO SIZE :: \(self.videoSize)")
+                let displayPoints = faceData.landmarks.map { $0.toDisplayPoint(size: faceData.size, videoLayer: try! self.videoPreviewLayerStream.value()!) }
+                print("FIRST DISPLAY POINT :: \(displayPoints[0].point)")
+                self.drawPointsStream.onNext(displayPoints)
 
                 let xValues = faceData.landmarks.map { $0.point.x }
                 let yValues = faceData.landmarks.map { $0.point.y }
@@ -146,21 +148,19 @@ class SampleSkinToneViewModel {
                     return
                 }
                 
-                //cameraState.captureDevice.iso
-                let exposureScore = self.cameraState.getStandardizedExposureScore()
-                /*
-                if faceData!.isTooBright {
+                if faceData.isTooBright {
                     self.userFaceState.onNext(.tooBright)
                     return
                 }
-                 */
-                
+                /*
+                let exposureScore = self.cameraState.getStandardizedExposureScore()
                 if exposureScore > 100 {
                     self.userFaceState.onNext(.tooBright)
                     return
                 }
+ */
                 
-                if !faceData!.isLightingBalanced {
+                if !faceData.isLightingBalanced {
                     self.userFaceState.onNext(.faceGradient)
                     return
                 }
@@ -482,7 +482,7 @@ class SampleSkinToneViewModel {
         
         return .ok
     }
-    
+    /*
     func getFaceLandmarks(capture: (AVCapturePhoto, FlashSettings)) -> Observable<(VNFaceLandmarks2D, AVCapturePhoto, FlashSettings)?> {
         let (photo, flashSettings) = capture
         return getFacialLandmarks(cameraState: cameraState, pixelBuffer: photo.pixelBuffer!)
@@ -493,5 +493,6 @@ class SampleSkinToneViewModel {
                 return (landmarks, photo, flashSettings)
             })
     }
+ */
 }
 

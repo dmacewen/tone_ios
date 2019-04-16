@@ -23,25 +23,25 @@ class Video:  NSObject {
         self.faceLandmarks = pixelBufferSubject
             //.flatMap { getFacialLandmarks(cameraState: cameraState, pixelBuffer: $0) }
             .flatMap { pixelBuffer -> Observable<FaceCapture?> in
-                guard let videoPreviewLayer = videoPreviewLayerStream.value() else { return Observable.just(nil) }
+                guard let videoPreviewLayer = try! videoPreviewLayerStream.value() else { return Observable.just(nil) }
                 return FaceCapture.create(pixelBuffer: pixelBuffer, orientation: cameraState.exifOrientationForCurrentDeviceOrientation(), videoPreviewLayer: videoPreviewLayer)
             }
-            .map { faceCaptureOptional? -> RealTimeFaceData? in
+            .map { faceCaptureOptional -> RealTimeFaceData? in
                 guard let faceCapture = faceCaptureOptional else { return nil }
                 
-                guard let (exposurePoint, isLightingBalanced, isTooBright) = getExposureInfo(pixelBuffer: pixelBuffer, landmarks: faceLandmarks, cameraState: cameraState) else {
+                guard let (exposurePoint, isLightingBalanced, isTooBright) = getExposureInfo(faceCapture: faceCapture, cameraState: cameraState) else {
                     return nil
                 }
                 
                 cameraState.exposurePointStream.onNext(exposurePoint)
                 
                 let exposureDuration = CMTimeGetSeconds(cameraState.captureDevice.exposureDuration)
-                return RealTimeFaceData(landmarks: faceLandmarks, isLightingBalanced: isLightingBalanced, isTooBright: isTooBright, iso: cameraState.captureDevice.iso, exposureDuration: exposureDuration)
+                guard let allImagePoints = faceCapture.getAllImagePoints() else { return nil }
+                return RealTimeFaceData(landmarks: allImagePoints, size: faceCapture.imageSize, isLightingBalanced: isLightingBalanced, isTooBright: isTooBright, iso: CGFloat(cameraState.captureDevice.iso), exposureDuration: exposureDuration)
             }
             .asObservable()
 
         self.videoDataOutput = AVCaptureVideoDataOutput()
-        
         super.init()
         
         self.videoDataOutput.alwaysDiscardsLateVideoFrames = true

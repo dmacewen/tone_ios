@@ -19,6 +19,16 @@ struct ImageData {
     let setMetadata: SetMetadata
 }
 
+struct RealTimeFaceData {
+    var landmarks: [ImagePoint]
+    var size: ImageSize
+    var isLightingBalanced: Bool
+    var isTooBright: Bool
+    var iso: CGFloat
+    var exposureDuration: Float64
+}
+
+/*
 struct ImageByteBuffer {
     private let byteBuffer: UnsafeMutablePointer<UInt8>
     private let width: Int
@@ -81,11 +91,13 @@ struct ImageByteBuffer {
         return averageSubpixelValue
     }
 }
-
-func getRightEyePoint(landmarks: [CGPoint]) -> CGPoint {
+ */
+/*
+func getRightEyePoint(landmarks: [ImagePoint]) -> ImagePoint {
     return landmarks[16]
 }
-
+ */
+/*
 func bufferBoundingBox(_ bb: CGRect, imgSize: CGSize, margin: CGFloat = 0.25) -> CGRect {
     let sizeMultiplier = 1 + (2 * margin)
     
@@ -111,6 +123,7 @@ func bufferBoundingBox(_ bb: CGRect, imgSize: CGSize, margin: CGFloat = 0.25) ->
     
     return CGRect.init(x: newX, y: newY, width: newWidth, height: newHeight)
 }
+ */
 /*
 func getRightEyeBB(landmarks: [ImagePoint], imgSize: CGSize) -> CGRect {
     let eyePoints = landmarks[16...23]
@@ -125,31 +138,31 @@ func getLeftEyeBB(landmarks: [ImagePoint], imgSize: CGSize) -> CGRect {
 func getRightCheekPoint(landmarks: [ImagePoint]) -> ImagePoint {
     let middleRightEye = landmarks[64]
     let middleNose = landmarks[58]
-    return CGPoint.init(x: middleRightEye.x, y: middleNose.y)
+    return ImagePoint.init(x: middleRightEye.point.x, y: middleNose.point.y)
 }
 
 func getLeftCheekPoint(landmarks: [ImagePoint]) -> ImagePoint {
     let middleLeftEye = landmarks[63]
     let middleNose = landmarks[52]
-    return CGPoint.init(x: middleLeftEye.x, y: middleNose.y)
+    return ImagePoint.init(x: middleLeftEye.point.x, y: middleNose.point.y)
 }
 
 func getChinPoint(landmarks: [ImagePoint]) -> ImagePoint {
     let centerLipBottom = landmarks[31]
     let centerJawBottom = landmarks[45]
-    return CGPoint.init(x: (centerLipBottom.x + centerJawBottom.x) / 2, y: (centerLipBottom.y + centerJawBottom.y) / 2)
+    return ImagePoint.init(x: (centerLipBottom.point.x + centerJawBottom.point.x) / 2, y: (centerLipBottom.point.y + centerJawBottom.point.y) / 2)
 }
 
 func getForeheadPoint(landmarks: [ImagePoint]) -> ImagePoint {
     let leftEyebrowInner = landmarks[3]
     let rightEyebrowInner = landmarks[4]
-    return CGPoint.init(x: (leftEyebrowInner.x + rightEyebrowInner.x) / 2, y: (leftEyebrowInner.y + rightEyebrowInner.y) / 2)
+    return ImagePoint.init(x: (leftEyebrowInner.point.x + rightEyebrowInner.point.x) / 2, y: (leftEyebrowInner.point.y + rightEyebrowInner.point.y) / 2)
 }
 
 func getForeheadPair(landmarks: [ImagePoint]) -> (ImagePoint, ImagePoint) {
-    let offset = abs(landmarks[2].x - landmarks[1].x)
-    let leftEyeBrowSample = CGPoint.init(x: landmarks[2].x, y: landmarks[2].y - offset)
-    let rightEyeBrowSample = CGPoint.init(x: landmarks[5].x, y: landmarks[5].y - offset)
+    let offset = abs(landmarks[2].point.x - landmarks[1].point.x)
+    let leftEyeBrowSample = ImagePoint.init(x: landmarks[2].point.x, y: landmarks[2].point.y - offset)
+    let rightEyeBrowSample = ImagePoint.init(x: landmarks[5].point.x, y: landmarks[5].point.y - offset)
     return (leftEyeBrowSample, rightEyeBrowSample)
 }
 
@@ -158,15 +171,15 @@ func getEyePair(landmarks: [ImagePoint]) -> (ImagePoint, ImagePoint) {
 }
 
 func getUpperCheekPair(landmarks: [ImagePoint]) -> (ImagePoint, ImagePoint) {
-    let leftUpperCheek = CGPoint.init(x: landmarks[8].x, y: landmarks[55].y)
-    let rightUpperCheek = CGPoint.init(x: landmarks[20].x, y: landmarks[55].y)
+    let leftUpperCheek = ImagePoint.init(x: landmarks[8].point.x, y: landmarks[55].point.y)
+    let rightUpperCheek = ImagePoint.init(x: landmarks[20].point.x, y: landmarks[55].point.y)
     return (leftUpperCheek, rightUpperCheek)
 }
 
 func getLowerCheekPair(landmarks: [ImagePoint]) -> (ImagePoint, ImagePoint) {
     let offset = abs(landmarks[26].point.y - landmarks[35].point.y)
-    let leftUpperCheek = CGPoint.init(x: landmarks[33].point.x - offset, y: landmarks[33].point.y)
-    let rightUpperCheek = CGPoint.init(x: landmarks[29].point.x + offset, y: landmarks[29].point.y)
+    let leftUpperCheek = ImagePoint.init(x: landmarks[33].point.x - offset, y: landmarks[33].point.y)
+    let rightUpperCheek = ImagePoint.init(x: landmarks[29].point.x + offset, y: landmarks[29].point.y)
     return (leftUpperCheek, rightUpperCheek)
 }
 
@@ -184,7 +197,7 @@ func isLightingEqual(points: (ImagePoint, ImagePoint), faceCapture: FaceCapture,
     return true
 }
 
-func getExposureInfo(faceCapture: FaceCapture, cameraState: CameraState) -> (DisplayPoint, Bool, Bool)? {
+func getExposureInfo(faceCapture: FaceCapture, cameraState: CameraState) -> (ImagePoint, Bool, Bool)? {
     faceCapture.lock()
     defer { faceCapture.unlock() }
     
@@ -230,7 +243,7 @@ func getExposureInfo(faceCapture: FaceCapture, cameraState: CameraState) -> (Dis
     print("BRIGHTEST EXPOSURE SCORE :: \(brightestExposureScore)")
     let isTooBright = brightestExposureScore > 100
     
-    return (brightestPoint.toDisplayPoint(size: faceCapture.imageSize), isBrightnessBalanced, isTooBright)
+    return (brightestPoint, isBrightnessBalanced, isTooBright)
 }
 
 //Error :: 2018-11-14 11:44:19.689414-0800 Tone[32016:9326030] LandmarkDetector error -20:out of bounds in int vision::mod::LandmarkAttributes::computeBlinkFunction(const vImage_Buffer &, const Geometry2D_rect2D &, const std::vector<Geometry2D_point2D> &, vImage_Buffer &, vImage_Buffer &, std::vector<float> &, std::vector<float> &) @ /BuildRoot/Library/Caches/com.apple.xbs/Sources/Vision/Vision-2.0.62/LandmarkDetector/LandmarkDetector_Attributes.mm:535
@@ -306,7 +319,7 @@ func getReflectionBrightness(_ cameraState: CameraState, _ capture: (AVCapturePh
         }
 }
  */
-
+/*
 func convertPortraitPointToLandscapePoint(points: [CGPoint], imgSize: CGSize) -> [CGPoint] {
     return points.map { CGPoint.init(x: CGFloat(imgSize.height) - $0.y, y: $0.x) }
 }
@@ -335,6 +348,7 @@ func calculateFaceCrop(faceLandmarks: [VNFaceLandmarks2D], imgSize: CGSize) -> [
     
     return crops
 }
+ */
 /*
 func calculateEyeCrops(faceLandmarks: [VNFaceLandmarks2D], imgSize: CGSize) -> [(CGRect, CGRect)] {
     let faceLandmarkPoints = faceLandmarks.map { $0.allPoints!.pointsInImage(imageSize: imgSize) }

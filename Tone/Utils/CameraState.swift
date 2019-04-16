@@ -24,18 +24,8 @@ struct FlashSettings: Codable {
 }
 
 struct ExposureRatios {
-    let iso: Float64
-    let exposure: Float64
-}
-
-struct RealTimeFaceData {
-    var landmarks: [DisplayPoint]
-    var isLightingBalanced: Bool
-    var isTooBright: Bool
-    var iso: Float64
-    var exposureDuration: Float64
-    
-    
+    let iso: CGFloat
+    let exposure: CGFloat
 }
 
 //Defining a Camera how we want it
@@ -53,8 +43,8 @@ class CameraState {
     let isAdjustingWB: ConnectableObservable<Bool>//Variable<Bool>
     let disposeBag = DisposeBag()
     
-    let exposurePointStream = BehaviorSubject<CGPoint>(value: CGPoint.init(x: 0.5, y: 0.5))
-
+    let exposurePointStream = BehaviorSubject<ImagePoint>(value: ImagePoint.init(x: 0.5, y: 0.5))
+    
     init(flashStream: BehaviorSubject<FlashSettings>) {
         print("Setting up camera...")
         self.flashStream = flashStream
@@ -116,7 +106,9 @@ class CameraState {
             //print("Setting exposure point to \(exposurePoint)")
             //let manualExposurePoint = CGPoint.init(x: 0.5, y: 0.5)
             //self.captureDevice.exposurePointOfInterest = manualExposurePoint
-            self.captureDevice.exposurePointOfInterest = exposurePoint
+            
+            //NEEDS TO BE LOCKED FOR CONFIG
+            self.captureDevice.exposurePointOfInterest = exposurePoint.point
             self.captureDevice.exposureMode = AVCaptureDevice.ExposureMode.autoExpose
         }).disposed(by: disposeBag)
     }
@@ -225,8 +217,8 @@ class CameraState {
         let minExposureDuration = self.captureDevice.activeFormat.minExposureDuration
         let minISO = self.captureDevice.activeFormat.minISO
         
-        let exposureRatio =  Float64(CMTimeGetSeconds(self.captureDevice.exposureDuration) / CMTimeGetSeconds(minExposureDuration))
-        let isoRatio = Float64(self.captureDevice.iso / minISO)
+        let exposureRatio =  CGFloat(CMTimeGetSeconds(self.captureDevice.exposureDuration) / CMTimeGetSeconds(minExposureDuration))
+        let isoRatio = CGFloat(self.captureDevice.iso / minISO)
         
         return ExposureRatios(iso: isoRatio, exposure: exposureRatio)
     }
