@@ -281,9 +281,32 @@ struct ImagePoint {
     }
 
     func toDisplayPoint(size: ImageSize, videoLayer: AVCaptureVideoPreviewLayer) -> DisplayPoint {
-        let normalizedX = self.point.x / size.size.width
-        let normalizedY = 1 - (self.point.y / size.size.height)
+        let normalizedImagePoint = self.toNormalizedImagePoint(size: size)
+        let normalizedX = normalizedImagePoint.point.x
+        let normalizedY = 1 - normalizedImagePoint.point.y
         return DisplayPoint.init(videoLayer.layerPointConverted(fromCaptureDevicePoint: CGPoint.init(x: normalizedX, y: normalizedY))) //Needs to be 0.0 - 1.0
+    }
+    
+    func toNormalizedImagePoint(size: ImageSize) -> NormalizedImagePoint {
+        let normalizedX = self.point.x / size.size.width
+        let normalizedY = self.point.y / size.size.height
+        return NormalizedImagePoint.init(x: normalizedX, y: normalizedY)
+    }
+}
+
+struct NormalizedImagePoint {
+    let point: CGPoint
+    
+    init(_ point: CGPoint) {
+        self.point = point
+    }
+    
+    init(x: CGFloat, y: CGFloat) {
+        self.point = CGPoint.init(x: x, y: y)
+    }
+    
+    init(x: Int, y: Int) {
+        self.point = CGPoint.init(x: x, y: y)
     }
 }
 
@@ -313,6 +336,7 @@ struct ImageSize {
         return DisplaySize.init(width: displayBoundsPoint.point.x, height: displayBoundsPoint.point.y)
     }
 }
+
 
 struct DisplayPoint {
     let point: CGPoint

@@ -110,9 +110,9 @@ class SampleSkinToneViewModel {
         cameraState = CameraState(flashStream: flashSettings)
         video = Video(cameraState: cameraState, videoPreviewLayerStream: videoPreviewLayerStream)
         
-        video.faceLandmarks
-            .subscribe(onNext: { faceDataOptional in
-                guard let faceData = faceDataOptional else {
+        video.realtimeDataStream
+            .subscribe(onNext: { realtimeDataOptional in
+                guard let realtimeData = realtimeDataOptional else {
                     self.userFaceState.onNext(.noFaceFound)
                     return
                 }
@@ -122,17 +122,21 @@ class SampleSkinToneViewModel {
                     self.userFaceState.onNext(.noFaceFound)
                     return
                 }
+                
+                self.cameraState.exposurePointStream.onNext(realtimeData.exposurePoint.toNormalizedImagePoint(size: realtimeData.size))
+                
+                self.drawPointsStream.onNext([realtimeData.exposurePoint.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)])
 
-                let displayPoints = faceData.landmarks.map { $0.toDisplayPoint(size: faceData.size, videoLayer: videoLayer) }
-                self.drawPointsStream.onNext(displayPoints)
+                let displayPoints = realtimeData.landmarks.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer) }
+                //self.drawPointsStream.onNext(displayPoints)
 
-                let xImageValues = faceData.landmarks.map { $0.point.x }
-                let yImageValues = faceData.landmarks.map { $0.point.y }
+                let xImageValues = realtimeData.landmarks.map { $0.point.x }
+                let yImageValues = realtimeData.landmarks.map { $0.point.y }
                 
                 let minImagePoint = ImagePoint.init(x: xImageValues.min()!, y: yImageValues.min()!)
                 let maxImagePoint = ImagePoint.init(x: xImageValues.max()!, y: yImageValues.max()!)
                 
-                let faceSizeState = self.checkFaceSize(min: minImagePoint, max: maxImagePoint, imageSize: faceData.size)
+                let faceSizeState = self.checkFaceSize(min: minImagePoint, max: maxImagePoint, imageSize: realtimeData.size)
                 if faceSizeState != .ok {
                     self.userFaceState.onNext(faceSizeState)
                     return
@@ -151,12 +155,12 @@ class SampleSkinToneViewModel {
                 }
                 
                 
-                if faceData.isTooBright {
+                if realtimeData.isTooBright {
                     self.userFaceState.onNext(.tooBright)
                     return
                 }
                 
-                if !faceData.isLightingBalanced {
+                if !realtimeData.isLightingBalanced {
                     self.userFaceState.onNext(.faceGradient)
                     return
                 }

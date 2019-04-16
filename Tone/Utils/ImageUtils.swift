@@ -22,6 +22,7 @@ struct ImageData {
 struct RealTimeFaceData {
     var landmarks: [ImagePoint]
     var size: ImageSize
+    var exposurePoint: ImagePoint
     var isLightingBalanced: Bool
     var isTooBright: Bool
     var iso: CGFloat

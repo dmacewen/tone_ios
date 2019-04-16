@@ -13,14 +13,14 @@ import AVKit
 
 class Video:  NSObject {
     private var cameraState: CameraState
-    let faceLandmarks: Observable<RealTimeFaceData?>
+    let realtimeDataStream: Observable<RealTimeFaceData?>
     private let pixelBufferSubject = PublishSubject<CVPixelBuffer>()
     private let videoDataOutput: AVCaptureVideoDataOutput
     
     init(cameraState: CameraState, videoPreviewLayerStream:  BehaviorSubject<AVCaptureVideoPreviewLayer?>) {
         self.cameraState = cameraState
         
-        self.faceLandmarks = pixelBufferSubject
+        self.realtimeDataStream = pixelBufferSubject
             //.flatMap { getFacialLandmarks(cameraState: cameraState, pixelBuffer: $0) }
             .flatMap { pixelBuffer -> Observable<FaceCapture?> in
                 guard let videoPreviewLayer = try! videoPreviewLayerStream.value() else { return Observable.just(nil) }
@@ -33,11 +33,11 @@ class Video:  NSObject {
                     return nil
                 }
                 
-                cameraState.exposurePointStream.onNext(exposurePoint)
+                //cameraState.exposurePointStream.onNext(exposurePoint)
                 
                 let exposureDuration = CMTimeGetSeconds(cameraState.captureDevice.exposureDuration)
                 guard let allImagePoints = faceCapture.getAllImagePoints() else { return nil }
-                return RealTimeFaceData(landmarks: allImagePoints, size: faceCapture.imageSize, isLightingBalanced: isLightingBalanced, isTooBright: isTooBright, iso: CGFloat(cameraState.captureDevice.iso), exposureDuration: exposureDuration)
+                return RealTimeFaceData(landmarks: allImagePoints, size: faceCapture.imageSize, exposurePoint: exposurePoint, isLightingBalanced: isLightingBalanced, isTooBright: isTooBright, iso: CGFloat(cameraState.captureDevice.iso), exposureDuration: exposureDuration)
             }
             .asObservable()
 

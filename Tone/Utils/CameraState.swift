@@ -43,7 +43,7 @@ class CameraState {
     let isAdjustingWB: ConnectableObservable<Bool>//Variable<Bool>
     let disposeBag = DisposeBag()
     
-    let exposurePointStream = BehaviorSubject<ImagePoint>(value: ImagePoint.init(x: 0.5, y: 0.5))
+    let exposurePointStream = BehaviorSubject<NormalizedImagePoint>(value: NormalizedImagePoint.init(x: 0.5, y: 0.5))
     
     init(flashStream: BehaviorSubject<FlashSettings>) {
         print("Setting up camera...")
@@ -103,13 +103,10 @@ class CameraState {
         _ = isAdjustingExposure.connect()
         
         exposurePointStream.subscribe(onNext: {  exposurePoint in
-            //print("Setting exposure point to \(exposurePoint)")
-            //let manualExposurePoint = CGPoint.init(x: 0.5, y: 0.5)
-            //self.captureDevice.exposurePointOfInterest = manualExposurePoint
-            
             //NEEDS TO BE LOCKED FOR CONFIG
             self.captureDevice.exposurePointOfInterest = exposurePoint.point
             self.captureDevice.exposureMode = AVCaptureDevice.ExposureMode.autoExpose
+            //self.captureDevice.exposureMode = AVCaptureDevice.ExposureMode.continuousAutoExposure
         }).disposed(by: disposeBag)
     }
     
