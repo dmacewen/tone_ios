@@ -29,6 +29,7 @@
 		86C0B8BB224BFEC200B6C33F /* RxBlocking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 86F138D821877F89004C6092 /* RxBlocking.framework */; };
 		86C0B8BC224BFEC200B6C33F /* RxBlocking.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 86F138D821877F89004C6092 /* RxBlocking.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		86ED6FCA22611D7F00124A1F /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86ED6FC922611D7F00124A1F /* Image.swift */; };
+		86ED6FCC2266DCA200124A1F /* Points.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86ED6FCB2266DCA200124A1F /* Points.swift */; };
 		86F138AA218768C2004C6092 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F138A9218768C2004C6092 /* AppDelegate.swift */; };
 		86F138AF218768C2004C6092 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 86F138AD218768C2004C6092 /* Main.storyboard */; };
 		86F138B1218768C4004C6092 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 86F138B0218768C4004C6092 /* Assets.xcassets */; };
@@ -103,6 +104,7 @@
 		86C0B8B5224BFDC500B6C33F /* project.pbxproj */ = {isa = PBXFileReference; lastKnownFileType = text.pbxproject; name = project.pbxproj; path = Tone.xcodeproj/project.pbxproj; sourceTree = "<group>"; };
 		86D5C7452187898000D5E15E /* RxTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxTest.framework; path = Carthage/Build/iOS/RxTest.framework; sourceTree = "<group>"; };
 		86ED6FC922611D7F00124A1F /* Image.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Image.swift; sourceTree = "<group>"; };
+		86ED6FCB2266DCA200124A1F /* Points.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Points.swift; sourceTree = "<group>"; };
 		86F138A6218768C2004C6092 /* Tone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		86F138A9218768C2004C6092 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		86F138AE218768C2004C6092 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -199,6 +201,7 @@
 				86F9E728225E9C5C00E6E52E /* CGExtensions.swift */,
 				86F9E72A225EA1E200E6E52E /* Metadata.swift */,
 				8618710A225ECB0D00F19565 /* FaceCapture.swift */,
+				86ED6FCB2266DCA200124A1F /* Points.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -465,6 +468,7 @@
 				86F9E729225E9C5C00E6E52E /* CGExtensions.swift in Sources */,
 				866C405F21911709007BABDE /* ImageDataUpload.swift in Sources */,
 				86F138AA218768C2004C6092 /* AppDelegate.swift in Sources */,
+				86ED6FCC2266DCA200124A1F /* Points.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

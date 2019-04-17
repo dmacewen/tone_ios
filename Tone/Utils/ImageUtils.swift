@@ -27,20 +27,18 @@ struct RealTimeFaceData {
     var brightnessPoints: [ImagePoint]
     var exposurePoint: ImagePoint
     var size: ImageSize
-    //var iso: CGFloat
-    //var exposureDuration: Float64
 }
 
 enum UnbalanceDirection {
     case left
     case right
-    case none
+    case balanced
     
     var ok: Bool {
         switch self {
         case .left, .right:
             return false
-        case .none:
+        case .balanced:
             return true
         }
     }
@@ -49,31 +47,31 @@ enum UnbalanceDirection {
 func getRightCheekPoint(landmarks: [ImagePoint]) -> ImagePoint {
     let middleRightEye = landmarks[64]
     let middleNose = landmarks[58]
-    return ImagePoint.init(x: middleRightEye.point.x, y: middleNose.point.y)
+    return ImagePoint.init(x: middleRightEye.x, y: middleNose.y)
 }
 
 func getLeftCheekPoint(landmarks: [ImagePoint]) -> ImagePoint {
     let middleLeftEye = landmarks[63]
     let middleNose = landmarks[52]
-    return ImagePoint.init(x: middleLeftEye.point.x, y: middleNose.point.y)
+    return ImagePoint.init(x: middleLeftEye.x, y: middleNose.y)
 }
 
 func getChinPoint(landmarks: [ImagePoint]) -> ImagePoint {
     let centerLipBottom = landmarks[31]
     let centerJawBottom = landmarks[45]
-    return ImagePoint.init(x: (centerLipBottom.point.x + centerJawBottom.point.x) / 2, y: (centerLipBottom.point.y + centerJawBottom.point.y) / 2)
+    return ImagePoint.init(x: (centerLipBottom.x + centerJawBottom.x) / 2, y: (centerLipBottom.y + centerJawBottom.y) / 2)
 }
 
 func getForeheadPoint(landmarks: [ImagePoint]) -> ImagePoint {
     let leftEyebrowInner = landmarks[3]
     let rightEyebrowInner = landmarks[4]
-    return ImagePoint.init(x: (leftEyebrowInner.point.x + rightEyebrowInner.point.x) / 2, y: (leftEyebrowInner.point.y + rightEyebrowInner.point.y) / 2)
+    return ImagePoint.init(x: (leftEyebrowInner.x + rightEyebrowInner.x) / 2, y: (leftEyebrowInner.y + rightEyebrowInner.y) / 2)
 }
 
 func getForeheadPair(landmarks: [ImagePoint]) -> (ImagePoint, ImagePoint) {
-    let offset = abs(landmarks[2].point.x - landmarks[1].point.x)
-    let leftEyeBrowSample = ImagePoint.init(x: landmarks[2].point.x, y: landmarks[2].point.y - offset)
-    let rightEyeBrowSample = ImagePoint.init(x: landmarks[5].point.x, y: landmarks[5].point.y - offset)
+    let offset = abs(landmarks[2].x - landmarks[1].x)
+    let leftEyeBrowSample = ImagePoint.init(x: landmarks[2].x, y: landmarks[2].y - offset)
+    let rightEyeBrowSample = ImagePoint.init(x: landmarks[5].x, y: landmarks[5].y - offset)
     return (leftEyeBrowSample, rightEyeBrowSample)
 }
 
@@ -82,15 +80,15 @@ func getEyePair(landmarks: [ImagePoint]) -> (ImagePoint, ImagePoint) {
 }
 
 func getUpperCheekPair(landmarks: [ImagePoint]) -> (ImagePoint, ImagePoint) {
-    let leftUpperCheek = ImagePoint.init(x: landmarks[8].point.x, y: landmarks[55].point.y)
-    let rightUpperCheek = ImagePoint.init(x: landmarks[20].point.x, y: landmarks[55].point.y)
+    let leftUpperCheek = ImagePoint.init(x: landmarks[8].x, y: landmarks[55].y)
+    let rightUpperCheek = ImagePoint.init(x: landmarks[20].x, y: landmarks[55].y)
     return (leftUpperCheek, rightUpperCheek)
 }
 
 func getLowerCheekPair(landmarks: [ImagePoint]) -> (ImagePoint, ImagePoint) {
-    let offset = abs(landmarks[26].point.y - landmarks[35].point.y)
-    let leftUpperCheek = ImagePoint.init(x: landmarks[33].point.x - offset, y: landmarks[33].point.y)
-    let rightUpperCheek = ImagePoint.init(x: landmarks[29].point.x + offset, y: landmarks[29].point.y)
+    let offset = abs(landmarks[26].y - landmarks[35].y)
+    let leftUpperCheek = ImagePoint.init(x: landmarks[33].x - offset, y: landmarks[33].y)
+    let rightUpperCheek = ImagePoint.init(x: landmarks[29].x + offset, y: landmarks[29].y)
     return (leftUpperCheek, rightUpperCheek)
 }
 
@@ -110,7 +108,7 @@ func isLightingUnequal(points: (ImagePoint, ImagePoint), faceCapture: FaceCaptur
     let right_exposureScore = getExposureScore(intensity: right, exposureRatios: exposureRatios)
 
     if abs(left_exposureScore - right_exposureScore) <= 25 {
-        return .none
+        return .balanced
     } else if left_exposureScore > right_exposureScore {
         return .left
     }
@@ -140,19 +138,22 @@ func isLightingUnbalanced(faceCapture: FaceCapture, cameraState: CameraState) ->
     let eyePair = getEyePair(landmarks: facePoints)
     let upperCheekPair = getUpperCheekPair(landmarks: facePoints)
     let lowerCheekPair = getLowerCheekPair(landmarks: facePoints)
-    
+
     guard let foreheadBalance = isLightingUnequal(points: foreheadPair, faceCapture: faceCapture, exposureRatios: exposureRatios) else {
         print("Cant check FOREHEAD balance")
         return nil
     }
+
     guard let eyeBalance = isLightingUnequal(points: eyePair, faceCapture: faceCapture, exposureRatios: exposureRatios) else {
         print("Cant check EYE balance")
         return nil
     }
+
     guard let upperCheekBalance = isLightingUnequal(points: upperCheekPair, faceCapture: faceCapture, exposureRatios: exposureRatios) else {
         print("Cant check UPPER CHEEK balance")
         return nil
     }
+
     guard let lowerCheekBalance = isLightingUnequal(points: lowerCheekPair, faceCapture: faceCapture, exposureRatios: exposureRatios) else {
         print("Cant check LOWER CHEEK balance")
         return nil
@@ -207,7 +208,7 @@ func isTooBright(faceCapture: FaceCapture, cameraState: CameraState) -> (Bool, [
     brightnessPoints[0].color = UIColor.red.cgColor
     
     let brightestExposureScore = getExposureScore(intensity: sortedSamples.first!.0, exposureRatios: exposureRatios)
-    print("BRIGHTEST EXPOSURE SCORE :: \(brightestExposureScore)")
+    //print("BRIGHTEST EXPOSURE SCORE :: \(brightestExposureScore)")
     let isTooBright = brightestExposureScore > 100
     
     return (isTooBright, brightnessPoints)

@@ -39,17 +39,11 @@ class Video:  NSObject {
                     print("No Is Too Bright")
                     return nil
                 }
-                let test = isLightingUnbalanced(faceCapture: faceCapture, cameraState: cameraState)
-                print("TEST :: \(test)")
-                guard let (isLightingUnbalanced, balancePoints) = test else {
-                    print("No Is Lighting Unbalanced")
-                    return nil
-                }
-                /*
+                
                 guard let (isLightingUnbalanced, balancePoints) = isLightingUnbalanced(faceCapture: faceCapture, cameraState: cameraState) else {
                     print("No Is Lighting Unbalanced")
                     return nil
-                }*/
+                }
                 
                 return RealTimeFaceData(landmarks: allImagePoints, isLightingUnbalanced: isLightingUnbalanced, balancePoints: balancePoints, isTooBright: isTooBright, brightnessPoints: brightnessPoints, exposurePoint: brightnessPoints.first!, size: faceCapture.imageSize)
             }
