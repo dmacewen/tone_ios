@@ -129,8 +129,8 @@ class SampleSkinToneViewModel {
                 
                 //self.drawPointsStream.onNext(displayPoints)
                 //self.drawPointsStream.onNext([realtimeData.exposurePoint.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)])
-                //self.drawPointsStream.onNext(realtimeData.balancePoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)})
-                self.drawPointsStream.onNext(realtimeData.brightnessPoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)})
+                self.drawPointsStream.onNext(realtimeData.balancePoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)})
+                //self.drawPointsStream.onNext(realtimeData.brightnessPoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)})
 
                 let xImageValues = realtimeData.landmarks.map { $0.point.x }
                 let yImageValues = realtimeData.landmarks.map { $0.point.y }

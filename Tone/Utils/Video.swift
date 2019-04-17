@@ -27,23 +27,10 @@ class Video:  NSObject {
                 return FaceCapture.create(pixelBuffer: pixelBuffer, orientation: cameraState.exifOrientationForCurrentDeviceOrientation(), videoPreviewLayer: videoPreviewLayer)
             }
             .map { faceCaptureOptional -> RealTimeFaceData? in
-                guard let faceCapture = faceCaptureOptional else {
-                    print("No Face Capture")
-                    return nil
-                }
-                guard let allImagePoints = faceCapture.getAllImagePoints() else {
-                    print("No All Image Points")
-                    return nil
-                }
-                guard let (isTooBright, brightnessPoints) = isTooBright(faceCapture: faceCapture, cameraState: cameraState) else {
-                    print("No Is Too Bright")
-                    return nil
-                }
-                
-                guard let (isLightingUnbalanced, balancePoints) = isLightingUnbalanced(faceCapture: faceCapture, cameraState: cameraState) else {
-                    print("No Is Lighting Unbalanced")
-                    return nil
-                }
+                guard let faceCapture = faceCaptureOptional else { return nil }
+                guard let allImagePoints = faceCapture.getAllImagePoints() else { return nil }
+                guard let (isTooBright, brightnessPoints) = isTooBright(faceCapture: faceCapture, cameraState: cameraState) else { return nil }
+                guard let (isLightingUnbalanced, balancePoints) = isLightingUnbalanced(faceCapture: faceCapture, cameraState: cameraState) else { return nil}
                 
                 return RealTimeFaceData(landmarks: allImagePoints, isLightingUnbalanced: isLightingUnbalanced, balancePoints: balancePoints, isTooBright: isTooBright, brightnessPoints: brightnessPoints, exposurePoint: brightnessPoints.first!, size: faceCapture.imageSize)
             }

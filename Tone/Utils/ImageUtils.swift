@@ -69,9 +69,9 @@ func getForeheadPoint(landmarks: [ImagePoint]) -> ImagePoint {
 }
 
 func getForeheadPair(landmarks: [ImagePoint]) -> (ImagePoint, ImagePoint) {
-    let offset = abs(landmarks[2].x - landmarks[1].x)
-    let leftEyeBrowSample = ImagePoint.init(x: landmarks[2].x, y: landmarks[2].y - offset)
-    let rightEyeBrowSample = ImagePoint.init(x: landmarks[5].x, y: landmarks[5].y - offset)
+    let offset = abs(landmarks[2].y - landmarks[1].y)
+    let leftEyeBrowSample = ImagePoint.init(x: landmarks[2].x - offset, y: landmarks[2].y)
+    let rightEyeBrowSample = ImagePoint.init(x: landmarks[5].x - offset, y: landmarks[5].y)
     return (leftEyeBrowSample, rightEyeBrowSample)
 }
 
@@ -80,16 +80,16 @@ func getEyePair(landmarks: [ImagePoint]) -> (ImagePoint, ImagePoint) {
 }
 
 func getUpperCheekPair(landmarks: [ImagePoint]) -> (ImagePoint, ImagePoint) {
-    let leftUpperCheek = ImagePoint.init(x: landmarks[8].x, y: landmarks[55].y)
-    let rightUpperCheek = ImagePoint.init(x: landmarks[20].x, y: landmarks[55].y)
+    let leftUpperCheek = ImagePoint.init(x: landmarks[55].x, y: landmarks[8].y)
+    let rightUpperCheek = ImagePoint.init(x: landmarks[55].x, y: landmarks[20].y)
     return (leftUpperCheek, rightUpperCheek)
 }
 
 func getLowerCheekPair(landmarks: [ImagePoint]) -> (ImagePoint, ImagePoint) {
-    let offset = abs(landmarks[26].y - landmarks[35].y)
-    let leftUpperCheek = ImagePoint.init(x: landmarks[33].x - offset, y: landmarks[33].y)
-    let rightUpperCheek = ImagePoint.init(x: landmarks[29].x + offset, y: landmarks[29].y)
-    return (leftUpperCheek, rightUpperCheek)
+    let offset = abs(landmarks[33].y - landmarks[29].y) * (1/3)
+    let leftLowerCheek = ImagePoint.init(x: landmarks[33].x, y: landmarks[33].y + offset)
+    let rightLowerCheek = ImagePoint.init(x: landmarks[29].x , y: landmarks[29].y - offset)
+    return (leftLowerCheek, rightLowerCheek)
 }
 
 func isLightingUnequal(points: (ImagePoint, ImagePoint), faceCapture: FaceCapture, exposureRatios: ExposureRatios) -> UnbalanceDirection? {
@@ -166,11 +166,11 @@ func isLightingUnbalanced(faceCapture: FaceCapture, cameraState: CameraState) ->
         var left = pair.0
         var right = pair.1
         if balance == .left {
-            left.color = UIColor.red.cgColor
-            right.color = UIColor.yellow.cgColor
-        } else if balance == .right {
             right.color = UIColor.red.cgColor
             left.color = UIColor.yellow.cgColor
+        } else if balance == .right {
+            left.color = UIColor.red.cgColor
+            right.color = UIColor.yellow.cgColor
         }
         return [left, right]
     }
