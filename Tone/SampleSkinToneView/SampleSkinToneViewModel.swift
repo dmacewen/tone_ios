@@ -113,6 +113,7 @@ class SampleSkinToneViewModel {
         video.realtimeDataStream
             .subscribe(onNext: { realtimeDataOptional in
                 guard let realtimeData = realtimeDataOptional else {
+                    print("No realtime data")
                     self.userFaceState.onNext(.noFaceFound)
                     return
                 }
@@ -122,13 +123,14 @@ class SampleSkinToneViewModel {
                     self.userFaceState.onNext(.noFaceFound)
                     return
                 }
-                
-                self.cameraState.exposurePointStream.onNext(realtimeData.exposurePoint.toNormalizedImagePoint(size: realtimeData.size))
-                
-                self.drawPointsStream.onNext([realtimeData.exposurePoint.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)])
 
+                self.cameraState.exposurePointStream.onNext(realtimeData.exposurePoint.toNormalizedImagePoint(size: realtimeData.size))
                 let displayPoints = realtimeData.landmarks.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer) }
+                
                 //self.drawPointsStream.onNext(displayPoints)
+                //self.drawPointsStream.onNext([realtimeData.exposurePoint.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)])
+                //self.drawPointsStream.onNext(realtimeData.balancePoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)})
+                self.drawPointsStream.onNext(realtimeData.brightnessPoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)})
 
                 let xImageValues = realtimeData.landmarks.map { $0.point.x }
                 let yImageValues = realtimeData.landmarks.map { $0.point.y }
@@ -154,17 +156,15 @@ class SampleSkinToneViewModel {
                     return
                 }
                 
-                
                 if realtimeData.isTooBright {
                     self.userFaceState.onNext(.tooBright)
                     return
                 }
                 
-                if !realtimeData.isLightingBalanced {
+                if realtimeData.isLightingUnbalanced {
                     self.userFaceState.onNext(.faceGradient)
                     return
                 }
-                
                 
                 self.userFaceState.onNext(.ok)
             }).disposed(by: disposeBag)
@@ -287,7 +287,7 @@ class SampleSkinToneViewModel {
                 
                 //We ultimately want a crop that crops from the right jaw to the left, top of the image to the bottom of the chin (want hair in image)
                 let faceSizes = faceCaptures.map { $0.getAllPointsSize()! }
-                let faceCropSize = self.getEncapsulatingSize(sizes: faceSizes) //* 1.10
+                let faceCropSize = self.getEncapsulatingSize(sizes: faceSizes) * 1.10
                 let faceBBs = faceCaptures.map { $0.getAllPointsBB()! }
                 let scaledFaceBBs = faceBBs.map { $0.scaleToSize(size: faceCropSize, imgSize: faceCaptures[0].imageSize.size) }
                 let encapsulatingMaxX = scaledFaceBBs.map { $0.maxX }.max()!

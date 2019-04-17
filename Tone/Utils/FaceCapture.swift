@@ -261,6 +261,7 @@ struct LandmarkSize {
 //Points in the native image buffer
 struct ImagePoint {
     let point: CGPoint
+    var color: CGColor? = nil
     
     init(_ point: CGPoint) {
         self.point = point
@@ -284,7 +285,11 @@ struct ImagePoint {
         let normalizedImagePoint = self.toNormalizedImagePoint(size: size)
         let normalizedX = normalizedImagePoint.point.x
         let normalizedY = 1 - normalizedImagePoint.point.y
-        return DisplayPoint.init(videoLayer.layerPointConverted(fromCaptureDevicePoint: CGPoint.init(x: normalizedX, y: normalizedY))) //Needs to be 0.0 - 1.0
+        
+        guard let color = self.color else {
+            return DisplayPoint.init(videoLayer.layerPointConverted(fromCaptureDevicePoint: CGPoint.init(x: normalizedX, y: normalizedY)))
+        }
+        return DisplayPoint.init(videoLayer.layerPointConverted(fromCaptureDevicePoint: CGPoint.init(x: normalizedX, y: normalizedY)), color: color)
     }
     
     func toNormalizedImagePoint(size: ImageSize) -> NormalizedImagePoint {
@@ -340,7 +345,7 @@ struct ImageSize {
 
 struct DisplayPoint {
     let point: CGPoint
-    var color = UIColor.red.cgColor
+    var color = UIColor.blue.cgColor
 
     init(_ point: CGPoint) {
         self.point = point

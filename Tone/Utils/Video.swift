@@ -27,15 +27,31 @@ class Video:  NSObject {
                 return FaceCapture.create(pixelBuffer: pixelBuffer, orientation: cameraState.exifOrientationForCurrentDeviceOrientation(), videoPreviewLayer: videoPreviewLayer)
             }
             .map { faceCaptureOptional -> RealTimeFaceData? in
-                guard let faceCapture = faceCaptureOptional else { return nil }
-                
-                guard let (exposurePoint, isLightingBalanced, isTooBright) = getExposureInfo(faceCapture: faceCapture, cameraState: cameraState) else {
+                guard let faceCapture = faceCaptureOptional else {
+                    print("No Face Capture")
                     return nil
                 }
-                                
-                let exposureDuration = CMTimeGetSeconds(cameraState.captureDevice.exposureDuration)
-                guard let allImagePoints = faceCapture.getAllImagePoints() else { return nil }
-                return RealTimeFaceData(landmarks: allImagePoints, size: faceCapture.imageSize, exposurePoint: exposurePoint, isLightingBalanced: isLightingBalanced, isTooBright: isTooBright, iso: CGFloat(cameraState.captureDevice.iso), exposureDuration: exposureDuration)
+                guard let allImagePoints = faceCapture.getAllImagePoints() else {
+                    print("No All Image Points")
+                    return nil
+                }
+                guard let (isTooBright, brightnessPoints) = isTooBright(faceCapture: faceCapture, cameraState: cameraState) else {
+                    print("No Is Too Bright")
+                    return nil
+                }
+                let test = isLightingUnbalanced(faceCapture: faceCapture, cameraState: cameraState)
+                print("TEST :: \(test)")
+                guard let (isLightingUnbalanced, balancePoints) = test else {
+                    print("No Is Lighting Unbalanced")
+                    return nil
+                }
+                /*
+                guard let (isLightingUnbalanced, balancePoints) = isLightingUnbalanced(faceCapture: faceCapture, cameraState: cameraState) else {
+                    print("No Is Lighting Unbalanced")
+                    return nil
+                }*/
+                
+                return RealTimeFaceData(landmarks: allImagePoints, isLightingUnbalanced: isLightingUnbalanced, balancePoints: balancePoints, isTooBright: isTooBright, brightnessPoints: brightnessPoints, exposurePoint: brightnessPoints.first!, size: faceCapture.imageSize)
             }
             .asObservable()
 

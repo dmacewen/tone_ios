@@ -21,121 +21,31 @@ struct ImageData {
 
 struct RealTimeFaceData {
     var landmarks: [ImagePoint]
-    var size: ImageSize
-    var exposurePoint: ImagePoint
-    var isLightingBalanced: Bool
+    var isLightingUnbalanced: Bool
+    var balancePoints: [ImagePoint]
     var isTooBright: Bool
-    var iso: CGFloat
-    var exposureDuration: Float64
+    var brightnessPoints: [ImagePoint]
+    var exposurePoint: ImagePoint
+    var size: ImageSize
+    //var iso: CGFloat
+    //var exposureDuration: Float64
 }
 
-/*
-struct ImageByteBuffer {
-    private let byteBuffer: UnsafeMutablePointer<UInt8>
-    private let width: Int
-    private let bufferWidth: Int
-    private let height: Int
-    private let bufferHeight: Int
-    private let bytesPerRow: Int
-    private let sampleHalfSideLength: CGFloat = 5.0
+enum UnbalanceDirection {
+    case left
+    case right
+    case none
     
-    static func from(_ pixelBuffer: CVImageBuffer) -> ImageByteBuffer {
-        let baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer)!
-        let byteBuffer = baseAddress.assumingMemoryBound(to: UInt8.self)
-        let bufferWidth = CVPixelBufferGetWidth(pixelBuffer)
-        let bufferHeight = CVPixelBufferGetHeight(pixelBuffer)
-        let bytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer)
-        
-        //Buffer is rotated 90 degrees to left
-        return ImageByteBuffer(byteBuffer: byteBuffer, width: bufferHeight, bufferWidth: bufferWidth, height: bufferWidth, bufferHeight: bufferHeight, bytesPerRow: bytesPerRow)
-    }
-    
-    private func validPoint(_ point: CGPoint) -> Bool {
-        return (point.x > 0) && (point.y > 0) && (Int(point.x) < bufferWidth) && (Int(point.y) < bufferHeight)
-    }
-    
-    func size() -> CGSize {
-        return CGSize(width: width, height: height)
-    }
-    
-    //Convert Portait Coordinates from Landmarks to Left Landscape Coordinates of Buffer
-    private func convertPortraitPointToLandscapePoint(point: CGPoint) -> CGPoint {
-        return CGPoint.init(x: CGFloat(height) - point.y, y: point.x)
-    }
-    
-    func convertPortraitPointToLandscapeRatioPoint(point: CGPoint) -> CGPoint {
-        let landscapePoint = self.convertPortraitPointToLandscapePoint(point: point)
-        return CGPoint.init(x: landscapePoint.x / CGFloat(bufferWidth), y: landscapePoint.y / CGFloat(bufferHeight))
-    }
-    
-    func sampleLandmarkRegion(landmarkPoint: CGPoint) -> Float? {
-        let point = convertPortraitPointToLandscapePoint(point: landmarkPoint)
-
-        if !validPoint(point) { return nil }
-        
-        let startPoint = CGPoint.init(x: point.x - sampleHalfSideLength, y: point.y - sampleHalfSideLength)
-        let endPoint = CGPoint.init(x: point.x + sampleHalfSideLength, y: point.y + sampleHalfSideLength)
-        
-        if !validPoint(startPoint) || !validPoint(endPoint) { return nil }
-        
-        var sum = 0
-        for y in Int(startPoint.y) ..< Int(endPoint.y) {
-            let bufferRowOffset = y * bytesPerRow
-            for x in Int(startPoint.x) ..< Int(endPoint.x) {
-                let bufferIndex = bufferRowOffset + (x * 4) //Index into the buffer
-                sum += Int(byteBuffer[bufferIndex]) + Int(byteBuffer[bufferIndex + 1]) + Int(byteBuffer[bufferIndex + 2])
-            }
+    var ok: Bool {
+        switch self {
+        case .left, .right:
+            return false
+        case .none:
+            return true
         }
-        
-        let averageSubpixelValue = Float(sum) / Float(pow((2 * sampleHalfSideLength) + 1, 2)) // Area of the sample x 3 sub pixels each
-
-        return averageSubpixelValue
     }
-}
- */
-/*
-func getRightEyePoint(landmarks: [ImagePoint]) -> ImagePoint {
-    return landmarks[16]
-}
- */
-/*
-func bufferBoundingBox(_ bb: CGRect, imgSize: CGSize, margin: CGFloat = 0.25) -> CGRect {
-    let sizeMultiplier = 1 + (2 * margin)
-    
-    var newX = bb.minX - (margin * bb.width)
-    if newX < 0 {
-        newX = 0
-    }
-    
-    var newY = bb.minY - (margin * bb.height)
-    if newY < 0 {
-        newY = 0
-    }
-    
-    var newWidth = bb.width * sizeMultiplier
-    if newWidth > imgSize.width {
-        newWidth = imgSize.width
-    }
-    
-    var newHeight = bb.height * sizeMultiplier
-    if newHeight > imgSize.height {
-        newHeight = imgSize.height
-    }
-    
-    return CGRect.init(x: newX, y: newY, width: newWidth, height: newHeight)
-}
- */
-/*
-func getRightEyeBB(landmarks: [ImagePoint], imgSize: CGSize) -> CGRect {
-    let eyePoints = landmarks[16...23]
-    return bufferBoundingBox(CGRect.fromPoints(points: eyePoints, imgSize: imgSize), imgSize: imgSize)
 }
 
-func getLeftEyeBB(landmarks: [ImagePoint], imgSize: CGSize) -> CGRect {
-    let eyePoints = landmarks[8...15]
-    return bufferBoundingBox(CGRect.fromPoints(points: eyePoints, imgSize: imgSize), imgSize: imgSize)
-}
-*/
 func getRightCheekPoint(landmarks: [ImagePoint]) -> ImagePoint {
     let middleRightEye = landmarks[64]
     let middleNose = landmarks[58]
@@ -184,50 +94,104 @@ func getLowerCheekPair(landmarks: [ImagePoint]) -> (ImagePoint, ImagePoint) {
     return (leftUpperCheek, rightUpperCheek)
 }
 
-func isLightingEqual(points: (ImagePoint, ImagePoint), faceCapture: FaceCapture, exposureRatios: ExposureRatios) -> Bool? {
-    guard let A = faceCapture.sampleRegion(center: points.0) else { return nil }
-    let A_exposureScore = getExposureScore(intensity: A, exposureRatios: exposureRatios)
-    
-    guard let B = faceCapture.sampleRegion(center: points.1) else { return nil }
-    let B_exposureScore = getExposureScore(intensity: B, exposureRatios: exposureRatios)
-
-    if abs(A_exposureScore - B_exposureScore) > 25 {
-        return false
+func isLightingUnequal(points: (ImagePoint, ImagePoint), faceCapture: FaceCapture, exposureRatios: ExposureRatios) -> UnbalanceDirection? {
+    guard let left = faceCapture.sampleRegion(center: points.0) else {
+        print("Cant Sample Left Region")
+        return nil
     }
     
-    return true
+    let left_exposureScore = getExposureScore(intensity: left, exposureRatios: exposureRatios)
+    
+    guard let right = faceCapture.sampleRegion(center: points.1) else {
+        print("Cant Sample Right Region")
+        return nil
+    }
+    
+    let right_exposureScore = getExposureScore(intensity: right, exposureRatios: exposureRatios)
+
+    if abs(left_exposureScore - right_exposureScore) <= 25 {
+        return .none
+    } else if left_exposureScore > right_exposureScore {
+        return .left
+    }
+    
+    return .right
 }
 
-func getExposureInfo(faceCapture: FaceCapture, cameraState: CameraState) -> (ImagePoint, Bool, Bool)? {
+func getExposureScore(intensity: CGFloat, exposureRatios: ExposureRatios) -> CGFloat {
+    let inverseISO = CGFloat(1 / exposureRatios.iso)
+    let inverseExposure = CGFloat(1 / exposureRatios.exposure)
+    return CGFloat(intensity) * inverseISO * inverseExposure * 100_000
+}
+
+func isLightingUnbalanced(faceCapture: FaceCapture, cameraState: CameraState) -> (Bool, [ImagePoint])? {
     faceCapture.lock()
     defer { faceCapture.unlock() }
     
+    guard let facePoints = faceCapture.getAllImagePoints() else {
+        print("No All Image Points in Lighting Unbalanced")
+        return nil
+    }
+
     let exposureRatios = cameraState.getStandardizedExposureData()
     
-    //let imageByteBuffer = ImageByteBuffer.from(pixelBuffer)
-    //let facePoints = landmarks.allPoints!.pointsInImage(imageSize: imageByteBuffer.size())
-    
     //BalanceLightCheckPoints
-    guard let facePoints = faceCapture.getAllImagePoints() else { return nil }
     let foreheadPair = getForeheadPair(landmarks: facePoints)
     let eyePair = getEyePair(landmarks: facePoints)
     let upperCheekPair = getUpperCheekPair(landmarks: facePoints)
     let lowerCheekPair = getLowerCheekPair(landmarks: facePoints)
     
-    guard let isForeheadEqual = isLightingEqual(points: foreheadPair, faceCapture: faceCapture, exposureRatios: exposureRatios) else { return nil }
-    guard let isEyeEqual = isLightingEqual(points: eyePair, faceCapture: faceCapture, exposureRatios: exposureRatios) else { return nil }
-    guard let isUpperCheekEqual = isLightingEqual(points: upperCheekPair, faceCapture: faceCapture, exposureRatios: exposureRatios) else { return nil }
-    guard let isLowerCheekEqual = isLightingEqual(points: lowerCheekPair, faceCapture: faceCapture, exposureRatios: exposureRatios) else { return nil }
+    guard let foreheadBalance = isLightingUnequal(points: foreheadPair, faceCapture: faceCapture, exposureRatios: exposureRatios) else {
+        print("Cant check FOREHEAD balance")
+        return nil
+    }
+    guard let eyeBalance = isLightingUnequal(points: eyePair, faceCapture: faceCapture, exposureRatios: exposureRatios) else {
+        print("Cant check EYE balance")
+        return nil
+    }
+    guard let upperCheekBalance = isLightingUnequal(points: upperCheekPair, faceCapture: faceCapture, exposureRatios: exposureRatios) else {
+        print("Cant check UPPER CHEEK balance")
+        return nil
+    }
+    guard let lowerCheekBalance = isLightingUnequal(points: lowerCheekPair, faceCapture: faceCapture, exposureRatios: exposureRatios) else {
+        print("Cant check LOWER CHEEK balance")
+        return nil
+    }
     
-    //print("FOREHEAD: \(isForeheadEqual) | EYE: \(isEyeEqual) | UPPER CHEEK: \(isUpperCheekEqual) | LOWER CHEEK: \(isLowerCheekEqual)")
-    let isBrightnessBalanced = isForeheadEqual && isEyeEqual && isUpperCheekEqual && isLowerCheekEqual
+    let sets = [(foreheadBalance, foreheadPair), (eyeBalance, eyePair), (upperCheekBalance, upperCheekPair), (lowerCheekBalance, lowerCheekPair)]
+    
+    let balancePoints = sets.flatMap { set -> [ImagePoint] in
+        let (balance, pair) = set
+        var left = pair.0
+        var right = pair.1
+        if balance == .left {
+            left.color = UIColor.red.cgColor
+            right.color = UIColor.yellow.cgColor
+        } else if balance == .right {
+            right.color = UIColor.red.cgColor
+            left.color = UIColor.yellow.cgColor
+        }
+        return [left, right]
+    }
+    
+    let isBrightnessUnbalanced = !foreheadBalance.ok || !eyeBalance.ok || !upperCheekBalance.ok || !lowerCheekBalance.ok
+
+    return (isBrightnessUnbalanced, balancePoints)
+}
+
+func isTooBright(faceCapture: FaceCapture, cameraState: CameraState) -> (Bool, [ImagePoint])? {
+    faceCapture.lock()
+    defer { faceCapture.unlock() }
+    
+    guard let facePoints = faceCapture.getAllImagePoints() else { return nil }
+    
+    let exposureRatios = cameraState.getStandardizedExposureData()
 
     //Exposure Points
     let leftCheekPoint = getLeftCheekPoint(landmarks: facePoints)
     let rightCheekPoint = getRightCheekPoint(landmarks: facePoints)
     let chinPoint = getChinPoint(landmarks: facePoints)
     let foreheadPoint = getForeheadPoint(landmarks: facePoints)
-    
     
     guard let leftCheekSample = faceCapture.sampleRegion(center: leftCheekPoint) else { return nil }
     guard let rightCheekSample = faceCapture.sampleRegion(center: rightCheekPoint) else { return nil }
@@ -237,208 +201,14 @@ func getExposureInfo(faceCapture: FaceCapture, cameraState: CameraState) -> (Ima
     let sortedSamples = [(leftCheekSample, leftCheekPoint), (rightCheekSample, rightCheekPoint), (chinSample, chinPoint), (foreheadSample, foreheadPoint)].sorted { A, B in
         return A.0 > B.0
     }
+        
+    var brightnessPoints = sortedSamples.map { $0.1 }
     
-    let brightestPoint = sortedSamples.first!.1
+    brightnessPoints[0].color = UIColor.red.cgColor
     
     let brightestExposureScore = getExposureScore(intensity: sortedSamples.first!.0, exposureRatios: exposureRatios)
     print("BRIGHTEST EXPOSURE SCORE :: \(brightestExposureScore)")
     let isTooBright = brightestExposureScore > 100
     
-    return (brightestPoint, isBrightnessBalanced, isTooBright)
+    return (isTooBright, brightnessPoints)
 }
-
-//Error :: 2018-11-14 11:44:19.689414-0800 Tone[32016:9326030] LandmarkDetector error -20:out of bounds in int vision::mod::LandmarkAttributes::computeBlinkFunction(const vImage_Buffer &, const Geometry2D_rect2D &, const std::vector<Geometry2D_point2D> &, vImage_Buffer &, vImage_Buffer &, std::vector<float> &, std::vector<float> &) @ /BuildRoot/Library/Caches/com.apple.xbs/Sources/Vision/Vision-2.0.62/LandmarkDetector/LandmarkDetector_Attributes.mm:535
-
-//Seems to be caused by covering the mouth/face... I.E. When looking at a second computer screen, supporting your face with your hand. Fingers/palm covering mouth and thumb resting on cheekbone... Kinda a weird description... Towards edge of image. Face inside image frame but hand extending out of the frame... Probably not an issue, just something thats come up. Does not change expected functionality
-
-//Was able to replciate just by holding my face towards the edge of the frame looking at a ~45 - 90 degree angle away from the phone (at a second screen in this case...)
-/*
-func getFacialLandmarks(cameraState: CameraState, pixelBuffer: CVPixelBuffer) -> Observable<(VNFaceLandmarks2D, CVPixelBuffer)?> {
-    return Observable<(VNFaceLandmarks2D, CVPixelBuffer)?>.create { observable in
-        var requestHandlerOptions: [VNImageOption: AnyObject] = [:]
-        
-        let cameraIntrinsicData = CMGetAttachment(pixelBuffer, key: kCMSampleBufferAttachmentKey_CameraIntrinsicMatrix, attachmentModeOut: nil)
-        if cameraIntrinsicData != nil {
-            requestHandlerOptions[VNImageOption.cameraIntrinsics] = cameraIntrinsicData
-        }
-        
-        let exifOrientation = cameraState.exifOrientationForCurrentDeviceOrientation()
-        
-        // Perform face landmark tracking on detected faces.
-        let faceLandmarksRequest = VNDetectFaceLandmarksRequest(completionHandler: { (request, error) in
-            if error != nil {
-                print("FaceLandmarks error: \(String(describing: error)).")
-            }
-            
-            guard let landmarksRequest = request as? VNDetectFaceLandmarksRequest,
-                let results = landmarksRequest.results as? [VNFaceObservation] else {
-                    observable.onNext(nil)
-                    observable.onCompleted()
-                    return
-            }
-            
-            if results.count > 0 {
-                let faceLandmarks = results[0].landmarks!
-                observable.onNext((faceLandmarks, pixelBuffer))
-                observable.onCompleted()
-            } else {
-                observable.onNext(nil)
-                observable.onCompleted()
-            }
-        })
-        
-        let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer,
-                                                        orientation: exifOrientation,
-                                                        options: requestHandlerOptions)
-        
-        do {
-            try imageRequestHandler.perform([faceLandmarksRequest])
-        } catch let error as NSError {
-            NSLog("Failed to perform FaceLandmarkRequest: %@", error)
-            fatalError("Error Landmarking")
-        }
-        
-        return Disposables.create()
-    }
-}
- */
-/*
-func getReflectionBrightness(_ cameraState: CameraState, _ capture: (AVCapturePhoto, FlashSettings)) -> Observable<Int8> {
-    let (photo, flashSettings) = capture
-    return getFacialLandmarks(cameraState: cameraState, pixelBuffer: photo.pixelBuffer!)
-        .map { landmarks in
-            guard let (landmarks, pixelBuffer) = landmarks else {
-                return 0
-            }
-            
-            CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
-            defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly) }
-            //let imageByteBuffer = ImageByteBuffer.from(pixelBuffer)
-            //let facePoints = landmarks.allPoints!.pointsInImage(imageSize: imageByteBuffer.size())
-            
-            return 0
-        }
-}
- */
-/*
-func convertPortraitPointToLandscapePoint(points: [CGPoint], imgSize: CGSize) -> [CGPoint] {
-    return points.map { CGPoint.init(x: CGFloat(imgSize.height) - $0.y, y: $0.x) }
-}
-
-func calculateFaceCrop(faceLandmarks: [VNFaceLandmarks2D], imgSize: CGSize) -> [CGRect] {
-    let faceLandmarkPoints = faceLandmarks.map { $0.allPoints!.pointsInImage(imageSize: imgSize) }
-
-    let orientedFaceLandmarkPoints = faceLandmarkPoints.map { convertPortraitPointToLandscapePoint(points: $0, imgSize: imgSize)}
-    let newImgSize = CGSize(width: imgSize.height, height: imgSize.width)
-    
-    //Find the offsets from each images right eye to the target right eye
-    let targetPoint = getRightEyePoint(landmarks: orientedFaceLandmarkPoints[0])
-    let offsets = orientedFaceLandmarkPoints.map { getRightEyePoint(landmarks: $0).getOffset(targetPoint) }
-    
-    //Get All of the Faces Bounding Boxes
-    let BBs = orientedFaceLandmarkPoints.map { CGRect.fromPoints(points: $0, imgSize: newImgSize) }
-    
-    //"Align" All of the bounding boxes to the target image by adding the offset vector
-    let alignedBBs = zip(BBs, offsets).map { BB, offset in BB.addOffsetVector(vector: offset, imgSize: newImgSize) }
-    
-    //Create new bounding box that bounds all the aligned images
-    let BB = CGRect.fromBoundingBoxes(rectangles: alignedBBs, imgSize: newImgSize)
-    
-    //Create the invdividual crops by subtracting the offset vector from the Set BB
-    let crops = offsets.map { offset in BB.subOffsetVector(vector: offset, imgSize: newImgSize) }
-    
-    return crops
-}
- */
-/*
-func calculateEyeCrops(faceLandmarks: [VNFaceLandmarks2D], imgSize: CGSize) -> [(CGRect, CGRect)] {
-    let faceLandmarkPoints = faceLandmarks.map { $0.allPoints!.pointsInImage(imageSize: imgSize) }
-    
-    let orientedFaceLandmarkPoints = faceLandmarkPoints.map { convertPortraitPointToLandscapePoint(points: $0, imgSize: imgSize)}
-    let newImgSize = CGSize(width: imgSize.height, height: imgSize.width)
-
-    let eyeCrops = orientedFaceLandmarkPoints.map { landmarkPoints -> (CGRect, CGRect) in
-        let leftEyeBB = getLeftEyeBB(landmarks: landmarkPoints, imgSize: newImgSize)
-        let rightEyeBB = getRightEyeBB(landmarks:  landmarkPoints, imgSize: newImgSize)
-        return (leftEyeBB, rightEyeBB)
-    }
-    
-    let maxWidthLeft = eyeCrops
-        .map { LREyeCrops in LREyeCrops.0.width }
-        .max()!
-    
-    let maxHeightLeft = eyeCrops
-        .map { LREyeCrops in LREyeCrops.0.height }
-        .max()!
-    
-    let maxWidthRight = eyeCrops
-        .map { LREyeCrops in LREyeCrops.1.width }
-        .max()!
-    
-    let maxHeightRight = eyeCrops
-        .map { LREyeCrops in LREyeCrops.1.height }
-        .max()!
-
-    let eyeCropsEqualized = eyeCrops.map { LREyeCrop -> (CGRect, CGRect) in
-        let (leftEyeCrop, rightEyeCrop) = LREyeCrop
-        
-        let leftWidthDiff = (maxWidthLeft - leftEyeCrop.width) / 2
-        let leftHeightDiff = (maxHeightLeft - leftEyeCrop.height) / 2
-        let rightWidthDiff = (maxWidthRight - rightEyeCrop.width) / 2
-        let rightHeightDiff = (maxHeightRight - rightEyeCrop.height) / 2
-
-        let leftEyeCropEqualized = CGRect.init(x: leftEyeCrop.minX - leftWidthDiff, y: leftEyeCrop.minY - leftHeightDiff, width: maxWidthLeft, height: maxHeightLeft).toInt()
-        let rightEyeCropEqualized = CGRect.init(x: rightEyeCrop.minX - rightWidthDiff, y: rightEyeCrop.minY - rightHeightDiff, width: maxWidthRight, height: maxHeightRight).toInt()
-        return (leftEyeCropEqualized, rightEyeCropEqualized)
-    }
-    
-    return eyeCropsEqualized
-}
- */
-
-func getExposureScore(intensity: CGFloat, exposureRatios: ExposureRatios) -> CGFloat {
-    let inverseISO = CGFloat(1 / exposureRatios.iso)
-    let inverseExposure = CGFloat(1 / exposureRatios.exposure)
-    return CGFloat(intensity) * inverseISO * inverseExposure * 100_000
-}
-
-/*
-//Needs a context to have been created
-func cropImage(_ input: CIImage, dimensions: CGRect, _ imageTransforms: inout ImageTransforms) -> CIImage {
-    let toCroppedFilter = CIFilter(name:"CICrop")
-    toCroppedFilter!.setValue(input, forKey: kCIInputImageKey)
-    toCroppedFilter!.setValue(dimensions, forKey: kCIAttributeTypeRectangle)
-
-    imageTransforms.isCropped = true
-    return toCroppedFilter!.outputImage!
-}
-
-//Needs a context to have been created
-func convertImageToLinear(_ input: CIImage, _ imageTransforms: inout ImageTransforms) -> CIImage {
-    let toLinearFilter = CIFilter(name:"CISRGBToneCurveToLinear")
-    toLinearFilter!.setValue(input, forKey: kCIInputImageKey)
-    imageTransforms.isGammaSBGR = true
-    return toLinearFilter!.outputImage!
-}
-
-//Needs a context to have been created
-func rotateImage(_ input: CIImage, _ imageTransforms: inout ImageTransforms) -> CIImage {
-    let toRotateFilter = CIFilter(name:"CIAffineTransform")
-    let affineRotationTransform = CGAffineTransform.init(rotationAngle: -CGFloat.pi/2)
-    toRotateFilter!.setValue(affineRotationTransform, forKey: kCIInputTransformKey)
-    toRotateFilter!.setValue(input, forKey: kCIInputImageKey)
-    imageTransforms.isRotated = true
-    return toRotateFilter!.outputImage!
-}
-
-//Needs a context to have been created
-func scaleImage(_ input: CIImage, scale: CGFloat, _ imageTransforms: inout ImageTransforms) -> CIImage {
-    let toScaleFilter = CIFilter(name:"CILanczosScaleTransform")
-    toScaleFilter!.setValue(input, forKey: kCIInputImageKey)
-    toScaleFilter!.setValue(scale, forKey: kCIInputScaleKey)
-    toScaleFilter!.setValue(1, forKey: kCIInputAspectRatioKey)
-    
-    imageTransforms.isScaled = true
-    return toScaleFilter!.outputImage!
-}
-*/
