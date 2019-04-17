@@ -41,7 +41,7 @@ class CameraState {
     
     let isAdjustingExposure: ConnectableObservable<Bool>//Variable<Bool>
     let isAdjustingWB: ConnectableObservable<Bool>//Variable<Bool>
-    let disposeBag = DisposeBag()
+    let disposeBag: DisposeBag = DisposeBag()
     
     private var areSettingsLocked = false
     
@@ -104,10 +104,24 @@ class CameraState {
         _ = isAdjustingWB.connect()
         _ = isAdjustingExposure.connect()
         
+        isAdjustingExposure
+            .distinctUntilChanged()
+            .subscribe(onNext: { isAdjusting in
+                print("ADJUSTING EXPOSURE :: \(isAdjusting)")
+            })
+            .disposed(by: disposeBag)
+        
+        isAdjustingWB
+            .distinctUntilChanged()
+            .subscribe(onNext: { isAdjusting in
+                print("ADJUSTING WB :: \(isAdjusting)")
+            })
+            .disposed(by: disposeBag)
+        
         exposurePointStream
             .filter { _ in !self.areSettingsLocked }
             .subscribe(onNext: {  exposurePoint in
-                print("Exposing to :: \(exposurePoint)")
+                print("Exposing to :: \(exposurePoint.point)")
             //NEEDS TO BE LOCKED FOR CONFIG
                 self.captureDevice.exposurePointOfInterest = exposurePoint.point
                 self.captureDevice.exposureMode = AVCaptureDevice.ExposureMode.autoExpose

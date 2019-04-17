@@ -228,6 +228,7 @@ class SampleSkinToneViewController: UIViewController {
             //.distinctUntilChanged()
             .subscribe(onNext: { points in
                 let size = 5
+                let halfSize = 2 //floor size/2
                 
                 //REUSE THIS!
                 //let renderer = UIGraphicsImageRenderer(size: CGSize(width: width, height: height))
@@ -239,7 +240,7 @@ class SampleSkinToneViewController: UIViewController {
                 
                     for point in points {
                         ctx.cgContext.setFillColor(point.color)
-                        ctx.cgContext.fill(CGRect(x: Int(point.point.x), y: Int(point.point.y), width: size, height: size))
+                        ctx.cgContext.fill(CGRect(x: Int(point.x) - halfSize, y: Int(point.y) - halfSize, width: size, height: size))
                     }
                 }
                 

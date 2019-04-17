@@ -103,7 +103,7 @@ class SampleSkinToneViewModel {
     var video: Video
     var videoSize = CGSize.init(width: 0, height: 0)
     
-    let disposeBag = DisposeBag()
+    var disposeBag = DisposeBag()
     
     init(user: User) {
         self.user = user
@@ -113,13 +113,13 @@ class SampleSkinToneViewModel {
         video.realtimeDataStream
             .subscribe(onNext: { realtimeDataOptional in
                 guard let realtimeData = realtimeDataOptional else {
-                    print("No realtime data")
+                    //print("No realtime data")
                     self.userFaceState.onNext(.noFaceFound)
                     return
                 }
                 
                 guard let videoLayer = try! self.videoPreviewLayerStream.value() else {
-                    print("No video preview layer")
+                    //print("No video preview layer")
                     self.userFaceState.onNext(.noFaceFound)
                     return
                 }
@@ -128,8 +128,8 @@ class SampleSkinToneViewModel {
                 let displayPoints = realtimeData.landmarks.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer) }
                 
                 //self.drawPointsStream.onNext(displayPoints)
-                //self.drawPointsStream.onNext([realtimeData.exposurePoint.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)])
-                self.drawPointsStream.onNext(realtimeData.balancePoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)})
+                self.drawPointsStream.onNext([realtimeData.exposurePoint.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)])
+                //self.drawPointsStream.onNext(realtimeData.balancePoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)})
                 //self.drawPointsStream.onNext(realtimeData.brightnessPoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)})
 
                 let xImageValues = realtimeData.landmarks.map { $0.point.x }
@@ -370,8 +370,8 @@ class SampleSkinToneViewModel {
     
     private func checkFaceClipped(min: DisplayPoint, max: DisplayPoint) -> UserFaceStates {
         let height = 1.5 * (max.point.y - min.point.y)
-        print("Min :: \(min.point) | Max :: \(max.point) | Height :: \(height)")
-        print("Video Height :: \(self.videoSize.height)")
+        //print("Min :: \(min.point) | Max :: \(max.point) | Height :: \(height)")
+        //print("Video Height :: \(self.videoSize.height)")
         if min.point.x < -10 {
             return .faceTooFarLeft
         } else if max.point.x > self.videoSize.width + 10 {

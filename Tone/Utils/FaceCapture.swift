@@ -120,8 +120,8 @@ class FaceCapture {
         precondition(isLocked)
         if !self.isValidPoint(center) { return nil }
         
-        let sideLength = 15
-        let halfSideLength = floor(CGFloat(sideLength - 1) / 2)
+        //let sideLength = 15
+        let halfSideLength = CGFloat(7)
         
         let start = ImagePoint.init(x: center.x - halfSideLength, y: center.y - halfSideLength)
         let end = ImagePoint.init(x: center.x + halfSideLength, y: center.y + halfSideLength)
@@ -141,7 +141,8 @@ class FaceCapture {
             }
         }
         
-        let averageSubpixelValue = CGFloat(sum) / CGFloat(pow((2 * halfSideLength) + 1, 2)) // Area of the sample x 3 sub pixels each
+        //Really dont need to divide by area since it will be the same for all... might as well save some cycles I suppose
+        let averageSubpixelValue = CGFloat(sum)// / (CGFloat(pow((2 * halfSideLength) + 1, 2)) * 3) // Area of the sample x 3 sub pixels each
         
         return averageSubpixelValue
     }
