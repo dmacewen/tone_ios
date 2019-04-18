@@ -28,6 +28,11 @@ class HomeViewModel {
         events.onNext(.logOut)
     }
     
+    func openSettings() {
+        print("Opening Settings")
+        events.onNext(.openSettings)
+    }
+    
     func sampleSkinTone() {
         print("Starting Sample Skin Tone for \(user.email)")
         events.onNext(.sampleSkinTone)

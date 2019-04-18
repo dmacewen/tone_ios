@@ -26,6 +26,11 @@ func viewController(forViewModel viewModel: Any) -> UIViewController? {
         viewController?.viewModel = viewModel
         return viewController
         
+    case let viewModel as SettingsViewModel:
+        let viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "settingsViewController") as? SettingsViewController
+        viewController?.viewModel = viewModel
+        return viewController
+        
     case let viewModel as SampleSkinToneViewModel:
         let viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "sampleSkinToneViewController") as? SampleSkinToneViewController
         viewController?.viewModel = viewModel

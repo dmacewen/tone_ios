@@ -13,6 +13,9 @@
 		86193C8D21891B36001F5C4E /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C8C21891B36001F5C4E /* HomeViewController.swift */; };
 		86193C94218945B8001F5C4E /* SampleSkinToneViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C93218945B8001F5C4E /* SampleSkinToneViewModel.swift */; };
 		86193C96218945C6001F5C4E /* SampleSkinToneViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C95218945C6001F5C4E /* SampleSkinToneViewController.swift */; };
+		8619C7A422684682003E4054 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8619C7A322684682003E4054 /* Settings.swift */; };
+		8619C7A722684CDB003E4054 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8619C7A622684CDB003E4054 /* SettingsViewModel.swift */; };
+		8619C7A922684CEE003E4054 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8619C7A822684CEE003E4054 /* SettingsViewController.swift */; };
 		8619E15B224AC96600A6A438 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8619E15A224AC96600A6A438 /* User.swift */; };
 		86213F9B2187F56600A622FB /* KeyboardHeightObservable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86213F9A2187F56600A622FB /* KeyboardHeightObservable.swift */; };
 		864A580C2187C8EB006FFC1D /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 864A580B2187C8EB006FFC1D /* Globals.swift */; };
@@ -89,6 +92,9 @@
 		86193C8C21891B36001F5C4E /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
 		86193C93218945B8001F5C4E /* SampleSkinToneViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleSkinToneViewModel.swift; sourceTree = "<group>"; };
 		86193C95218945C6001F5C4E /* SampleSkinToneViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleSkinToneViewController.swift; sourceTree = "<group>"; };
+		8619C7A322684682003E4054 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
+		8619C7A622684CDB003E4054 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
+		8619C7A822684CEE003E4054 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		8619E15A224AC96600A6A438 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		86213F9A2187F56600A622FB /* KeyboardHeightObservable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardHeightObservable.swift; sourceTree = "<group>"; };
 		864A580B2187C8EB006FFC1D /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
@@ -202,6 +208,7 @@
 				86F9E72A225EA1E200E6E52E /* Metadata.swift */,
 				8618710A225ECB0D00F19565 /* FaceCapture.swift */,
 				86ED6FCB2266DCA200124A1F /* Points.swift */,
+				8619C7A322684682003E4054 /* Settings.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -213,6 +220,15 @@
 				86193C95218945C6001F5C4E /* SampleSkinToneViewController.swift */,
 			);
 			path = SampleSkinToneView;
+			sourceTree = "<group>";
+		};
+		8619C7A522684CB2003E4054 /* SettingsView */ = {
+			isa = PBXGroup;
+			children = (
+				8619C7A622684CDB003E4054 /* SettingsViewModel.swift */,
+				8619C7A822684CEE003E4054 /* SettingsViewController.swift */,
+			);
+			path = SettingsView;
 			sourceTree = "<group>";
 		};
 		86F1389D218768C2004C6092 = {
@@ -241,6 +257,7 @@
 			children = (
 				86193C9221894590001F5C4E /* SampleSkinToneView */,
 				86193C9021894274001F5C4E /* HomeView */,
+				8619C7A522684CB2003E4054 /* SettingsView */,
 				86193C8F2189425B001F5C4E /* LoginView */,
 				86193C8E21894246001F5C4E /* RootNavigation */,
 				86193C912189428D001F5C4E /* Utils */,
@@ -456,6 +473,7 @@
 				86F1BCAA218D219E00A18457 /* serialMap.swift in Sources */,
 				8651B60E2187D72200FB7A3A /* LoginViewController.swift in Sources */,
 				86ED6FCA22611D7F00124A1F /* Image.swift in Sources */,
+				8619C7A722684CDB003E4054 /* SettingsViewModel.swift in Sources */,
 				864A580C2187C8EB006FFC1D /* Globals.swift in Sources */,
 				86131005218B9E0A00BD1305 /* CameraState.swift in Sources */,
 				86193C8D21891B36001F5C4E /* HomeViewController.swift in Sources */,
@@ -464,9 +482,11 @@
 				8694A07F2187BF1A00615BE3 /* RootNavigationViewModel.swift in Sources */,
 				8619E15B224AC96600A6A438 /* User.swift in Sources */,
 				8618710B225ECB0D00F19565 /* FaceCapture.swift in Sources */,
+				8619C7A422684682003E4054 /* Settings.swift in Sources */,
 				8694A0812187BF4300615BE3 /* RootNavigationViewController.swift in Sources */,
 				86F9E729225E9C5C00E6E52E /* CGExtensions.swift in Sources */,
 				866C405F21911709007BABDE /* ImageDataUpload.swift in Sources */,
+				8619C7A922684CEE003E4054 /* SettingsViewController.swift in Sources */,
 				86F138AA218768C2004C6092 /* AppDelegate.swift in Sources */,
 				86ED6FCC2266DCA200124A1F /* Points.swift in Sources */,
 			);

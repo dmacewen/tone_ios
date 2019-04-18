@@ -15,6 +15,7 @@ class HomeViewController: UIViewController {
     var viewModel: HomeViewModel!
     
     @IBOutlet weak var logoutButton: UIButton!
+    @IBOutlet weak var settingsButton: UIButton!
     @IBOutlet weak var sampleSkinToneButton: UIButton!
     
     let disposeBag = DisposeBag()
@@ -31,6 +32,11 @@ class HomeViewController: UIViewController {
         logoutButton.rx.tap
             .single()
             .subscribe(onNext: { _ in self.viewModel.logout() })
+            .disposed(by: disposeBag)
+        
+        settingsButton.rx.tap
+            //.single()
+            .subscribe(onNext: { _ in self.viewModel.openSettings() })
             .disposed(by: disposeBag)
     }
 }
