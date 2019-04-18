@@ -370,8 +370,7 @@ class SampleSkinToneViewModel {
     
     private func checkFaceClipped(min: DisplayPoint, max: DisplayPoint) -> UserFaceStates {
         let height = 1.5 * (max.point.y - min.point.y)
-        //print("Min :: \(min.point) | Max :: \(max.point) | Height :: \(height)")
-        //print("Video Height :: \(self.videoSize.height)")
+ 
         if min.point.x < -10 {
             return .faceTooFarLeft
         } else if max.point.x > self.videoSize.width + 10 {

@@ -44,7 +44,7 @@ enum UnbalanceDirection {
     }
 }
 
-let MAX_BRIGHTNESS_SCORE: CGFloat = 20_000
+let MAX_BRIGHTNESS_SCORE: CGFloat = 300
 
 func getRightCheekPoint(landmarks: [ImagePoint]) -> ImagePoint {
     let middleRightEye = landmarks[64]
@@ -96,14 +96,14 @@ func getLowerCheekPair(landmarks: [ImagePoint]) -> (ImagePoint, ImagePoint) {
 }
 
 func isLightingUnequal(points: (ImagePoint, ImagePoint), faceCapture: FaceCapture, exposureRatios: ExposureRatios) -> UnbalanceDirection? {
-    guard let left = faceCapture.sampleRegion(center: points.0) else {
+    guard let left = faceCapture.sampleRegionIntensity(center: points.0) else {
         print("Cant Sample Left Region")
         return nil
     }
     
     let left_exposureScore = getExposureScore(intensity: left, exposureRatios: exposureRatios)
     
-    guard let right = faceCapture.sampleRegion(center: points.1) else {
+    guard let right = faceCapture.sampleRegionIntensity(center: points.1) else {
         print("Cant Sample Right Region")
         return nil
     }
@@ -169,11 +169,11 @@ func isLightingUnbalanced(faceCapture: FaceCapture, cameraState: CameraState) ->
         var left = pair.0
         var right = pair.1
         if balance == .left {
-            right.color = UIColor.red.cgColor
-            left.color = UIColor.yellow.cgColor
-        } else if balance == .right {
             left.color = UIColor.red.cgColor
             right.color = UIColor.yellow.cgColor
+        } else if balance == .right {
+            right.color = UIColor.red.cgColor
+            left.color = UIColor.yellow.cgColor
         }
         return [left, right]
     }
@@ -193,32 +193,23 @@ func isTooBright(faceCapture: FaceCapture, cameraState: CameraState) -> (Bool, [
 
     //Exposure Points
     let leftCheekPoint = getLeftCheekPoint(landmarks: facePoints)
-    //leftCheekPoint.color = UIColor.blue.cgColor
     let rightCheekPoint = getRightCheekPoint(landmarks: facePoints)
-    //rightCheekPoint.color = UIColor.red.cgColor
     let chinPoint = getChinPoint(landmarks: facePoints)
-    //chinPoint.color = UIColor.green.cgColor
     let foreheadPoint = getForeheadPoint(landmarks: facePoints)
-    //foreheadPoint.color = UIColor.yellow.cgColor
     
-    guard let leftCheekSample = faceCapture.sampleRegion(center: leftCheekPoint) else { return nil }
-    guard let rightCheekSample = faceCapture.sampleRegion(center: rightCheekPoint) else { return nil }
-    guard let chinSample = faceCapture.sampleRegion(center: chinPoint) else { return nil }
-    guard let foreheadSample = faceCapture.sampleRegion(center: foreheadPoint) else { return nil }
+    guard let leftCheekSample = faceCapture.sampleRegionIntensity(center: leftCheekPoint) else { return nil }
+    guard let rightCheekSample = faceCapture.sampleRegionIntensity(center: rightCheekPoint) else { return nil }
+    guard let chinSample = faceCapture.sampleRegionIntensity(center: chinPoint) else { return nil }
+    guard let foreheadSample = faceCapture.sampleRegionIntensity(center: foreheadPoint) else { return nil }
     
     let sortedSamples = [(leftCheekSample, leftCheekPoint), (rightCheekSample, rightCheekPoint), (chinSample, chinPoint), (foreheadSample, foreheadPoint)].sorted { A, B in
         return A.0 > B.0
     }
         
     var brightnessPoints = sortedSamples.map { $0.1 }
-    //print("Brightnesses :: \(sortedSamples.map { $0.0 } )")
     brightnessPoints[0].color = UIColor.red.cgColor
-    //brightnessPoints[1].color = UIColor.yellow.cgColor
-    //brightnessPoints[2].color = UIColor.green.cgColor
-    brightnessPoints[3].color = UIColor.magenta.cgColor
 
-    let brightestExposureScore = getExposureScore(intensity: sortedSamples.first!.0, exposureRatios: exposureRatios)
-    print("BRIGHTEST EXPOSURE SCORE :: \(brightestExposureScore)")
+    let brightestExposureScore = getExposureScore(intensity: sortedSamples[0].0, exposureRatios: exposureRatios)
     let isTooBright = brightestExposureScore > MAX_BRIGHTNESS_SCORE
     
     return (isTooBright, brightnessPoints)

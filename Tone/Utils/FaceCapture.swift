@@ -116,45 +116,40 @@ class FaceCapture {
         return self.imageSize.size.contains(point: point.point)
     }
     
-    func sampleRegion(center: ImagePoint) -> CGFloat? {
+    func sampleRegionIntensity(center: ImagePoint) -> CGFloat? {
         precondition(isLocked)
         if !self.isValidPoint(center) { return nil }
+        
+        //One more grid/orientation to be aware of...
+        let orientedCenter = CVImageBufferIsFlipped(self.pixelBuffer) ? ImagePoint.init(x: center.x, y: self.imageSize.height - center.y) : center
         
         //let sideLength = 15
         let halfSideLength = CGFloat(7)
         
-        let start = ImagePoint.init(x: center.x - halfSideLength, y: center.y - halfSideLength)
-        let end = ImagePoint.init(x: center.x + halfSideLength, y: center.y + halfSideLength)
+        let start = ImagePoint.init(x: orientedCenter.x - halfSideLength, y: orientedCenter.y - halfSideLength)
+        let end = ImagePoint.init(x: orientedCenter.x + halfSideLength, y: orientedCenter.y + halfSideLength)
         
         if !self.isValidPoint(start) || !self.isValidPoint(end) { return nil }
         
         let bytesPerRow = CVPixelBufferGetBytesPerRow(self.pixelBuffer)
         guard let baseAddress = CVPixelBufferGetBaseAddress(self.pixelBuffer) else { return nil }
         let byteBuffer = baseAddress.assumingMemoryBound(to: UInt8.self)
-        
+
         var sum = 0
+        var counter = 0
         for y in Int(start.y) ..< Int(end.y) {
             let bufferRowOffset = y * bytesPerRow
             for x in Int(start.x) ..< Int(end.x) {
                 let bufferIndex = bufferRowOffset + (x * 4) //Index into the buffer
-                sum += Int(byteBuffer[bufferIndex]) + Int(byteBuffer[bufferIndex + 1]) + Int(byteBuffer[bufferIndex + 2])
+                if bufferIndex % 5 == 0 {
+                    sum += Int(byteBuffer[bufferIndex]) + Int(byteBuffer[bufferIndex + 1]) + Int(byteBuffer[bufferIndex + 2])
+                    counter += 3
+                }
             }
         }
-        
-        //Really dont need to divide by area since it will be the same for all... might as well save some cycles I suppose
-        let averageSubpixelValue = CGFloat(sum)// / (CGFloat(pow((2 * halfSideLength) + 1, 2)) * 3) // Area of the sample x 3 sub pixels each
-        
-        return averageSubpixelValue
+
+        return CGFloat(sum) / CGFloat(counter)
     }
-/*
-    func getJawDisplayPoints() -> [DisplayPoint]? {
-        guard let faceContour = self.faceLandmarks.faceContour else { return nil }
-        
-        return faceContour
-            .pointsInImage(imageSize: self.imageSize.toLandmarkSize().size)
-            .map { LandmarkPoint($0).toDisplayPoint(size: self.imageSize) }
-    }
- */
     
     func getAllImagePoints() -> [ImagePoint]? {
         guard let allPoints = self.faceLandmarks.allPoints else { return nil }

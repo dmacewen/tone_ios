@@ -103,7 +103,7 @@ class CameraState {
         
         _ = isAdjustingWB.connect()
         _ = isAdjustingExposure.connect()
-        
+        /*
         isAdjustingExposure
             .distinctUntilChanged()
             .subscribe(onNext: { isAdjusting in
@@ -117,15 +117,13 @@ class CameraState {
                 print("ADJUSTING WB :: \(isAdjusting)")
             })
             .disposed(by: disposeBag)
-        
+        */
         exposurePointStream
             .filter { _ in !self.areSettingsLocked }
             .subscribe(onNext: {  exposurePoint in
-                print("Exposing to :: \(exposurePoint.point)")
             //NEEDS TO BE LOCKED FOR CONFIG
                 self.captureDevice.exposurePointOfInterest = exposurePoint.point
                 self.captureDevice.exposureMode = AVCaptureDevice.ExposureMode.autoExpose
-                //self.captureDevice.exposureMode = AVCaptureDevice.ExposureMode.continuousAutoExposure
             }).disposed(by: disposeBag)
     }
     
