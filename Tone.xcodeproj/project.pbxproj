@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		86131005218B9E0A00BD1305 /* CameraState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86131004218B9E0A00BD1305 /* CameraState.swift */; };
-		861621442269291D00052925 /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 861621432269291D00052925 /* SettingsTableViewController.swift */; };
 		8618710B225ECB0D00F19565 /* FaceCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8618710A225ECB0D00F19565 /* FaceCapture.swift */; };
 		86193C8B21891B29001F5C4E /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C8A21891B29001F5C4E /* HomeViewModel.swift */; };
 		86193C8D21891B36001F5C4E /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C8C21891B36001F5C4E /* HomeViewController.swift */; };
@@ -88,7 +87,6 @@
 
 /* Begin PBXFileReference section */
 		86131004218B9E0A00BD1305 /* CameraState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraState.swift; sourceTree = "<group>"; };
-		861621432269291D00052925 /* SettingsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTableViewController.swift; sourceTree = "<group>"; };
 		8618710A225ECB0D00F19565 /* FaceCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceCapture.swift; sourceTree = "<group>"; };
 		86193C8A21891B29001F5C4E /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		86193C8C21891B36001F5C4E /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
@@ -229,7 +227,6 @@
 			children = (
 				8619C7A622684CDB003E4054 /* SettingsViewModel.swift */,
 				8619C7A822684CEE003E4054 /* SettingsViewController.swift */,
-				861621432269291D00052925 /* SettingsTableViewController.swift */,
 			);
 			path = SettingsView;
 			sourceTree = "<group>";
@@ -485,7 +482,6 @@
 				8694A07F2187BF1A00615BE3 /* RootNavigationViewModel.swift in Sources */,
 				8619E15B224AC96600A6A438 /* User.swift in Sources */,
 				8618710B225ECB0D00F19565 /* FaceCapture.swift in Sources */,
-				861621442269291D00052925 /* SettingsTableViewController.swift in Sources */,
 				8619C7A422684682003E4054 /* Settings.swift in Sources */,
 				8694A0812187BF4300615BE3 /* RootNavigationViewController.swift in Sources */,
 				86F9E729225E9C5C00E6E52E /* CGExtensions.swift in Sources */,

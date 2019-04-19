@@ -7,53 +7,40 @@
 //
 
 import Foundation
-
-class RadioValue {
-    private var isActive = false
-    private let set: RadioSet
-    
-    var value: Bool {
-        get {
-            return self.isActive
-        }
-        set (isActive){
-            self.set.clearAll()
-            self.isActive = isActive
-        }
-    }
-    
-    func clear() {
-        self.isActive = false
-    }
-    
-    init(set: RadioSet) {
-        self.set = set
-    }
-}
+import RxSwift
 
 class RadioSet {
-    var values = [RadioValue]()
+    var values = [BehaviorSubject<Bool>]()
+    private let disposeBag = DisposeBag()
     
-    func clearAll() {
-        for i in 0...values.count {
-            values[i].clear()
-        }
-    }
-    
-    func newField() -> RadioValue {
-        let newRadioValue = RadioValue.init(set: self)
+    func newField() -> BehaviorSubject<Bool> {
+        let id = values.count
+        let newRadioValue = BehaviorSubject<Bool>(value: false)
         values.append(newRadioValue)
+        
+        self.values[id]
+            .filter { $0 }
+            .subscribe(onNext: { _ in
+                for i in 0..<self.values.count {
+                    if i != id {
+                        self.values[i].onNext(false)
+                    }
+                }
+            })
+            .disposed(by: disposeBag)
+        
         return newRadioValue
     }
-    
 }
 
-struct Settings {
+class Settings {
     private let landmarkDisplayRadio = RadioSet()
-    let showAllLandmarks: RadioValue
-    let showExposureLandmarks: RadioValue
-    let showBalanceLandmarks: RadioValue
-    let showBrightnessLandmarks: RadioValue
+    private let disposeBag = DisposeBag()
+    
+    let showAllLandmarks: BehaviorSubject<Bool>
+    let showExposureLandmarks: BehaviorSubject<Bool>
+    let showBalanceLandmarks: BehaviorSubject<Bool>
+    let showBrightnessLandmarks: BehaviorSubject<Bool>
     
     init() {
         showAllLandmarks = self.landmarkDisplayRadio.newField()

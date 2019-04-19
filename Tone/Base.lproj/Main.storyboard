@@ -574,7 +574,11 @@
                         <viewLayoutGuide key="safeArea" id="8Rl-r5-pAi"/>
                     </view>
                     <connections>
+                        <outlet property="allLandmarks" destination="j9E-es-Zk0" id="RQQ-55-MHX"/>
                         <outlet property="backButton" destination="dQT-E6-7In" id="Sbe-Jn-CQP"/>
+                        <outlet property="balanceLandmarks" destination="tb4-K0-U4x" id="144-q9-sAI"/>
+                        <outlet property="brightnessLandmarks" destination="NRf-wG-Is1" id="cK0-xf-z0V"/>
+                        <outlet property="exposureLandmarks" destination="NkN-iI-IcX" id="CC2-jt-asr"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Tfe-pe-b49" userLabel="First Responder" sceneMemberID="firstResponder"/>
