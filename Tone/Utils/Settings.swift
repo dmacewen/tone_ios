@@ -41,11 +41,13 @@ class Settings {
     let showExposureLandmarks: BehaviorSubject<Bool>
     let showBalanceLandmarks: BehaviorSubject<Bool>
     let showBrightnessLandmarks: BehaviorSubject<Bool>
+    let showFacingCameraLandmarks: BehaviorSubject<Bool>
     
     init() {
         showAllLandmarks = self.landmarkDisplayRadio.newField()
         showExposureLandmarks = self.landmarkDisplayRadio.newField()
         showBalanceLandmarks = self.landmarkDisplayRadio.newField()
         showBrightnessLandmarks = self.landmarkDisplayRadio.newField()
+        showFacingCameraLandmarks = self.landmarkDisplayRadio.newField()
     }
 }

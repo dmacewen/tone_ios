@@ -459,7 +459,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="7Da-gD-VMC" userLabel="Settings Container">
-                                <rect key="frame" x="16" y="105" width="343" height="200"/>
+                                <rect key="frame" x="16" y="105" width="343" height="250"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Vrw-TJ-Sqw" userLabel="All Landmarks">
                                         <rect key="frame" x="0.0" y="0.0" width="343" height="50"/>
@@ -553,6 +553,29 @@
                                             <constraint firstItem="NRf-wG-Is1" firstAttribute="centerY" secondItem="iRi-VI-Nl3" secondAttribute="centerY" id="yL3-ZN-a4P"/>
                                         </constraints>
                                     </view>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dLz-eL-C3g" userLabel="Facing Camera Landmarks">
+                                        <rect key="frame" x="0.0" y="200" width="343" height="50"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Facing Camera Landmarks" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wZV-e5-6FF" userLabel="Facing Camera Landmarks">
+                                                <rect key="frame" x="0.0" y="14.999999999999998" width="200.66666666666666" height="20.333333333333329"/>
+                                                <fontDescription key="fontDescription" type="system" weight="thin" pointSize="17"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="bWs-Nb-tzG">
+                                                <rect key="frame" x="294" y="9.6666666666666856" width="51" height="31"/>
+                                            </switch>
+                                        </subviews>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstItem="wZV-e5-6FF" firstAttribute="centerY" secondItem="dLz-eL-C3g" secondAttribute="centerY" id="6bN-YI-kUf"/>
+                                            <constraint firstItem="wZV-e5-6FF" firstAttribute="leading" secondItem="dLz-eL-C3g" secondAttribute="leading" id="F37-7K-dps"/>
+                                            <constraint firstAttribute="height" constant="50" id="YRj-yG-nuc"/>
+                                            <constraint firstItem="bWs-Nb-tzG" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="wZV-e5-6FF" secondAttribute="trailing" constant="8" symbolic="YES" id="eh5-br-eAr"/>
+                                            <constraint firstAttribute="trailing" secondItem="bWs-Nb-tzG" secondAttribute="trailing" id="gtc-Yf-zwB"/>
+                                            <constraint firstItem="bWs-Nb-tzG" firstAttribute="centerY" secondItem="dLz-eL-C3g" secondAttribute="centerY" id="sg8-pn-c9i"/>
+                                        </constraints>
+                                    </view>
                                 </subviews>
                                 <constraints>
                                     <constraint firstItem="Vrw-TJ-Sqw" firstAttribute="top" secondItem="7Da-gD-VMC" secondAttribute="top" id="pVy-rx-Cfe"/>
@@ -579,6 +602,7 @@
                         <outlet property="balanceLandmarks" destination="tb4-K0-U4x" id="144-q9-sAI"/>
                         <outlet property="brightnessLandmarks" destination="NRf-wG-Is1" id="cK0-xf-z0V"/>
                         <outlet property="exposureLandmarks" destination="NkN-iI-IcX" id="CC2-jt-asr"/>
+                        <outlet property="facingCameraLandmarks" destination="bWs-Nb-tzG" id="Ou9-Wv-SLj"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Tfe-pe-b49" userLabel="First Responder" sceneMemberID="firstResponder"/>

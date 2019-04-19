@@ -25,6 +25,10 @@ struct RealTimeFaceData {
     var balancePoints: [ImagePoint]
     var isTooBright: Bool
     var brightnessPoints: [ImagePoint]
+    var isNotHorizontallyAligned: Bool
+    var isNotVerticallyAligned: Bool
+    var isRotated: Bool
+    var facingCameraPoints: [ImagePoint]
     var exposurePoint: ImagePoint
     var size: ImageSize
 }
@@ -44,7 +48,7 @@ enum UnbalanceDirection {
     }
 }
 
-let MAX_BRIGHTNESS_SCORE: CGFloat = 300
+let MAX_BRIGHTNESS_SCORE: CGFloat = 250
 
 func getRightCheekPoint(landmarks: [ImagePoint]) -> ImagePoint {
     let middleRightEye = landmarks[64]
@@ -52,10 +56,18 @@ func getRightCheekPoint(landmarks: [ImagePoint]) -> ImagePoint {
     return ImagePoint.init(x: middleNose.x, y: middleRightEye.y)
 }
 
+func getRightEyePoint(landmarks: [ImagePoint]) -> ImagePoint {
+    return landmarks[18]
+}
+
 func getLeftCheekPoint(landmarks: [ImagePoint]) -> ImagePoint {
     let middleLeftEye = landmarks[63]
     let middleNose = landmarks[52]
     return ImagePoint.init(x: middleNose.x, y: middleLeftEye.y)
+}
+
+func getLeftEyePoint(landmarks: [ImagePoint]) -> ImagePoint {
+    return landmarks[10]
 }
 
 func getChinPoint(landmarks: [ImagePoint]) -> ImagePoint {
@@ -93,6 +105,32 @@ func getLowerCheekPair(landmarks: [ImagePoint]) -> (ImagePoint, ImagePoint) {
     let leftLowerCheek = ImagePoint.init(x: landmarks[33].x, y: landmarks[33].y + offset)
     let rightLowerCheek = ImagePoint.init(x: landmarks[29].x , y: landmarks[29].y - offset)
     return (leftLowerCheek, rightLowerCheek)
+}
+
+func getFirstRow(landmarks: [ImagePoint]) -> CGFloat {
+    return (1/3) * (landmarks[10].x + landmarks[60].x + landmarks[18].x)
+}
+
+func getFirstCol(landmarks: [ImagePoint]) -> CGFloat {
+    //Maybe dont include #63? -> its partially dependent on where the user is looking?
+    return (1/3) * (landmarks[10].y + landmarks[63].y + landmarks[14].y)
+}
+
+func getMiddleRow(landmarks: [ImagePoint]) -> CGFloat {
+    return (1/5) * (landmarks[53].x + landmarks[54].x + landmarks[55].x + landmarks[56].x + landmarks[55].x)
+}
+
+func getMiddleCol(landmarks: [ImagePoint]) -> CGFloat {
+    return (1/4) * (landmarks[60].y + landmarks[61].y + landmarks[62].y + landmarks[55].y)
+}
+
+func getLastRow(landmarks: [ImagePoint]) -> CGFloat {
+    return landmarks[45].x
+}
+
+func getLastCol(landmarks: [ImagePoint]) -> CGFloat {
+    //Maybe dont include #64? -> its partially dependent on where the user is looking?
+    return (1/3) * (landmarks[18].y + landmarks[64].y + landmarks[22].y)
 }
 
 func isLightingUnequal(points: (ImagePoint, ImagePoint), faceCapture: FaceCapture, exposureRatios: ExposureRatios) -> UnbalanceDirection? {
@@ -213,4 +251,65 @@ func isTooBright(faceCapture: FaceCapture, cameraState: CameraState) -> (Bool, [
     let isTooBright = brightestExposureScore > MAX_BRIGHTNESS_SCORE
     
     return (isTooBright, brightnessPoints)
+}
+
+
+func isFaceNotParallelToCamera(faceCapture: FaceCapture, cameraState: CameraState) -> (Bool, Bool, Bool, [ImagePoint])? {
+    guard let facePoints = faceCapture.getAllImagePoints() else { return nil }
+    
+    var isNotVerticallyAligned = true
+    var isNotHorizontallyAligned = true
+    var isRotated = true
+
+    let firstRowX = getFirstRow(landmarks: facePoints)
+    let middleRowX = getMiddleRow(landmarks: facePoints)
+    let lastRowX = getLastRow(landmarks: facePoints)
+    
+    let firstColY = getFirstCol(landmarks: facePoints)
+    let middleColY = getMiddleCol(landmarks: facePoints)
+    let lastColY = getLastCol(landmarks: facePoints)
+    
+    let leftEyePoint = getLeftEyePoint(landmarks: facePoints)
+    let rightEyePoint = getRightEyePoint(landmarks: facePoints)
+    
+    let eyeWidth = abs(leftEyePoint.y - rightEyePoint.y)
+    let eyeHeight = abs(leftEyePoint.x - rightEyePoint.x)
+    let rotatedRatio = eyeHeight / eyeWidth
+    if rotatedRatio < 0.1 {
+        isRotated = false
+    }
+    
+    let firstSectionHeight = middleRowX - firstRowX
+    let combinedSectionHeight = lastRowX - firstRowX
+    let firstSectionHeightRatio = firstSectionHeight / combinedSectionHeight
+
+    if (firstSectionHeightRatio > 0.35) && (firstSectionHeightRatio < 0.55) {
+        isNotVerticallyAligned = false
+    }
+    
+    let firstSectionWidth = firstColY - middleColY
+    let combinedSectionWidth = firstColY - lastColY
+    let firstSectionWidthRatio = firstSectionWidth / combinedSectionWidth
+    
+    if (firstSectionWidthRatio > 0.4) && (firstSectionWidthRatio < 0.6) {
+        isNotHorizontallyAligned = false
+    }
+    /*
+    print("---")
+    print("Height :: \(isNotVerticallyAligned) | Width :: \(isNotHorizontallyAligned) | Rotated :: \(isRotated)")
+    print("Height Ratio :: \(firstSectionHeightRatio) | Width Ratio :: \(firstSectionWidthRatio) | Rotated Ratio :: \(rotatedRatio)")
+    */
+    let A = ImagePoint.init(x: firstRowX, y: firstColY)
+    let B = ImagePoint.init(x: firstRowX, y: middleColY)
+    let C = ImagePoint.init(x: firstRowX, y: lastColY)
+    
+    let D = ImagePoint.init(x: middleRowX, y: firstColY)
+    let E = ImagePoint.init(x: middleRowX, y: middleColY)
+    let F = ImagePoint.init(x: middleRowX, y: lastColY)
+    
+    let G = ImagePoint.init(x: lastRowX, y: firstColY)
+    let H = ImagePoint.init(x: lastRowX, y: middleColY)
+    let I = ImagePoint.init(x: lastRowX, y: lastColY)
+
+    return (isNotHorizontallyAligned, isNotVerticallyAligned, isRotated, [A, B, C, D, E, F, G, H, I])
 }

@@ -216,6 +216,14 @@ class SampleSkinToneViewController: UIViewController {
                             black = blackRatio
                         }
                     }
+                    //Draw Focus Point where we want users to look
+                    let focusPointY = Int(round(height * 0.2)) - 3
+                    let focusPointX = Int(width * 0.5) - 3
+                    ctx.cgContext.setFillColor(UIColor.blue.cgColor)
+                    ctx.cgContext.fill(CGRect(x: focusPointX, y: focusPointY, width: 7, height: 7))
+                    
+                    ctx.cgContext.setFillColor(UIColor.black.cgColor)
+
                 }
                 
                 self.FlashLayer.image = img

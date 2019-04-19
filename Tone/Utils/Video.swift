@@ -30,9 +30,10 @@ class Video:  NSObject {
                 guard let faceCapture = faceCaptureOptional else { return nil }
                 guard let allImagePoints = faceCapture.getAllImagePoints() else { return nil }
                 guard let (isTooBright, brightnessPoints) = isTooBright(faceCapture: faceCapture, cameraState: cameraState) else { return nil }
-                guard let (isLightingUnbalanced, balancePoints) = isLightingUnbalanced(faceCapture: faceCapture, cameraState: cameraState) else { return nil}
+                guard let (isLightingUnbalanced, balancePoints) = isLightingUnbalanced(faceCapture: faceCapture, cameraState: cameraState) else { return nil }
+                guard let (isNotHorizontallyAligned, isNotVerticallyAligned, isRotated, facingCameraPoints) = isFaceNotParallelToCamera(faceCapture: faceCapture, cameraState: cameraState) else { return nil }
                 
-                return RealTimeFaceData(landmarks: allImagePoints, isLightingUnbalanced: isLightingUnbalanced, balancePoints: balancePoints, isTooBright: isTooBright, brightnessPoints: brightnessPoints, exposurePoint: brightnessPoints.first!, size: faceCapture.imageSize)
+                return RealTimeFaceData(landmarks: allImagePoints, isLightingUnbalanced: isLightingUnbalanced, balancePoints: balancePoints, isTooBright: isTooBright, brightnessPoints: brightnessPoints, isNotHorizontallyAligned: isNotHorizontallyAligned, isNotVerticallyAligned: isNotVerticallyAligned, isRotated: isRotated, facingCameraPoints: facingCameraPoints, exposurePoint: brightnessPoints.first!, size: faceCapture.imageSize)
             }
             .asObservable()
 

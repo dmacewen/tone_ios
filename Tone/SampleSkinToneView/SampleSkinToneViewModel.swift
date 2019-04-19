@@ -53,6 +53,9 @@ class SampleSkinToneViewModel {
         case faceTooFarUp
         case faceTooFarLeft
         case faceTooFarRight
+        case faceTiltedVertically
+        case faceTiltedHorizontally
+        case faceRotated
         
         var prompt: Message {
             switch self {
@@ -76,6 +79,12 @@ class SampleSkinToneViewModel {
                 return Message(message: "Your left cheek is cropped!", tip: "Try moving the phone to your left")
             case .faceTooFarRight:
                 return Message(message: "Your right cheek is cropped!", tip: "Try moving the phone to your right")
+            case .faceTiltedVertically:
+                return Message(message: "You're taking the photo at an angle!", tip: "Try adjusting your head up or down")
+            case .faceTiltedHorizontally:
+                return Message(message: "You're not facing the camera!", tip: "Try adjusting your left up or right")
+            case .faceRotated:
+                return Message(message: "Your head is at an angle!", tip: "Try aligning your head vertically")
             case .faceGradient:
                 return Message(message: "You're Unevenly Lit!", tip: "Try facing away from the brightest lights in the room")
             //case .faceGradient:
@@ -131,6 +140,7 @@ class SampleSkinToneViewModel {
                 if try! user.settings.showExposureLandmarks.value() { self.drawPointsStream.onNext([realtimeData.exposurePoint.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)]) }
                 if try! user.settings.showBalanceLandmarks.value() { self.drawPointsStream.onNext(realtimeData.balancePoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)}) }
                 if try! user.settings.showBrightnessLandmarks.value() { self.drawPointsStream.onNext(realtimeData.brightnessPoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)}) }
+                if try! user.settings.showFacingCameraLandmarks.value() { self.drawPointsStream.onNext(realtimeData.facingCameraPoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)}) }
 
                 let xImageValues = realtimeData.landmarks.map { $0.point.x }
                 let yImageValues = realtimeData.landmarks.map { $0.point.y }
@@ -143,6 +153,22 @@ class SampleSkinToneViewModel {
                     self.userFaceState.onNext(faceSizeState)
                     return
                 }
+                
+                if realtimeData.isRotated {
+                    self.userFaceState.onNext(.faceRotated)
+                    return
+                }
+                
+                if realtimeData.isNotHorizontallyAligned {
+                    self.userFaceState.onNext(.faceTiltedHorizontally)
+                    return
+                }
+                
+                if realtimeData.isNotVerticallyAligned {
+                    self.userFaceState.onNext(.faceTiltedVertically)
+                    return
+                }
+                
                 
                 let xDisplayValues = displayPoints.map { $0.point.x }
                 let yDisplayValues = displayPoints.map { $0.point.y }
@@ -359,9 +385,9 @@ class SampleSkinToneViewModel {
         //Mostly to avoid picking up background faces
         if (fractionWidth < 0.20) || (fractionHeight < 0.20) {
             return .noFaceFound
-        } else if (fractionWidth < 0.3) || (fractionHeight < 0.6) {
+        } else if (fractionWidth < 0.4) || (fractionHeight < 0.85) {
             return .faceTooFar
-        } else if (fractionWidth > 0.7) || (fractionHeight > 0.9) {
+        } else if (fractionWidth > 0.7) || (fractionHeight > 1.0) {
             return .faceTooClose
         }
         
@@ -370,14 +396,15 @@ class SampleSkinToneViewModel {
     
     private func checkFaceClipped(min: DisplayPoint, max: DisplayPoint) -> UserFaceStates {
         let height = 1.5 * (max.point.y - min.point.y)
+        let margin = CGFloat(20)
  
-        if min.point.x < -10 {
+        if min.point.x < (-1 * margin) {
             return .faceTooFarLeft
-        } else if max.point.x > self.videoSize.width + 10 {
+        } else if max.point.x > self.videoSize.width + margin {
             return .faceTooFarRight
-        } else if max.point.y > self.videoSize.height + 10 {
+        } else if max.point.y > self.videoSize.height { //This is a hard cutoff of facial features we actually want.. make sure its in the frame
             return .faceTooFarDown
-        } else if (max.point.y - height) < -10 {
+        } else if (max.point.y - height) < (-1 * margin) {
             return .faceTooFarUp
         }
         
