@@ -52,7 +52,7 @@ class RootNavigationViewModel {
                 case .openSample(let sample):
                     print("Open Sample :: \(sample)")
                 case .openSettings:
-                    self!.navigationStackActions.onNext(.push(viewModel: self!.createSettingsViewModel(withSettings: Settings()), animated: false))
+                    self!.navigationStackActions.onNext(.push(viewModel: self!.createSettingsViewModel(withUser: user), animated: false))
 
                 }
             }).disposed(by: disposeBag)
@@ -74,8 +74,8 @@ class RootNavigationViewModel {
         return sampleSkinToneViewModel
     }
     
-    private func createSettingsViewModel(withSettings settings: Settings) -> SettingsViewModel {
-        let settingsViewModel = SettingsViewModel(settings: settings)
+    private func createSettingsViewModel(withUser user: User) -> SettingsViewModel {
+        let settingsViewModel = SettingsViewModel(user: user)
         settingsViewModel.events
             .subscribe(onNext: { [weak self] event in //Reference createLoginViewModel for how to reference Self
                 switch event {

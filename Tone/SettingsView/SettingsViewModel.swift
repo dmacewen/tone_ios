@@ -17,8 +17,8 @@ class SettingsViewModel {
     let events = PublishSubject<Event>()
     let settings: Settings
     
-    init(settings: Settings) {
-        self.settings = settings
+    init(user: User) {
+        self.settings = user.settings
     }
     
     func back() {
