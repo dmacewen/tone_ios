@@ -135,7 +135,7 @@ class SampleSkinToneViewModel {
 
                 self.cameraState.exposurePointStream.onNext(realtimeData.exposurePoint.toNormalizedImagePoint(size: realtimeData.size))
                 let displayPoints = realtimeData.landmarks.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer) }
-                
+                print("Real Time Size :: \(realtimeData.size) | Video Layer Size :: \(self.videoSize)")
                 if try! user.settings.showAllLandmarks.value() { self.drawPointsStream.onNext(displayPoints) }
                 if try! user.settings.showExposureLandmarks.value() { self.drawPointsStream.onNext([realtimeData.exposurePoint.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)]) }
                 if try! user.settings.showBalanceLandmarks.value() { self.drawPointsStream.onNext(realtimeData.balancePoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)}) }
@@ -354,7 +354,7 @@ class SampleSkinToneViewModel {
                     
                     let pngDataRightEye = context.pngRepresentation(of: rightEyeImage.image, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])!
                     
-                    let setMetadata = SetMetadata.getFrom(faceImage: faceImage, leftEyeImage: leftEyeImage, rightEyeImage: rightEyeImage, flashSettings: faceCapture.flashSettings, cameraState: self.cameraState, rawMetadata: faceCapture.rawMetadata)
+                      let setMetadata = SetMetadata.getFrom(faceImage: faceImage, leftEyeImage: leftEyeImage, rightEyeImage: rightEyeImage, flashSettings: faceCapture.flashSettings, cameraState: self.cameraState, rawMetadata: faceCapture.rawMetadata)
                 
                     return ImageData(faceData: pngDataFace, leftEyeData: pngDataLeftEye, rightEyeData: pngDataRightEye, setMetadata: setMetadata)
                     //DONT FORGET TO TRANSFER EYE WIDTH AS WELL!

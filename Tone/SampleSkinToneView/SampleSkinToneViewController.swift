@@ -269,7 +269,6 @@ class SampleSkinToneViewController: UIViewController {
                 videoPreviewLayer.frame = self.view.layer.bounds
                 self.viewModel.videoSize = videoPreviewLayer.bounds.size
                 
-                //Set Video Preview Layer to Root View
                 self.InteractionLayer.layer.insertSublayer(videoPreviewLayer, below: self.UILayer.layer)
                 
                 //Provide Access to video preview layer for converting between coordinate systems.... there might be a better way?

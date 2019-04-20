@@ -19,7 +19,7 @@ struct WhiteBalance : Codable {
 }
 
 struct ImageMetadata : Codable {
-    var isGammaSBGR = false
+    var isGammaSBGR = true
     var isRotated = false
     var isCropped = false
     var isScaled = false
@@ -59,7 +59,7 @@ struct SetMetadata : Codable {
         let (iso, exposure) = SetMetadata.extractRelevantMetadata(rawMetadata)
         let whiteBalance = WhiteBalance.getFrom(captureDevice: cameraState.captureDevice)
         
-        return SetMetadata(iso: iso, exposureTime: exposure, whiteBalance: whiteBalance, flashSettings: flashSettings, faceImageTransforms: faceImage.imageMetadata, leftEyeImageTransforms: leftEyeImage.imageMetadata, rightEyeImageTransforms: rightEyeImage.imageMetadata)
+        return SetMetadata(iso: iso, exposureTime: exposure, whiteBalance: whiteBalance, flashSettings: flashSettings, faceImageTransforms: faceImage.getImageMetadata(), leftEyeImageTransforms: leftEyeImage.getImageMetadata(), rightEyeImageTransforms: rightEyeImage.getImageMetadata())
     }
     
     static private func extractRelevantMetadata(_ metadata: [String: Any]) -> (Float64, Float64) {

@@ -102,7 +102,6 @@ struct ImagePoint {
         let normalizedImagePoint = self.toNormalizedImagePoint(size: size)
         let normalizedX = normalizedImagePoint.x
         let normalizedY = 1 - normalizedImagePoint.y
-
         
         guard let color = self.color else {
             return DisplayPoint.init(videoLayer.layerPointConverted(fromCaptureDevicePoint: CGPoint.init(x: normalizedX, y: normalizedY)))

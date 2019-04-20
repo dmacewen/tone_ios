@@ -13,7 +13,7 @@ import Vision
 class Image {
     var image: CIImage
     var landmarks: [CGPoint]
-    var imageMetadata = ImageMetadata()
+    private var imageMetadata = ImageMetadata()
     
     init(image: CIImage, landmarks: [CGPoint]) {
         self.image = image
@@ -28,6 +28,11 @@ class Image {
         newImage.imageMetadata.isCropped = true
         newImage.imageMetadata.bbInParent = crop
         return newImage
+    }
+    
+    func getImageMetadata() -> ImageMetadata {
+        self.imageMetadata.landmarks = landmarks
+        return self.imageMetadata
     }
     
     func crop(_ crop: CGRect) {
