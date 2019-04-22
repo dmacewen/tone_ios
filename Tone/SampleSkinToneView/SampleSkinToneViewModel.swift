@@ -11,6 +11,7 @@ import RxSwift
 import AVFoundation
 import Alamofire
 import Vision
+import UIKit
 
 class SampleSkinToneViewModel {
     let screenFlashSettings = [
@@ -25,15 +26,21 @@ class SampleSkinToneViewModel {
     
     enum Event {
         case cancel
+        case beginSetUp
+        case beginPreivew
+        case beginFlash
+        case beginProcessing
+        case beginUpload
+        case resumePreview
     }
     
     enum SampleStates {
-        case prepping
+        case setup
         case previewUser
-        case referenceSample
-        case sample
-        case process(photoData: [(AVCapturePhoto, FlashSettings)?])
-        case upload(images: [ImageData])
+        //case referenceSample
+        case flash
+        case process//(photoData: [(AVCapturePhoto, FlashSettings)?])
+        case upload//(images: [ImageData])
     }
     
     struct Message {
@@ -87,16 +94,14 @@ class SampleSkinToneViewModel {
                 return Message(message: "Your head is at an angle!", tip: "Try aligning your head vertically")
             case .faceGradient:
                 return Message(message: "You're Unevenly Lit!", tip: "Try facing away from the brightest lights in the room")
-            //case .faceGradient:
-                //return "The Lighting On Your Face Is Uneven!"// Try and face away from the brightest light in the room"
             }
         }
     }
     let user: User
-    let sampleState = BehaviorSubject<SampleStates>(value: .prepping)
+    let sampleState = BehaviorSubject<SampleStates>(value: .setup)
     let userFaceState = BehaviorSubject<UserFaceStates>(value: .noFaceFound)
     
-    let referencePhotos = PublishSubject<AVCapturePhoto>()
+    //let referencePhotos = PublishSubject<AVCapturePhoto>()
     let samplePhotos = PublishSubject<AVCapturePhoto>()
     
     let uploadProgress = BehaviorSubject<Float>(value: 0.0)
@@ -114,11 +119,14 @@ class SampleSkinToneViewModel {
     
     var disposeBag = DisposeBag()
     
+    //Shared Between Flash and Draw Overlay
+    let renderer = UIGraphicsImageRenderer(size: UIScreen.main.bounds.size)
+    
     init(user: User) {
         self.user = user
         cameraState = CameraState(flashTaskStream: flashSettingsTaskStream)
         video = Video(cameraState: cameraState, videoPreviewLayerStream: videoPreviewLayerStream)
-        
+        /*
         video.realtimeDataStream
             .subscribe(onNext: { realtimeDataOptional in
                 guard let realtimeData = realtimeDataOptional else {
@@ -215,7 +223,7 @@ class SampleSkinToneViewModel {
             .filter { if case .previewUser = $0 { return true } else { return false } }
             .subscribe { _ in self.cameraState.unlockCameraSettings() }
             .disposed(by: disposeBag)
-            
+        /*
         sampleState
             .observeOn(MainScheduler.instance)
             .filter { if case .referenceSample = $0 { return true } else { return false } }
@@ -226,14 +234,16 @@ class SampleSkinToneViewModel {
                 self.sampleState.onNext(.sample)
             }
             .disposed(by: disposeBag)
+ */
         
         sampleState
             .observeOn(MainScheduler.instance)
-            .filter { if case .sample = $0 { return true } else { return false } }
+            .filter { .flash == $0 }
+            //.filter { if case .sample = $0 { return true } else { return false } }
             //.flatMap { _ in self.cameraState.preparePhotoSettings(numPhotos: self.screenFlashSettings.count) }
             .flatMap { _ in self.captureSamplePhotos() }
             .subscribe(onNext: { photoData in
-                self.sampleState.onNext(.process(photoData: photoData))
+                self.sampleState.onNext(.process)
             }).disposed(by: disposeBag)
         
         sampleState
@@ -269,6 +279,7 @@ class SampleSkinToneViewModel {
             }).disposed(by: disposeBag)
         
         sampleState.onNext(.previewUser)
+ */
     }
     
     func cancel() {

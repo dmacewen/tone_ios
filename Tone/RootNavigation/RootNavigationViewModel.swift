@@ -17,8 +17,21 @@ enum NavigationStackAction {
 
 class RootNavigationViewModel {
     lazy private(set) var navigationStackActions = BehaviorSubject<NavigationStackAction>(value: .set(viewModels: [self.createLoginViewModel()], animated: false))
-
+    private var currentViewModelStack: [Any] = []
     private let disposeBag = DisposeBag()
+    
+    init() {
+        self.navigationStackActions.subscribe(onNext: { action in
+            switch action {
+            case .set(let viewModels, _):
+                self.currentViewModelStack = viewModels
+            case .push(let viewModel, _):
+                self.currentViewModelStack.append(viewModel)
+            case .pop(_):
+                _ = self.currentViewModelStack.popLast()
+            }
+        }).disposed(by: disposeBag)
+    }
     
     func createLoginViewModel() -> LoginViewModel {
         let loginViewModel = LoginViewModel()
@@ -62,12 +75,32 @@ class RootNavigationViewModel {
     
     private func createSampleSkinToneViewModel(withUser user: User) -> SampleSkinToneViewModel {
         let sampleSkinToneViewModel = SampleSkinToneViewModel(user: user)
+        var savedNavigationStack: [Any] = []
         sampleSkinToneViewModel.events
             .subscribe(onNext: { [weak self] event in //Reference createLoginViewModel for how to reference Self
                 switch event {
                 case .cancel:
                     print("Cancel")
                     self!.navigationStackActions.onNext(.pop(animated: false))
+                case .beginSetUp:
+                    print("SETTING VIEW: Setting Up")
+                    savedNavigationStack = self!.currentViewModelStack
+                    self!.navigationStackActions.onNext(.set(viewModels: [sampleSkinToneViewModel], animated: false))
+                case .beginPreivew:
+                    print("SETTING VIEW: Previewing")
+                    self!.navigationStackActions.onNext(.set(viewModels: [sampleSkinToneViewModel], animated: false))
+                case .beginFlash:
+                    print("SETTING VIEW: Flash")
+                    self!.navigationStackActions.onNext(.set(viewModels: [sampleSkinToneViewModel], animated: false))
+                case .beginProcessing:
+                    print("SETTING VIEW: Processing")
+                    self!.navigationStackActions.onNext(.set(viewModels: [sampleSkinToneViewModel], animated: false))
+                case .beginUpload:
+                    print("SETTING VIEW: Upload")
+                    self!.navigationStackActions.onNext(.set(viewModels: [sampleSkinToneViewModel], animated: false))
+                case .resumePreview:
+                    print("SETTING VIEW: Resume Preview")
+                    self!.navigationStackActions.onNext(.set(viewModels: savedNavigationStack, animated: false))
                 }
             }).disposed(by: disposeBag)
         

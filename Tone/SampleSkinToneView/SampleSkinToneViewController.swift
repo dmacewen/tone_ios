@@ -5,7 +5,7 @@
 //  Created by Doug MacEwen on 10/30/18.
 //  Copyright © 2018 Doug MacEwen. All rights reserved.
 //
-
+/*
 import Foundation
 import AVFoundation
 import UIKit
@@ -14,68 +14,25 @@ import RxCocoa
 
 class SampleSkinToneViewController: UIViewController {
     var viewModel: SampleSkinToneViewModel!
-    
-    @IBOutlet weak var cancelButton: UIButton!
-    @IBOutlet weak var takeSampleButton: UIButton!
-    @IBOutlet weak var UILayer: UIView!
-    @IBOutlet weak var InteractionLayer: UIView!
-    
-    @IBOutlet weak var UploadProgessLayer: UIView! //Layer that holds Upload Progress Bar, Progress Spinner, and Prepping Spinner
-    @IBOutlet weak var UploadLayer: UIView!
-    @IBOutlet weak var UploadBar: UIProgressView!
-    @IBOutlet weak var ProgessLayer: UIView!
-    @IBOutlet weak var ProgessSpinner: UIActivityIndicatorView!
-    @IBOutlet weak var PreppingLayer: UIView!
-    @IBOutlet weak var PreppingSpinner: UIActivityIndicatorView!
-    
-    @IBOutlet weak var rootView: UIView!
-    
-    @IBOutlet weak var FlashLayer: UIImageView!
-    @IBOutlet weak var OverlayLayer: UIImageView!
-    
-    @IBOutlet weak var userPrompt: UITextField!
-    @IBOutlet weak var userTip: UITextField!
-    
+
     let disposeBag = DisposeBag()
-    let renderer = UIGraphicsImageRenderer(size: UIScreen.main.bounds.size)
 
     override func viewDidLoad() {
+        /*
         super.viewDidLoad()
         title = "Sample Skin Tone"
         print("Saving Original Screen Brightness!")
         self.viewModel.originalScreenBrightness = UIScreen.main.brightness
-
-        cancelButton.rx.tap
-            .single()
-            .subscribe(onNext: { _ in self.viewModel.cancel() })
-            .disposed(by: disposeBag)
-        
-        takeSampleButton.rx.tap
-            .subscribe(onNext: { _ in
-                self.viewModel.sampleState.onNext(.referenceSample)
-            }).disposed(by: disposeBag)
-
-        viewModel.userFaceState
-            .asDriver(onErrorJustReturn: .noFaceFound)
-            .distinctUntilChanged()
-            .throttle(0.5)
-            .drive(onNext:{
-                self.userPrompt.text = $0.prompt.message
-                self.userTip.text = $0.prompt.tip
-            })
-            .disposed(by: disposeBag)
-        
-        viewModel.userFaceState
-            .map { $0 == .ok }
-            .bind(to: takeSampleButton.rx.isEnabled)
-            .disposed(by: disposeBag)
-        
+*/
+       
+        /*
         viewModel.sampleState
             .observeOn(MainScheduler.instance)
             .map { if case .previewUser = $0 { return false } else { return true } }
             .bind(to: InteractionLayer.rx.isHidden )
             .disposed(by: disposeBag)
-        
+        */
+        /*
         viewModel.sampleState
             .observeOn(MainScheduler.instance)
             .map { state in
@@ -86,7 +43,8 @@ class SampleSkinToneViewController: UIViewController {
             }
             .bind(to: UploadProgessLayer.rx.isHidden )
             .disposed(by: disposeBag)
-        
+ */
+        /*
         viewModel.sampleState
             .observeOn(MainScheduler.instance)
             .filter { if case .process = $0 { return true } else { return false }}
@@ -97,7 +55,8 @@ class SampleSkinToneViewController: UIViewController {
                 self.PreppingLayer.isHidden = true
                 self.ProgessSpinner.startAnimating()
             }).disposed(by: disposeBag)
-        
+ */
+        /*
         viewModel.sampleState
             .observeOn(MainScheduler.instance)
             .filter { if case .prepping = $0 { return true } else { return false }}
@@ -108,11 +67,9 @@ class SampleSkinToneViewController: UIViewController {
                 self.UploadLayer.isHidden = true
                 self.PreppingSpinner.startAnimating()
             }).disposed(by: disposeBag)
+*/
 
-        viewModel.uploadProgress
-            .bind(to: UploadBar.rx.progress)
-            .disposed(by: disposeBag)
-        
+        /*
         viewModel.uploadProgress
             //.map { $0 == 1.0 }
             .distinctUntilChanged()
@@ -132,8 +89,8 @@ class SampleSkinToneViewController: UIViewController {
                     }
                 }
             }).disposed(by: disposeBag)
-
-        
+*/
+        /*
         viewModel.sampleState
             .observeOn(MainScheduler.instance)
             .map { (state) -> Bool in
@@ -157,7 +114,8 @@ class SampleSkinToneViewController: UIViewController {
                 }
             })
             .disposed(by: disposeBag)
-
+ */
+/*
         viewModel.flashSettingsTaskStream
             .observeOn(MainScheduler.instance)
             .subscribeOn(MainScheduler.instance)
@@ -243,7 +201,8 @@ class SampleSkinToneViewController: UIViewController {
  
                 //flashSettingTask.isDone.onCompleted()
             }).disposed(by: disposeBag)
-        
+        */
+        /*
         viewModel.drawPointsStream
             .observeOn(MainScheduler.instance)
             .subscribeOn(MainScheduler.instance)
@@ -269,8 +228,8 @@ class SampleSkinToneViewController: UIViewController {
                 //self.FlashLayer.image = img
                 self.OverlayLayer.image = img
             }).disposed(by: disposeBag)
-        
-        
+        */
+        /*
         viewModel.sampleState
             .filter { if case .previewUser = $0 { return true } else { return false } }
             .take(1)
@@ -288,10 +247,13 @@ class SampleSkinToneViewController: UIViewController {
                 //Provide Access to video preview layer for converting between coordinate systems.... there might be a better way?
                 self.viewModel.videoPreviewLayerStream.onNext(videoPreviewLayer)
             }, onError: { error in print(error) } ).disposed(by: disposeBag)
+ */
     }
-    
+    /*
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         viewModel.video.pauseProcessing()
     }
+ */
 }
+*/

@@ -29,11 +29,23 @@ func viewController(forViewModel viewModel: Any) -> UIViewController? {
     case let viewModel as SettingsViewModel:
         let viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "settingsViewController") as? SettingsViewController
         viewController?.viewModel = viewModel
-        //return UINavigationController(rootViewController: viewController!)
         return viewController
         
     case let viewModel as SampleSkinToneViewModel:
-        let viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "sampleSkinToneViewController") as? SampleSkinToneViewController
+        let viewController: ReactiveUIViewController<SampleSkinToneViewModel>?
+        switch try! viewModel.sampleState.value() {
+        case .setup:
+            viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "setupViewController") as? SetupViewController
+        case .previewUser:
+            viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "previewViewController") as? PreviewViewController
+        case .flash:
+            viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "flashViewController") as? FlashViewController
+        case .process:
+            viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "processViewController") as? ProcessViewController
+        case .upload:
+            viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "uploadViewController") as? UploadViewController
+        }
+        //let viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "sampleSkinToneViewController") as? SampleSkinToneViewController
         viewController?.viewModel = viewModel
         return viewController
 
