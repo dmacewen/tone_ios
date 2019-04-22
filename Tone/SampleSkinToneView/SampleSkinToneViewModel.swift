@@ -339,14 +339,12 @@ class SampleSkinToneViewModel {
                     //leftEyeImage.updateParentBB(parentScale: scaleRatio)
                     //rightEyeImage.updateParentBB(parentScale: scaleRatio)
                     
-
                     faceImage.rotate()
                     leftEyeImage.rotate()
                     rightEyeImage.rotate()
                     
                     leftEyeImage.updateParentBB(rotate: true)
                     rightEyeImage.updateParentBB(rotate: true)
-                    
                     
                     let pngDataFace = context.pngRepresentation(of: faceImage.image, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])!
                     

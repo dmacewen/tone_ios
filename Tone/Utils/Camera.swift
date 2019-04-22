@@ -33,6 +33,7 @@ class Camera: NSObject {
         */
         Observable.combineLatest(cameraState.isAdjustingExposure, cameraState.isAdjustingWB, flashTask.isDone.observeOn(MainScheduler.instance)) { $0 || $1 || !$2 }
             .observeOn(MainScheduler.instance)
+            //.subscribeOn(MainScheduler.instance)
             .filter { !$0 }
             .take(1)
             .subscribe(onNext: { _ in

@@ -37,12 +37,12 @@ extension ObservableType {
         
         workerA.asObservable()
             .observeOn(MainScheduler.instance)
-            .subscribeOn(MainScheduler.instance)
+            //.subscribeOn(MainScheduler.instance)
             .subscribe(onNext: { arg in
                 //NSLog("Start")
                 transform(arg)
                     .observeOn(MainScheduler.instance)
-                    .subscribeOn(MainScheduler.instance)
+                    //.subscribeOn(MainScheduler.instance)
                     .toArray()
                     .subscribe(
                         onNext: { value in
@@ -61,12 +61,12 @@ extension ObservableType {
         
         workerB.asObservable()
             .observeOn(MainScheduler.instance)
-            .subscribeOn(MainScheduler.instance)
+            //.subscribeOn(MainScheduler.instance)
             .subscribe(onNext: { arg in
                 //NSLog("Start")
                 transform(arg)
                     .observeOn(MainScheduler.instance)
-                    .subscribeOn(MainScheduler.instance)
+                    //.subscribeOn(MainScheduler.instance)
                     .toArray()
                     .subscribe( onNext: { value in
                         callbackQueue[0].onNext(value)
@@ -88,7 +88,7 @@ extension ObservableType {
                 case .next(let value):
                     addTask(task: value)
                         .observeOn(MainScheduler.instance)
-                        .subscribeOn(MainScheduler.instance)
+                        //.subscribeOn(MainScheduler.instance)
                         .subscribe(onNext: { result in
                             observer.on(.next(result[0]))
                             

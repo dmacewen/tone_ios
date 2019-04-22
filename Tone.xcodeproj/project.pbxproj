@@ -374,13 +374,16 @@
 				TargetAttributes = {
 					86F138A5218768C2004C6092 = {
 						CreatedOnToolsVersion = 10.0;
+						LastSwiftMigration = 1020;
 					};
 					86F138B9218768C4004C6092 = {
 						CreatedOnToolsVersion = 10.0;
+						LastSwiftMigration = 1020;
 						TestTargetID = 86F138A5218768C2004C6092;
 					};
 					86F138C4218768C4004C6092 = {
 						CreatedOnToolsVersion = 10.0;
+						LastSwiftMigration = 1020;
 						TestTargetID = 86F138A5218768C2004C6092;
 					};
 				};
@@ -678,7 +681,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.tone-cosmetics.tone";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -702,7 +705,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.tone-cosmetics.tone";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -722,7 +725,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "Tone-Cosmetics.ToneTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Tone.app/Tone";
 			};
@@ -743,7 +746,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "Tone-Cosmetics.ToneTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Tone.app/Tone";
 			};
@@ -763,7 +766,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "Tone-Cosmetics.ToneUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = Tone;
 			};
@@ -783,7 +786,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "Tone-Cosmetics.ToneUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = Tone;
 			};

@@ -233,11 +233,13 @@ class SampleSkinToneViewController: UIViewController {
                 self.FlashLayer.setNeedsDisplay()
                 print("Animating?? :: \(self.FlashLayer.isAnimating)")
                 print("Done Drawing!")
-                //flashSettingTask.isDone.onNext(true)
+                flashSettingTask.isDone.onNext(true)
 
+                /*
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                     flashSettingTask.isDone.onNext(true)
                 }
+                */
  
                 //flashSettingTask.isDone.onCompleted()
             }).disposed(by: disposeBag)
