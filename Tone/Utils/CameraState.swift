@@ -23,6 +23,11 @@ struct FlashSettings: Codable {
     var areas: Int = 0
 }
 
+struct FlashSettingsTask {
+    var flashSettings: FlashSettings
+    let isDone = BehaviorSubject<Bool>(value: false)
+}
+
 struct ExposureRatios {
     let iso: CGFloat
     let exposure: CGFloat
@@ -35,7 +40,7 @@ class CameraState {
     var captureSession: AVCaptureSession
     
     //var flashStream: PublishSubject<FlashSettings>
-    var flashStream: BehaviorSubject<FlashSettings>
+    var flashTaskStream: PublishSubject<FlashSettingsTask>
     var isAvailable =  BehaviorSubject<Bool>(value: true)
     var photoSettingsIndex = 0
     
@@ -47,9 +52,9 @@ class CameraState {
     
     let exposurePointStream = BehaviorSubject<NormalizedImagePoint>(value: NormalizedImagePoint.init(x: 0.5, y: 0.5))
     
-    init(flashStream: BehaviorSubject<FlashSettings>) {
+    init(flashTaskStream: PublishSubject<FlashSettingsTask>) {
         print("Setting up camera...")
-        self.flashStream = flashStream
+        self.flashTaskStream = flashTaskStream
 
         //Create Capture Session
         captureSession = AVCaptureSession()

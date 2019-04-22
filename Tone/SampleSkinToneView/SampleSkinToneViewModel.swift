@@ -103,7 +103,7 @@ class SampleSkinToneViewModel {
     let videoPreviewLayerStream = BehaviorSubject<AVCaptureVideoPreviewLayer?>(value: nil)
     let drawPointsStream = BehaviorSubject<[DisplayPoint]>(value: [])
     
-    let flashSettings = BehaviorSubject<FlashSettings>(value: FlashSettings(area: 0, areas: 0))
+    let flashSettingsTaskStream = PublishSubject<FlashSettingsTask>()
     
     let events = PublishSubject<Event>()
     
@@ -116,7 +116,7 @@ class SampleSkinToneViewModel {
     
     init(user: User) {
         self.user = user
-        cameraState = CameraState(flashStream: flashSettings)
+        cameraState = CameraState(flashTaskStream: flashSettingsTaskStream)
         video = Video(cameraState: cameraState, videoPreviewLayerStream: videoPreviewLayerStream)
         
         video.realtimeDataStream

@@ -14,6 +14,7 @@ class Camera: NSObject {
     private var cameraState: CameraState
     private let capture = PublishSubject<(AVCapturePhoto, FlashSettings)>()
     private let disposeBag = DisposeBag()
+    private var flashSettings: FlashSettings?
     
     init(cameraState: CameraState) {
         print("New Camera")
@@ -22,8 +23,15 @@ class Camera: NSObject {
     
     func capturePhoto(_ flashSettings: FlashSettings) -> PublishSubject<(AVCapturePhoto, FlashSettings)> {
         print("Beginning to capture photo!")
-        self.cameraState.flashStream.onNext(flashSettings)
-        Observable.combineLatest(cameraState.isAdjustingExposure, cameraState.isAdjustingWB) { $0 || $1 }
+        self.flashSettings = flashSettings
+        
+        let flashTask = FlashSettingsTask(flashSettings: flashSettings)
+        self.cameraState.flashTaskStream.onNext(flashTask)
+        /*
+        isDoneDrawingFlash
+            .filter { $0 }
+        */
+        Observable.combineLatest(cameraState.isAdjustingExposure, cameraState.isAdjustingWB, flashTask.isDone.observeOn(MainScheduler.instance)) { $0 || $1 || !$2 }
             .observeOn(MainScheduler.instance)
             .filter { !$0 }
             .take(1)
@@ -51,12 +59,11 @@ extension Camera: AVCapturePhotoCaptureDelegate {
         guard error == nil else {
             fatalError("Error in capture!")
         }
-        var flashSetting: FlashSettings
-        do {
-            flashSetting = try self.cameraState.flashStream.value()
-        } catch {
+        
+        guard let flashSetting = self.flashSettings else {
             fatalError("No Flash Setting Found! What flash setting was used?")
         }
+    
         
         capture.onNext((photo, flashSetting))
         capture.onCompleted()

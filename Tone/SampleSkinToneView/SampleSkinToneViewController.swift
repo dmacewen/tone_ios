@@ -158,10 +158,12 @@ class SampleSkinToneViewController: UIViewController {
             })
             .disposed(by: disposeBag)
 
-        viewModel.flashSettings
+        viewModel.flashSettingsTaskStream
             .observeOn(MainScheduler.instance)
             .subscribeOn(MainScheduler.instance)
-            .subscribe(onNext: { flashSetting in
+            .subscribe(onNext: { flashSettingTask in
+                flashSettingTask.isDone.onNext(false)
+                let flashSetting = flashSettingTask.flashSettings
                 if flashSetting.areas == 0 {
                     //Return Early if Areas is 0
                     print("Zero Areas Returning Early")
@@ -197,6 +199,7 @@ class SampleSkinToneViewController: UIViewController {
                     var black = blackRatio
                     
                     while location <= numLocations {
+                        
                         if white > 0 {
                             location += 1
                             white -= 1
@@ -223,11 +226,20 @@ class SampleSkinToneViewController: UIViewController {
                     ctx.cgContext.fill(CGRect(x: focusPointX, y: focusPointY, width: 7, height: 7))
                     
                     ctx.cgContext.setFillColor(UIColor.black.cgColor)
-
+                    print("Done Rendering!")
                 }
                 
                 self.FlashLayer.image = img
+                self.FlashLayer.setNeedsDisplay()
+                print("Animating?? :: \(self.FlashLayer.isAnimating)")
                 print("Done Drawing!")
+                //flashSettingTask.isDone.onNext(true)
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    flashSettingTask.isDone.onNext(true)
+                }
+ 
+                //flashSettingTask.isDone.onCompleted()
             }).disposed(by: disposeBag)
         
         viewModel.drawPointsStream
