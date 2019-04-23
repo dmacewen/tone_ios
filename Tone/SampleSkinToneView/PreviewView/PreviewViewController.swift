@@ -25,8 +25,6 @@ class PreviewViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
     @IBOutlet weak var takeSampleButton: UIButton!
     
     @IBOutlet weak var userPrompt: UITextField!
-    //@IBOutlet weak var userTip: UITextField!
-    //let renderer = UIGraphicsImageRenderer(size: UIScreen.main.bounds.size)
 
     override func viewDidLoad() {
         super.viewDidLoad()

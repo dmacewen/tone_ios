@@ -25,6 +25,7 @@ class RootNavigationViewController: UINavigationController {
                 switch navigationStackAction {
                 case .set(let viewModels, let animated):
                     let viewControllers = viewModels.compactMap { viewController(forViewModel: $0) }
+                    print("Setting View Controllers!")
                     self?.setViewControllers(viewControllers, animated: animated)
                     
                 case .push(let viewModel, let animated):
@@ -33,6 +34,13 @@ class RootNavigationViewController: UINavigationController {
                 
                 case .pop(let animated):
                     _ = self?.popViewController(animated: animated)
+                    
+                case .swap(let viewModel, let animated):
+                    //Maybe just:
+                    //self?.viewControllers[self?.viewControllers.count - 1] = viewModel
+                    self?.popViewController(animated: animated)
+                    guard let viewController = viewController(forViewModel: viewModel) else { return }
+                    self?.pushViewController(viewController, animated: animated)
                 }
             })
             .disposed(by: disposeBag)

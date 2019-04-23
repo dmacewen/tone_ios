@@ -13,6 +13,7 @@ enum NavigationStackAction {
     case set(viewModels: [Any], animated: Bool)
     case push(viewModel: Any, animated: Bool)
     case pop(animated: Bool)
+    case swap(viewModel: Any, animated: Bool)
 }
 
 class RootNavigationViewModel {
@@ -29,6 +30,9 @@ class RootNavigationViewModel {
                 self.currentViewModelStack.append(viewModel)
             case .pop(_):
                 _ = self.currentViewModelStack.popLast()
+            case .swap(let viewModel, _):
+                _ = self.currentViewModelStack.popLast()
+                self.currentViewModelStack.append(viewModel)
             }
         }).disposed(by: disposeBag)
     }
@@ -85,10 +89,10 @@ class RootNavigationViewModel {
                 case .beginSetUp:
                     print("SETTING VIEW: Setting Up")
                     savedNavigationStack = self!.currentViewModelStack
-                    self!.navigationStackActions.onNext(.set(viewModels: [sampleSkinToneViewModel], animated: false))
+                    self!.navigationStackActions.onNext(.push(viewModel: sampleSkinToneViewModel, animated: false))
                 case .beginPreivew:
                     print("SETTING VIEW: Previewing")
-                    self!.navigationStackActions.onNext(.set(viewModels: [sampleSkinToneViewModel], animated: false))
+                    self!.navigationStackActions.onNext(.swap(viewModel: sampleSkinToneViewModel, animated: false))
                 case .beginFlash:
                     print("SETTING VIEW: Flash")
                     self!.navigationStackActions.onNext(.set(viewModels: [sampleSkinToneViewModel], animated: false))
@@ -101,6 +105,7 @@ class RootNavigationViewModel {
                 case .resumePreview:
                     print("SETTING VIEW: Resume Preview")
                     self!.navigationStackActions.onNext(.set(viewModels: savedNavigationStack, animated: false))
+                    self!.navigationStackActions.onNext(.push(viewModel: sampleSkinToneViewModel, animated: false))
                 }
             }).disposed(by: disposeBag)
         

@@ -33,6 +33,7 @@ func viewController(forViewModel viewModel: Any) -> UIViewController? {
         
     case let viewModel as SampleSkinToneViewModel:
         let viewController: ReactiveUIViewController<SampleSkinToneViewModel>?
+        print("VIEW MODEL STATE VALUE :: \(try! viewModel.sampleState.value())")
         switch try! viewModel.sampleState.value() {
         case .setup:
             viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "setupViewController") as? SetupViewController

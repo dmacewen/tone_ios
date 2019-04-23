@@ -17,7 +17,6 @@ class FlashViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
     let disposeBag = DisposeBag()
 
     @IBOutlet weak var FlashLayer: UIImageView!
-    
 
     override func viewDidLoad() {
         super.viewDidLoad()

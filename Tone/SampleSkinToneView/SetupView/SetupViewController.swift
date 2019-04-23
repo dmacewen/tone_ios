@@ -16,7 +16,6 @@ class SetupViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
     //var viewModel: SampleSkinToneViewModel!
     let disposeBag = DisposeBag()
     
-    //@IBOutlet weak var PreppingLayer: UIView!
     @IBOutlet weak var setupSpinner: UIActivityIndicatorView!
     
     override func viewDidLoad() {
