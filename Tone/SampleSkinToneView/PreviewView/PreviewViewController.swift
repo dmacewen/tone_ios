@@ -13,7 +13,6 @@ import RxSwift
 import RxCocoa
 
 class PreviewViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
-    //var viewModel: SampleSkinToneViewModel!
     let disposeBag = DisposeBag()
     
     @IBOutlet weak var rootView: UIView!
@@ -34,59 +33,71 @@ class PreviewViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
         videoPreviewLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
         videoPreviewLayer.frame = self.view.layer.bounds
         self.viewModel!.videoSize = videoPreviewLayer.bounds.size
-        self.InteractionLayer.layer.insertSublayer(videoPreviewLayer, below: self.UILayer.layer)
+        
+        DispatchQueue.main.async {
+            self.InteractionLayer.layer.insertSublayer(videoPreviewLayer, below: self.UILayer.layer)
+            self.viewModel!.videoPreviewLayerStream.onNext(videoPreviewLayer)
+        }
         
         //Provide Access to video preview layer for converting between coordinate systems.... there might be a better way?
-        self.viewModel!.videoPreviewLayerStream.onNext(videoPreviewLayer)
         
-        cancelButton.rx.tap
+        self.cancelButton.rx.tap
             .single()
             .subscribe(onNext: { _ in self.viewModel!.cancel() })
-            .disposed(by: disposeBag)
+            .disposed(by: self.disposeBag)
         
-        takeSampleButton.rx.tap
+
+        self.takeSampleButton.rx.tap
             .subscribe(onNext: { _ in
-                self.viewModel!.sampleState.onNext(.flash)
-            }).disposed(by: disposeBag)
+                self.viewModel!.takeSample()
+            }).disposed(by: self.disposeBag)
         
-        viewModel!.userFaceState
+        self.viewModel!.userFaceState
             .asDriver(onErrorJustReturn: .noFaceFound)
             .distinctUntilChanged()
             .throttle(0.5)
-            .drive(onNext:{
-                self.userPrompt.text = $0.prompt.message
+            .drive(onNext:{ faceState in
+                DispatchQueue.main.async {
+                    self.userPrompt.text = faceState.prompt.message
+                }
                 //self.userTip.text = $0.prompt.tip
             })
-            .disposed(by: disposeBag)
+            .disposed(by: self.disposeBag)
         
-        viewModel!.userFaceState
+        self.viewModel!.userFaceState
             .map { $0 == .ok }
-            .bind(to: takeSampleButton.rx.isEnabled)
-            .disposed(by: disposeBag)
+            .bind(to: self.takeSampleButton.rx.isEnabled)
+            .disposed(by: self.disposeBag)
         
         viewModel!.drawPointsStream
-            .observeOn(MainScheduler.instance)
-            .subscribeOn(MainScheduler.instance)
-            //.distinctUntilChanged()
             .subscribe(onNext: { points in
                 let size = 5
                 let halfSize = 2 //floor size/2
                 
                 let img = self.viewModel!.renderer.image { ctx in
-                                        
                     for point in points {
                         ctx.cgContext.setFillColor(point.color)
                         ctx.cgContext.fill(CGRect(x: Int(point.x) - halfSize, y: Int(point.y) - halfSize, width: size, height: size))
                     }
                 }
                 
-                //self.FlashLayer.image = img
-                self.OverlayLayer.image = img
+                DispatchQueue.main.async {
+                    self.OverlayLayer.image = img
+                }
             }).disposed(by: disposeBag)
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        DispatchQueue.main.async {
+            self.viewModel!.video.resumeProcessing()
+        }
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        viewModel!.video.pauseProcessing()
+        DispatchQueue.main.async {
+            self.viewModel!.video.pauseProcessing()
+        }
     }
 }

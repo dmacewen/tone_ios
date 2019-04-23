@@ -12,15 +12,12 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-class SetupViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
-    //var viewModel: SampleSkinToneViewModel!
-    let disposeBag = DisposeBag()
-    
+class SetupViewController: ReactiveUIViewController<SampleSkinToneViewModel> {    
     @IBOutlet weak var setupSpinner: UIActivityIndicatorView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Setup Sample Skin Tone"
-        setupSpinner.startAnimating()
+        self.title = "Setup Sample Skin Tone"
+        self.setupSpinner.startAnimating()
     }
 }

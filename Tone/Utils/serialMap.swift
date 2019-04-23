@@ -13,6 +13,7 @@ extension ObservableType {
     //Takes a function that returns an observable
     //Waits for the observable of that function to complete, emitting the result, before processing the next
     func serialMap<R>(_ transform: @escaping (E) -> PublishSubject<R>) -> Observable<R> {
+        print("New Serial Map!")
         let disposeBag = DisposeBag()
         
         var taskQueue: [E] = []
@@ -83,6 +84,7 @@ extension ObservableType {
             .disposed(by: disposeBag)
         
         return Observable.create { observer in
+            print("Serial Map -> new observable")
             let subscription = self.subscribe { e in
                 switch e {
                 case .next(let value):

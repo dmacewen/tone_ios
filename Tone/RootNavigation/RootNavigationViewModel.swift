@@ -65,7 +65,8 @@ class RootNavigationViewModel {
                     self!.navigationStackActions.onNext(.set(viewModels: [self!.createLoginViewModel()], animated: false))
                 case .sampleSkinTone:
                     print("Sample Skin Tone")
-                    self!.navigationStackActions.onNext(.push(viewModel: self!.createSampleSkinToneViewModel(withUser: user), animated: false))
+                    _ = self!.createSampleSkinToneViewModel(withUser: user) //Temporary... Fix! it sets its own controller
+                    //self!.navigationStackActions.onNext(.push(viewModel: self!.createSampleSkinToneViewModel(withUser: user), animated: false))
                 case .openSample(let sample):
                     print("Open Sample :: \(sample)")
                 case .openSettings:
@@ -82,6 +83,7 @@ class RootNavigationViewModel {
         var savedNavigationStack: [Any] = []
         sampleSkinToneViewModel.events
             .subscribe(onNext: { [weak self] event in //Reference createLoginViewModel for how to reference Self
+                print("EVENTS \(event)")
                 switch event {
                 case .cancel:
                     print("Cancel")
@@ -90,7 +92,7 @@ class RootNavigationViewModel {
                     print("SETTING VIEW: Setting Up")
                     savedNavigationStack = self!.currentViewModelStack
                     self!.navigationStackActions.onNext(.push(viewModel: sampleSkinToneViewModel, animated: false))
-                case .beginPreivew:
+                case .beginPreview:
                     print("SETTING VIEW: Previewing")
                     self!.navigationStackActions.onNext(.swap(viewModel: sampleSkinToneViewModel, animated: false))
                 case .beginFlash:

@@ -10,6 +10,7 @@ import Foundation
 import UIKit
 
 func viewController(forViewModel viewModel: Any) -> UIViewController? {
+    print("Get View Controller Called!")
     switch viewModel {
     case let viewModel as RootNavigationViewModel:
         let viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "rootNavigationViewController") as? RootNavigationViewController
@@ -33,20 +34,25 @@ func viewController(forViewModel viewModel: Any) -> UIViewController? {
         
     case let viewModel as SampleSkinToneViewModel:
         let viewController: ReactiveUIViewController<SampleSkinToneViewModel>?
-        print("VIEW MODEL STATE VALUE :: \(try! viewModel.sampleState.value())")
-        switch try! viewModel.sampleState.value() {
-        case .setup:
+        print("VIEW MODEL STATE VALUE :: \(try! viewModel.events.value())")
+        //switch try! viewModel.sampleState.value() {
+        switch try! viewModel.events.value() {
+        case .cancel:
+            viewController = nil
+        case .beginSetUp:
             viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "setupViewController") as? SetupViewController
-        case .previewUser:
+        case .beginPreview:
             viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "previewViewController") as? PreviewViewController
-        case .flash:
+        case .beginFlash:
             viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "flashViewController") as? FlashViewController
-        case .process:
+        case .beginProcessing:
             viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "processViewController") as? ProcessViewController
-        case .upload:
+        case .beginUpload:
             viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "uploadViewController") as? UploadViewController
+        case .resumePreview:
+            viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "previewViewController") as? PreviewViewController
         }
-        //let viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "sampleSkinToneViewController") as? SampleSkinToneViewController
+
         viewController?.viewModel = viewModel
         return viewController
 

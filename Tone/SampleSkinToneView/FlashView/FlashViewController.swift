@@ -27,9 +27,10 @@ class FlashViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
         UIScreen.main.brightness = CGFloat(1.0)
         
         viewModel!.flashSettingsTaskStream
-            .observeOn(MainScheduler.instance)
-            .subscribeOn(MainScheduler.instance)
+            //.observeOn(MainScheduler.instance)
+            //.subscribeOn(MainScheduler.instance)
             .subscribe(onNext: { flashSettingTask in
+                print("Received Flash Task!")
                 flashSettingTask.isDone.onNext(false)
                 let flashSetting = flashSettingTask.flashSettings
                 if flashSetting.areas == 0 {
@@ -97,11 +98,12 @@ class FlashViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
                     print("Done Rendering!")
                 }
                 
-                self.FlashLayer.image = img
-                self.FlashLayer.setNeedsDisplay()
-                print("Animating?? :: \(self.FlashLayer.isAnimating)")
-                print("Done Drawing!")
-                flashSettingTask.isDone.onNext(true)
+                DispatchQueue.main.async {
+                    self.FlashLayer.image = img
+                    self.FlashLayer.setNeedsDisplay()
+                    print("Done Drawing!")
+                    flashSettingTask.isDone.onNext(true)
+                }
                 
                 /*
                  DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {

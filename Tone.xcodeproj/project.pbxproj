@@ -207,21 +207,11 @@
 			isa = PBXGroup;
 			children = (
 				86213F9A2187F56600A622FB /* KeyboardHeightObservable.swift */,
-				864A580B2187C8EB006FFC1D /* Globals.swift */,
-				8619E15A224AC96600A6A438 /* User.swift */,
 				86F1BCA9218D219E00A18457 /* serialMap.swift */,
-				86131004218B9E0A00BD1305 /* CameraState.swift */,
-				8685ADA4219CA7B900B66F90 /* Camera.swift */,
-				8685ADA6219CA7EA00B66F90 /* Video.swift */,
-				86ED6FC922611D7F00124A1F /* Image.swift */,
-				866C405C2190CB69007BABDE /* ImageUtils.swift */,
-				866C405E21911709007BABDE /* ImageDataUpload.swift */,
 				86F9E728225E9C5C00E6E52E /* CGExtensions.swift */,
 				86F9E72A225EA1E200E6E52E /* Metadata.swift */,
-				8618710A225ECB0D00F19565 /* FaceCapture.swift */,
 				86ED6FCB2266DCA200124A1F /* Points.swift */,
 				8619C7A322684682003E4054 /* Settings.swift */,
-				86AC4541226E698100324067 /* ReactiveUIViewController.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -289,6 +279,37 @@
 			path = UploadView;
 			sourceTree = "<group>";
 		};
+		86AC4543226F8EB200324067 /* Navigation Utils */ = {
+			isa = PBXGroup;
+			children = (
+				864A580B2187C8EB006FFC1D /* Globals.swift */,
+				86AC4541226E698100324067 /* ReactiveUIViewController.swift */,
+			);
+			path = "Navigation Utils";
+			sourceTree = "<group>";
+		};
+		86AC4544226F8EEE00324067 /* Imaging Utils */ = {
+			isa = PBXGroup;
+			children = (
+				8685ADA4219CA7B900B66F90 /* Camera.swift */,
+				86131004218B9E0A00BD1305 /* CameraState.swift */,
+				8685ADA6219CA7EA00B66F90 /* Video.swift */,
+				86ED6FC922611D7F00124A1F /* Image.swift */,
+				866C405C2190CB69007BABDE /* ImageUtils.swift */,
+				8618710A225ECB0D00F19565 /* FaceCapture.swift */,
+				866C405E21911709007BABDE /* ImageDataUpload.swift */,
+			);
+			path = "Imaging Utils";
+			sourceTree = "<group>";
+		};
+		86AC4545226F8F3700324067 /* State */ = {
+			isa = PBXGroup;
+			children = (
+				8619E15A224AC96600A6A438 /* User.swift */,
+			);
+			path = State;
+			sourceTree = "<group>";
+		};
 		86F1389D218768C2004C6092 = {
 			isa = PBXGroup;
 			children = (
@@ -318,6 +339,9 @@
 				8619C7A522684CB2003E4054 /* SettingsView */,
 				86193C8F2189425B001F5C4E /* LoginView */,
 				86193C8E21894246001F5C4E /* RootNavigation */,
+				86AC4543226F8EB200324067 /* Navigation Utils */,
+				86AC4544226F8EEE00324067 /* Imaging Utils */,
+				86AC4545226F8F3700324067 /* State */,
 				86193C912189428D001F5C4E /* Utils */,
 				86F138A9218768C2004C6092 /* AppDelegate.swift */,
 				86F138AD218768C2004C6092 /* Main.storyboard */,
