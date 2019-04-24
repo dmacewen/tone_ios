@@ -12,7 +12,6 @@
 		86193C8B21891B29001F5C4E /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C8A21891B29001F5C4E /* HomeViewModel.swift */; };
 		86193C8D21891B36001F5C4E /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C8C21891B36001F5C4E /* HomeViewController.swift */; };
 		86193C94218945B8001F5C4E /* SampleSkinToneViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C93218945B8001F5C4E /* SampleSkinToneViewModel.swift */; };
-		86193C96218945C6001F5C4E /* SampleSkinToneViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C95218945C6001F5C4E /* SampleSkinToneViewController.swift */; };
 		8619C7A422684682003E4054 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8619C7A322684682003E4054 /* Settings.swift */; };
 		8619C7A722684CDB003E4054 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8619C7A622684CDB003E4054 /* SettingsViewModel.swift */; };
 		8619C7A922684CEE003E4054 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8619C7A822684CEE003E4054 /* SettingsViewController.swift */; };
@@ -97,7 +96,6 @@
 		86193C8A21891B29001F5C4E /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		86193C8C21891B36001F5C4E /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
 		86193C93218945B8001F5C4E /* SampleSkinToneViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleSkinToneViewModel.swift; sourceTree = "<group>"; };
-		86193C95218945C6001F5C4E /* SampleSkinToneViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleSkinToneViewController.swift; sourceTree = "<group>"; };
 		8619C7A322684682003E4054 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		8619C7A622684CDB003E4054 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		8619C7A822684CEE003E4054 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
@@ -225,7 +223,6 @@
 				86AC452A226E610F00324067 /* ProcessView */,
 				86AC452B226E611500324067 /* UploadView */,
 				86193C93218945B8001F5C4E /* SampleSkinToneViewModel.swift */,
-				86193C95218945C6001F5C4E /* SampleSkinToneViewController.swift */,
 			);
 			path = SampleSkinToneView;
 			sourceTree = "<group>";
@@ -550,7 +547,6 @@
 			files = (
 				86AC4538226E61B600324067 /* FlashViewController.swift in Sources */,
 				8685ADA5219CA7B900B66F90 /* Camera.swift in Sources */,
-				86193C96218945C6001F5C4E /* SampleSkinToneViewController.swift in Sources */,
 				86F9E72B225EA1E200E6E52E /* Metadata.swift in Sources */,
 				86213F9B2187F56600A622FB /* KeyboardHeightObservable.swift in Sources */,
 				86AC453C226E61CE00324067 /* ProcessViewController.swift in Sources */,

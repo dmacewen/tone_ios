@@ -23,33 +23,36 @@ class Camera: NSObject {
     
     //func capturePhoto(_ flashSettings: FlashSettings) -> PublishSubject<(AVCapturePhoto, FlashSettings)> {
     func capturePhoto(_ flashSettings: FlashSettings) -> Observable<(AVCapturePhoto, FlashSettings)> {
-
-        print("Beginning to capture photo!")
-        self.flashSettings = flashSettings
-        
-        let flashTask = FlashSettingsTask(flashSettings: flashSettings)
-        self.cameraState.flashTaskStream.onNext(flashTask)
-        /*
-        isDoneDrawingFlash
-            .filter { $0 }
-        */
-        return Observable.combineLatest(cameraState.isAdjustingExposure, cameraState.isAdjustingWB, flashTask.isDone.observeOn(MainScheduler.instance)) { $0 || $1 || !$2 }
-            .observeOn(MainScheduler.instance)
-            .subscribeOn(MainScheduler.instance)
-            .filter { !$0 }
-            .take(1)
-            .map { _ in
-                print("Captuing Photo with Flash Settings :: \(flashSettings.area) \(flashSettings.areas)")
-                print("Getting Photo Settings!")
-                let photoSettings = self.cameraState.capturePhotoOutput.preparedPhotoSettingsArray.count >= self.cameraState.photoSettingsIndex
-                    ? self.cameraState.capturePhotoOutput.preparedPhotoSettingsArray[self.cameraState.photoSettingsIndex]
-                    : getPhotoSettings()
-                
-                self.cameraState.photoSettingsIndex += 1
-                print("Capturing!")
-                self.cameraState.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
-            }
-            .flatMap { _ in self.capture }
+        return Observable.create { observer in
+            print("Beginning to capture photo!")
+            self.flashSettings = flashSettings
+            
+            let flashTask = FlashSettingsTask(flashSettings: flashSettings)
+            self.cameraState.flashTaskStream.onNext(flashTask)
+            /*
+            isDoneDrawingFlash
+                .filter { $0 }
+            */
+            return Observable.combineLatest(self.cameraState.isAdjustingExposure, self.cameraState.isAdjustingWB, flashTask.isDone.observeOn(MainScheduler.instance)) { $0 || $1 || !$2 }
+                .observeOn(MainScheduler.instance)
+                .subscribeOn(MainScheduler.instance)
+                .filter { !$0 }
+                .take(1)
+                .map { _ in
+                    print("Captuing Photo with Flash Settings :: \(flashSettings.area) \(flashSettings.areas)")
+                    print("Getting Photo Settings!")
+                    let photoSettings = self.cameraState.capturePhotoOutput.preparedPhotoSettingsArray.count >= self.cameraState.photoSettingsIndex
+                        ? self.cameraState.capturePhotoOutput.preparedPhotoSettingsArray[self.cameraState.photoSettingsIndex]
+                        : getPhotoSettings()
+                    
+                    self.cameraState.photoSettingsIndex += 1
+                    print("Capturing!")
+                    self.cameraState.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
+                }
+                .flatMap { _ in self.capture }
+                .subscribe(onNext: { observer.onNext($0) }, onError: { observer.onError($0) }, onCompleted: { observer.onCompleted() })
+                //.disposed(by: self.disposeBag)
+        }
             /*
             .subscribe(onNext: { _ in
                 print("Captuing Photo with Flash Settings :: \(flashSettings.area) \(flashSettings.areas)")
@@ -82,7 +85,6 @@ extension Camera: AVCapturePhotoCaptureDelegate {
             fatalError("No Flash Setting Found! What flash setting was used?")
         }
     
-        
         capture.onNext((photo, flashSetting))
         capture.onCompleted()
     }

@@ -306,25 +306,19 @@ class SampleSkinToneViewModel {
         
         //let captureDispatchQueue = DispatchQueue.init(label: "CaptureDispatchQueue", qos: .userInitiated, attributes: [], autoreleaseFrequency: .inherit)
         DispatchQueue.global(qos: .userInitiated).async {
-            
-            Observable.from(self.screenFlashSettings)
-                //.observeOn(SerialDispatchQueueScheduler.init(qos: .userInitiated))
-                //.observeOn(MainScheduler.instance)
-                //.subscribeOn(MainScheduler.instance)
+            //.flatMap { _ in self.cameraState.preparePhotoSettings(numPhotos: self.screenFlashSettings.count) }
+
+            Observable.just(self.screenFlashSettings.count)
+                .flatMap { numberOfCaptures in self.cameraState.preparePhotoSettings(numPhotos: numberOfCaptures) }
+                .do(onCompleted: { print("COMPLETED CREATING PHOTO SETTINGS")})
+                .flatMap { _ in Observable.from(self.screenFlashSettings) }
+                .do(onCompleted: { print("COMPLETED CREATING ALL FLASH SETTINGS")})
+                .do(onNext: { flashSetting in print("Flash Setting \(flashSetting)") })
                 .map { flashSetting in (Camera(cameraState: self.cameraState), flashSetting) }
-                //.flatMap { _ in self.cameraState.preparePhotoSettings(numPhotos: self.screenFlashSettings.count) }
+                .do(onCompleted: { print("COMPLETED CREATING ALL CAMERAS")})
                 //.serialFlatMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
                 .serialMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
-                //.serialMap { $0.0.capturePhoto($0.1) }
-
-                /*
-                .flatMap { (camera, flashSetting) in
-                    //return DispatchQueue.global(qos: .userInitiated).sync {
-                    //return captureDispatchQueue.sync {
-                        return camera.capturePhoto(flashSetting)
-                   // }
-                }*/
- 
+                .do(onCompleted: { print("COMPLETED CAPTUREING ALL PHOTOS")})
                 .do(onCompleted: { self.events.onNext(.beginProcessing) })
                 .flatMap { photoData -> Observable<FaceCapture?> in
                     let (capturePhoto, flashSettings) = photoData

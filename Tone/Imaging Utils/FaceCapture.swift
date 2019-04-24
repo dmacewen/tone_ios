@@ -46,7 +46,12 @@ class FaceCapture {
     
     static func create(capturePhoto: AVCapturePhoto, orientation: CGImagePropertyOrientation, videoPreviewLayer: AVCaptureVideoPreviewLayer, flashSettings: FlashSettings = FlashSettings()) -> Observable<FaceCapture?> {
         
-        return FaceCapture.getFaceLandmarks(capturePhoto.pixelBuffer!, orientation)
+        guard let pixelBuffer = capturePhoto.pixelBuffer else {
+            print("Nil Pixel Buffer!")
+            fatalError()
+        }
+        
+        return FaceCapture.getFaceLandmarks(pixelBuffer, orientation)
             .map { faceLandmarks in
                 guard let foundFaceLandmarks = faceLandmarks else { return nil }
                 

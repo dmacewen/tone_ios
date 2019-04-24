@@ -12,7 +12,6 @@ import RxSwift
 extension ObservableType {
     //Takes a function that returns an observable
     //Waits for the observable of that function to complete, emitting the result, before processing the next
-    
     func serialMap<R>(_ transform: @escaping (E) -> Observable<R>) -> Observable<R> {
         print("New Serial Map!")
         let disposeBag = DisposeBag()
@@ -44,7 +43,7 @@ extension ObservableType {
             //.subscribeOn(MainScheduler.instance)
             .subscribe(onNext: { arg in
                 //NSLog("Start")
-                print("Starting Task on A!")
+                //print("Starting Task on A!")
                 captureDispatchQueue.async {
                     transform(arg)
                         //.observeOn(MainScheduler.instance)
@@ -52,11 +51,11 @@ extension ObservableType {
                         .toArray()
                         .subscribe(
                             onNext: { value in
-                                print("Done on A")
+                                //print("Done on A")
                                 callbackQueue[0].onNext(value)
                             }, onCompleted: {
                                 //NSLog("End")
-                                print("Completed on A")
+                                //print("Completed on A")
                                 taskQueue.removeFirst()
                                 let callback = callbackQueue.removeFirst()
                                 if !taskQueue.isEmpty {
@@ -73,18 +72,18 @@ extension ObservableType {
             //.subscribeOn(MainScheduler.instance)
             .subscribe(onNext: { arg in
                 //NSLog("Start")
-                print("Starting Task on B!")
+                //print("Starting Task on B!")
                 captureDispatchQueue.async {
                     transform(arg)
                         //.observeOn(MainScheduler.instance)
                         //.subscribeOn(MainScheduler.instance)
                         .toArray()
                         .subscribe( onNext: { value in
-                            print("Done on B")
+                            //print("Done on B")
                             callbackQueue[0].onNext(value)
                         }, onCompleted: {
                             //NSLog("End")
-                            print("Completed on B")
+                            //print("Completed on B")
                             taskQueue.removeFirst()
                             let callback = callbackQueue.removeFirst()
                             if !taskQueue.isEmpty {
@@ -118,6 +117,7 @@ extension ObservableType {
                 case .error(let error):
                     observer.on(.error(error))
                 case .completed:
+                    print("Received Completed Call in Serial Map")
                     completedCallback.subscribe(onCompleted: { observer.on(.completed) }).disposed(by: disposeBag)
                 }
             }
@@ -126,9 +126,8 @@ extension ObservableType {
         }
     }
  
- 
-    /*
-    func serialFlatMap<R>(_ transform: @escaping (E) -> Observable<R>) -> Observable<R> {
+   /*
+    func serialMap<R>(_ transform: @escaping (E) -> Observable<R>) -> Observable<R> {
         print("New Serial Map!")
         let disposeBag = DisposeBag()
         
