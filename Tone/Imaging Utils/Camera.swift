@@ -33,9 +33,7 @@ class Camera: NSObject {
             isDoneDrawingFlash
                 .filter { $0 }
             */
-            return Observable.combineLatest(self.cameraState.isAdjustingExposure, self.cameraState.isAdjustingWB, flashTask.isDone.observeOn(MainScheduler.instance)) { $0 || $1 || !$2 }
-                //.observeOn(MainScheduler.instance)
-                //.subscribeOn(MainScheduler.instance)
+            return Observable.combineLatest(self.cameraState.isAdjustingExposure, self.cameraState.isAdjustingWB, flashTask.isDone) { $0 || $1 || !$2 }
                 .filter { !$0 }
                 .take(1)
                 .flatMap { _ in self.cameraState.lockCameraSettings() }

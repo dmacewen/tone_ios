@@ -218,7 +218,7 @@
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="WwU-P4-kM2" userLabel="Setup">
                                         <rect key="frame" x="62.666666666666657" y="219.66666666666666" width="249.99999999999997" height="102.33333333333334"/>
                                         <subviews>
-                                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" animating="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="HxT-G1-vGI" userLabel="Is Setting Up">
+                                            <activityIndicatorView opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="HxT-G1-vGI" userLabel="Is Setting Up">
                                                 <rect key="frame" x="115" y="66.666666666666657" width="20" height="20"/>
                                             </activityIndicatorView>
                                             <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Preparing" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="DPH-ZT-p52" userLabel="Setting Up">
@@ -553,7 +553,7 @@
         <scene sceneID="AYJ-4V-1at">
             <objects>
                 <viewController storyboardIdentifier="flashViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="crQ-Ol-7xF" customClass="FlashViewController" customModule="Tone" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="u1n-Zw-gvF" userLabel="Root View">
+                    <view key="view" contentMode="scaleToFill" id="u1n-Zw-gvF" userLabel="Root View" customClass="UIImageView">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
@@ -592,7 +592,7 @@
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jyt-6o-gdc" userLabel="Uploading">
                                         <rect key="frame" x="62.666666666666657" y="220.00000000000003" width="249.99999999999997" height="101.33333333333334"/>
                                         <subviews>
-                                            <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="Vyu-WE-zHr" userLabel="Upload Progress">
+                                            <progressView opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="Vyu-WE-zHr" userLabel="Upload Progress">
                                                 <rect key="frame" x="31.000000000000014" y="75" width="187.66666666666669" height="2"/>
                                             </progressView>
                                             <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Uploading" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="6gc-Zr-ZUj" userLabel="Uploading Title">
@@ -666,7 +666,7 @@
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mnl-gE-XgW" userLabel="Processing">
                                         <rect key="frame" x="62.666666666666657" y="219.66666666666666" width="249.99999999999997" height="102.33333333333334"/>
                                         <subviews>
-                                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="Cgr-zy-7hq" userLabel="Is Processing">
+                                            <activityIndicatorView opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="Cgr-zy-7hq" userLabel="Is Processing">
                                                 <rect key="frame" x="115" y="66.666666666666657" width="20" height="20"/>
                                             </activityIndicatorView>
                                             <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Processing" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="3Ul-Y5-wfH" userLabel="Processing">

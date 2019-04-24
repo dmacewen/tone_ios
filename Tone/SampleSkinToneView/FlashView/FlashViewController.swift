@@ -28,8 +28,6 @@ class FlashViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
         
         DispatchQueue.global(qos: .userInteractive).async {
             self.viewModel!.flashSettingsTaskStream
-                //.observeOn(MainScheduler.instance)
-                //.subscribeOn(MainScheduler.instance)
                 .subscribe(onNext: { flashSettingTask in
                     print("Received Flash Task!")
                     flashSettingTask.isDone.onNext(false)
@@ -104,17 +102,15 @@ class FlashViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
                         self.FlashLayer.setNeedsDisplay()
                         print("Done Drawing!")
                         flashSettingTask.isDone.onNext(true)
+                        flashSettingTask.isDone.onCompleted()
                     }
-                
-                /*
-                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                 flashSettingTask.isDone.onNext(true)
-                 }
-                 */
-                
-                //flashSettingTask.isDone.onCompleted()
                 }).disposed(by: self.disposeBag)
         }
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        print("View Appeared!")
     }
     
     override func viewDidDisappear(_ animated: Bool) {

@@ -41,14 +41,16 @@ class RootNavigationViewController: UINavigationController {
                         _ = self?.popViewController(animated: animated)
                     }
                     
-                case .swap(let viewModel, let animated):
+                case .swap(let viewModel, _):
                     //Maybe just:
-                    //self?.viewControllers[self?.viewControllers.count - 1] = viewModel
+                    //self?.popViewController(animated: animated)
+                    guard let viewController = viewController(forViewModel: viewModel) else { return }
                     DispatchQueue.main.async {
-                        self?.popViewController(animated: animated)
-                        guard let viewController = viewController(forViewModel: viewModel) else { return }
-                        self?.pushViewController(viewController, animated: animated)
+                        self?.viewControllers[self!.viewControllers.count - 1] = viewController
                     }
+
+                        //self?.pushViewController(viewController, animated: animated)
+                    //}
                 }
             })
             .disposed(by: disposeBag)
