@@ -10,7 +10,17 @@ import Foundation
 import Alamofire
 import RxSwift
 
-func uploadImageData(imageData: [ImageData], progressBar: BehaviorSubject<Float>, user: User) -> Observable<Bool> {
+struct UploadStatus {
+    let doneUpload: Bool
+    let responseRecieved: Bool
+    
+    init(_ doneUpload: Bool, _ responseRecieved: Bool) {
+        self.doneUpload = doneUpload
+        self.responseRecieved = responseRecieved
+    }
+}
+
+func uploadImageData(imageData: [ImageData], progressBar: BehaviorSubject<Float>, user: User) -> Observable<UploadStatus> {
     
     let userid = user.email
     let url = "http://macewen.io/users/\(userid)/selfie"
@@ -66,12 +76,14 @@ func uploadImageData(imageData: [ImageData], progressBar: BehaviorSubject<Float>
                         } else {
                             print("Server Response not a valid UTF-8 sequence")
                         }
-                        observable.onNext(true)
+                        observable.onNext(UploadStatus.init(true, true))
                         observable.onCompleted()
                     }
                     upload.uploadProgress { progress in
                         progressBar.onNext(Float(progress.fractionCompleted))
-                        //self.taskProgress.setProgress(Float(progress.fractionCompleted), animated: true)
+                        if progress.isFinished {
+                            observable.onNext(UploadStatus(true, false))
+                        }
                     }
                 case .failure(let error):
                     print("Error in upload: \(error.localizedDescription)")
@@ -80,6 +92,7 @@ func uploadImageData(imageData: [ImageData], progressBar: BehaviorSubject<Float>
             }
         )
         
+        observable.onNext(UploadStatus.init(false, false))
         return Disposables.create()
     }
 }

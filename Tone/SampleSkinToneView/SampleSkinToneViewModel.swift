@@ -158,9 +158,6 @@ class SampleSkinToneViewModel {
                     if try! user.settings.showBrightnessLandmarks.value() { self.drawPointsStream.onNext(realtimeData.brightnessPoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)}) }
                     if try! user.settings.showFacingCameraLandmarks.value() { self.drawPointsStream.onNext(realtimeData.facingCameraPoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)}) }
                     
-                    self.userFaceState.onNext(.ok)
-                    return
-                    /*
                     let xImageValues = realtimeData.landmarks.map { $0.point.x }
                     let yImageValues = realtimeData.landmarks.map { $0.point.y }
                     
@@ -212,91 +209,11 @@ class SampleSkinToneViewModel {
                     }
         
                     self.userFaceState.onNext(.ok)
- */
                 }).disposed(by: self.disposeBag)
             
             self.events.onNext(.beginPreview)
 
         }
-        
-    /*
-        sampleState
-            .subscribe(onNext: {
-                switch $0 {
-                case .previewUser:
-                    self.cameraState.resetCameraState()
-                    self.video.resumeProcessing()
-                default:
-                    self.video.pauseProcessing()
-                }
-            }).disposed(by: disposeBag)
-        
-        sampleState
-            .subscribe(onCompleted: { print("Sample State Completed!!!") })
-            .disposed(by: disposeBag)
-        
-        sampleState
-            .observeOn(MainScheduler.instance)
-            .filter { if case .previewUser = $0 { return true } else { return false } }
-            .subscribe { _ in self.cameraState.unlockCameraSettings() }
-            .disposed(by: disposeBag)
-        /*
-        sampleState
-            .observeOn(MainScheduler.instance)
-            .filter { if case .referenceSample = $0 { return true } else { return false } }
-            .flatMap { _ in self.cameraState.preparePhotoSettings(numPhotos: self.screenFlashSettings.count + 1) }
-            .flatMap { _ in self.captureReferencePhoto() }
-            .subscribe { _ in
-                print("Took Reference Sample!")
-                self.sampleState.onNext(.sample)
-            }
-            .disposed(by: disposeBag)
- */
-        
-        sampleState
-            .observeOn(MainScheduler.instance)
-            .filter { .flash == $0 }
-            //.filter { if case .sample = $0 { return true } else { return false } }
-            //.flatMap { _ in self.cameraState.preparePhotoSettings(numPhotos: self.screenFlashSettings.count) }
-            .flatMap { _ in self.captureSamplePhotos() }
-            .subscribe(onNext: { photoData in
-                self.sampleState.onNext(.process)
-            }).disposed(by: disposeBag)
-        
-        sampleState
-            .observeOn(MainScheduler.instance)
-            .filter { if case .process = $0 { return true } else { return false } }
-            .flatMap { processState -> Observable<[ImageData]> in
-                if case .process(let photoData) = processState {
-                    return self.processSamplePhotos(photoData)
-                }
-                return self.processSamplePhotos([nil])
-            }
-            .subscribe(onNext: { imageData in
-                self.sampleState.onNext(.upload(images: imageData))
-            }).disposed(by: disposeBag)
-        
-        sampleState
-            .observeOn(MainScheduler.instance)
-            .filter { if case .upload = $0 { return true } else { return false } }
-            .subscribe(onNext: {
-                self.uploadProgress.onNext(0.0)
-                if case .upload(let imageData) = $0 {
-                    print("Uploading Images!")
-                    for photo in imageData {
-                        photo.setMetadata.prettyPrint()
-                    }
-                    
-                    uploadImageData(imageData: imageData, progressBar: self.uploadProgress, user: self.user)
-                        .subscribe(onNext: { _ in
-                            print("Done Uploading to \(user.email)")
-                            self.sampleState.onNext(.previewUser)
-                        }).disposed(by: self.disposeBag)
-                }
-            }).disposed(by: disposeBag)
-        
-        sampleState.onNext(.previewUser)
-        */
     }
     
     func takeSample() {
@@ -310,15 +227,10 @@ class SampleSkinToneViewModel {
 
             Observable.just(self.screenFlashSettings.count)
                 .flatMap { numberOfCaptures in self.cameraState.preparePhotoSettings(numPhotos: numberOfCaptures) }
-                .do(onCompleted: { print("COMPLETED CREATING PHOTO SETTINGS")})
                 .flatMap { _ in Observable.from(self.screenFlashSettings) }
-                .do(onCompleted: { print("COMPLETED CREATING ALL FLASH SETTINGS")})
-                .do(onNext: { flashSetting in print("Flash Setting \(flashSetting)") })
                 .map { flashSetting in (Camera(cameraState: self.cameraState), flashSetting) }
-                .do(onCompleted: { print("COMPLETED CREATING ALL CAMERAS")})
                 //.serialFlatMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
                 .serialMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
-                .do(onCompleted: { print("COMPLETED CAPTUREING ALL PHOTOS")})
                 .do(onCompleted: { self.events.onNext(.beginProcessing) })
                 .flatMap { photoData -> Observable<FaceCapture?> in
                     let (capturePhoto, flashSettings) = photoData
@@ -383,7 +295,7 @@ class SampleSkinToneViewModel {
                     }
                 }
                 .do(onCompleted: { self.events.onNext(.beginUpload) })
-                .flatMap { imageData -> Observable<Bool> in
+                .flatMap { imageData -> Observable<UploadStatus> in
                     self.uploadProgress.onNext(0.0)
                     print("Uploading Images!")
                     for photo in imageData {
@@ -392,9 +304,14 @@ class SampleSkinToneViewModel {
                     
                     return uploadImageData(imageData: imageData, progressBar: self.uploadProgress, user: self.user)
                 }
-                .subscribe(onNext: { didUpload in
-                    print("Done Uploading \(self.user.email) | Success :: \(didUpload)")
-                    self.events.onNext(.resumePreview)
+                .subscribe(onNext: { uploadStatus in
+                    if uploadStatus.doneUpload && !uploadStatus.responseRecieved {
+                        self.events.onNext(.beginProcessing)
+                    } else if uploadStatus.doneUpload && uploadStatus.responseRecieved {
+                        print("Done Uploading \(self.user.email)")
+                        self.events.onNext(.resumePreview)
+                        self.cameraState.resetCameraState()
+                    }
                 }).disposed(by: self.disposeBag)
         }
     }

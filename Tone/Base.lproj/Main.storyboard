@@ -49,7 +49,7 @@
                                                         <textInputTraits key="textInputTraits"/>
                                                     </textField>
                                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="VrN-rq-nYA">
-                                                        <rect key="frame" x="62.666666666666629" y="558.66666666666663" width="249.99999999999997" height="146"/>
+                                                        <rect key="frame" x="62.666666666666657" y="558.66666666666663" width="249.99999999999997" height="146"/>
                                                         <subviews>
                                                             <textField opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="251" verticalCompressionResistancePriority="751" contentHorizontalAlignment="center" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Username (Jenny / Halyna / Doug)" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="18Z-SD-snV">
                                                                 <rect key="frame" x="0.0" y="0.0" width="250" height="42"/>
@@ -468,12 +468,12 @@
                                                 <rect key="frame" x="0.0" y="609" width="375" height="203"/>
                                                 <subviews>
                                                     <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="75M-5o-mp9">
-                                                        <rect key="frame" x="174.66666666666663" y="0.0" width="26" height="30"/>
+                                                        <rect key="frame" x="174.66666666666666" y="0.0" width="26" height="30"/>
                                                         <fontDescription key="fontDescription" type="system" weight="thin" pointSize="20"/>
                                                         <textInputTraits key="textInputTraits"/>
                                                     </textField>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ne9-JC-XFj">
-                                                        <rect key="frame" x="132.66666666666663" y="78.666666666666629" width="110" height="46"/>
+                                                        <rect key="frame" x="132.66666666666666" y="78.666666666666629" width="110" height="46"/>
                                                         <color key="backgroundColor" red="0.29333442100000001" green="0.74110265980000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                                         <fontDescription key="fontDescription" type="system" weight="ultraLight" pointSize="26"/>
                                                         <color key="tintColor" cocoaTouchSystemColor="darkTextColor"/>
@@ -718,7 +718,7 @@
                         <viewLayoutGuide key="safeArea" id="Wh6-n9-hMs"/>
                     </view>
                     <connections>
-                        <outlet property="PreppingSpinner" destination="Cgr-zy-7hq" id="7MA-2w-pX6"/>
+                        <outlet property="processSpinner" destination="Cgr-zy-7hq" id="qtr-Xk-eWq"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Tei-jZ-pna" userLabel="First Responder" sceneMemberID="firstResponder"/>

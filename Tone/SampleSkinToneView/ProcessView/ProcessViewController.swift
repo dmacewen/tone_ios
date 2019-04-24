@@ -13,15 +13,11 @@ import RxSwift
 import RxCocoa
 
 class ProcessViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
-    //var viewModel: SampleSkinToneViewModel!
-    let disposeBag = DisposeBag()
-    
-    //@IBOutlet weak var ProgessLayer: UIView!
     @IBOutlet weak var processSpinner: UIActivityIndicatorView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Process Sample Skin Tone"
-        processSpinner.startAnimating()
+        self.processSpinner.startAnimating()
     }
 }
