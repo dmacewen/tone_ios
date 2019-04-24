@@ -12,7 +12,8 @@ import RxSwift
 extension ObservableType {
     //Takes a function that returns an observable
     //Waits for the observable of that function to complete, emitting the result, before processing the next
-    func serialMap<R>(_ transform: @escaping (E) -> PublishSubject<R>) -> Observable<R> {
+    
+    func serialMap<R>(_ transform: @escaping (E) -> Observable<R>) -> Observable<R> {
         print("New Serial Map!")
         let disposeBag = DisposeBag()
         
@@ -36,60 +37,76 @@ extension ObservableType {
             return callback
         }
         
+        let captureDispatchQueue = DispatchQueue.init(label: "CaptureDispatchQueue", qos: .userInitiated, attributes: [], autoreleaseFrequency: .inherit)
+
         workerA.asObservable()
-            .observeOn(MainScheduler.instance)
+            //.observeOn(MainScheduler.instance)
             //.subscribeOn(MainScheduler.instance)
             .subscribe(onNext: { arg in
                 //NSLog("Start")
-                transform(arg)
-                    .observeOn(MainScheduler.instance)
-                    //.subscribeOn(MainScheduler.instance)
-                    .toArray()
-                    .subscribe(
-                        onNext: { value in
-                            callbackQueue[0].onNext(value)
-                        }, onCompleted: {
-                            //NSLog("End")
-                            taskQueue.removeFirst()
-                            let callback = callbackQueue.removeFirst()
-                            if !taskQueue.isEmpty {
-                                workerB.onNext(taskQueue.first!)
-                            }
-                            callback.onCompleted()
-                    }).disposed(by:disposeBag)
+                print("Starting Task on A!")
+                captureDispatchQueue.async {
+                    transform(arg)
+                        //.observeOn(MainScheduler.instance)
+                        //.subscribeOn(MainScheduler.instance)
+                        .toArray()
+                        .subscribe(
+                            onNext: { value in
+                                print("Done on A")
+                                callbackQueue[0].onNext(value)
+                            }, onCompleted: {
+                                //NSLog("End")
+                                print("Completed on A")
+                                taskQueue.removeFirst()
+                                let callback = callbackQueue.removeFirst()
+                                if !taskQueue.isEmpty {
+                                    workerB.onNext(taskQueue.first!)
+                                }
+                                callback.onCompleted()
+                        }).disposed(by:disposeBag)
+                }
             })
             .disposed(by: disposeBag)
         
         workerB.asObservable()
-            .observeOn(MainScheduler.instance)
+            //.observeOn(MainScheduler.instance)
             //.subscribeOn(MainScheduler.instance)
             .subscribe(onNext: { arg in
                 //NSLog("Start")
-                transform(arg)
-                    .observeOn(MainScheduler.instance)
-                    //.subscribeOn(MainScheduler.instance)
-                    .toArray()
-                    .subscribe( onNext: { value in
-                        callbackQueue[0].onNext(value)
-                    }, onCompleted: {
-                        //NSLog("End")
-                        taskQueue.removeFirst()
-                        let callback = callbackQueue.removeFirst()
-                        if !taskQueue.isEmpty {
-                            workerA.onNext(taskQueue.first!)
-                        }
-                        callback.onCompleted()
-                    }).disposed(by:disposeBag)
+                print("Starting Task on B!")
+                captureDispatchQueue.async {
+                    transform(arg)
+                        //.observeOn(MainScheduler.instance)
+                        //.subscribeOn(MainScheduler.instance)
+                        .toArray()
+                        .subscribe( onNext: { value in
+                            print("Done on B")
+                            callbackQueue[0].onNext(value)
+                        }, onCompleted: {
+                            //NSLog("End")
+                            print("Completed on B")
+                            taskQueue.removeFirst()
+                            let callback = callbackQueue.removeFirst()
+                            if !taskQueue.isEmpty {
+                                workerA.onNext(taskQueue.first!)
+                            }
+                            callback.onCompleted()
+                        }).disposed(by:disposeBag)
+                }
             })
             .disposed(by: disposeBag)
         
         return Observable.create { observer in
             print("Serial Map -> new observable")
-            let subscription = self.subscribe { e in
+            let subscription = self
+                .observeOn(MainScheduler.instance)
+                .subscribeOn(MainScheduler.instance)
+                .subscribe { e in
                 switch e {
                 case .next(let value):
+                    print("Adding Task!")
                     addTask(task: value)
-                        .observeOn(MainScheduler.instance)
+                        //.observeOn(MainScheduler.instance)
                         //.subscribeOn(MainScheduler.instance)
                         .subscribe(onNext: { result in
                             observer.on(.next(result[0]))
@@ -108,6 +125,66 @@ extension ObservableType {
             return subscription
         }
     }
+ 
+ 
+    /*
+    func serialFlatMap<R>(_ transform: @escaping (E) -> Observable<R>) -> Observable<R> {
+        print("New Serial Map!")
+        let disposeBag = DisposeBag()
+        
+        let captureDispatchQueue = DispatchQueue.init(label: "CaptureDispatchQueue", qos: .userInitiated, attributes: [], autoreleaseFrequency: .inherit)
+
+        return Observable.create { observer in
+            print("Serial Flat Map -> new observable")
+            let subscription = self.subscribe { e in
+                switch e {
+                case .next(let value):
+                    captureDispatchQueue.async {
+                        transform(value)
+                            .single()
+                            .subscribe(onNext: { result in observer.on(.next(result)) })
+                            .disposed(by: disposeBag)
+                    }
+                case .error(let error):
+                    observer.on(.error(error))
+                case .completed:
+                    captureDispatchQueue.async {
+                        observer.on(.completed) }
+                    }
+                }
+            return subscription
+        }
+    }
+ */
+    /*
+    func serialDo<R>(_ transform: @escaping (E) -> Observable<R>) -> Observable<E> {
+        print("New Serial Do!")
+        let disposeBag = DisposeBag()
+        
+        let captureDispatchQueue = DispatchQueue.init(label: "CaptureDispatchQueue", qos: .userInitiated, attributes: [], autoreleaseFrequency: .inherit)
+        
+        return Observable.create { observer in
+            print("Serial Flat Map -> new observable")
+            let subscription = self.subscribe { e in
+                switch e {
+                case .next(let value):
+                    captureDispatchQueue.async {
+                        transform(value)
+                        .single()
+                        .subscribe(onNext: { result in observer.on(.next(result)) })
+                        .disposed(by: disposeBag)
+                    }
+                case .error(let error):
+                    observer.on(.error(error))
+                case .completed:
+                    captureDispatchQueue.async {
+                    observer.on(.completed) }
+                }
+            }
+            return subscription
+        }
+    }
+ */
     /*
     func serialMap2<R>(_ transform: @escaping (E) -> Observable<R>) -> Observable<R> {
         print("Setting Up SerialMap2!")

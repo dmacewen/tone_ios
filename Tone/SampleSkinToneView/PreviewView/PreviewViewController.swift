@@ -34,10 +34,8 @@ class PreviewViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
         videoPreviewLayer.frame = self.view.layer.bounds
         self.viewModel!.videoSize = videoPreviewLayer.bounds.size
         
-        DispatchQueue.main.async {
-            self.InteractionLayer.layer.insertSublayer(videoPreviewLayer, below: self.UILayer.layer)
-            self.viewModel!.videoPreviewLayerStream.onNext(videoPreviewLayer)
-        }
+        self.InteractionLayer.layer.insertSublayer(videoPreviewLayer, below: self.UILayer.layer)
+        self.viewModel!.videoPreviewLayerStream.onNext(videoPreviewLayer)
         
         //Provide Access to video preview layer for converting between coordinate systems.... there might be a better way?
         
@@ -57,10 +55,7 @@ class PreviewViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
             .distinctUntilChanged()
             .throttle(0.5)
             .drive(onNext:{ faceState in
-                DispatchQueue.main.async {
-                    self.userPrompt.text = faceState.prompt.message
-                }
-                //self.userTip.text = $0.prompt.tip
+                self.userPrompt.text = faceState.prompt.message
             })
             .disposed(by: self.disposeBag)
         
@@ -81,23 +76,17 @@ class PreviewViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
                     }
                 }
                 
-                DispatchQueue.main.async {
-                    self.OverlayLayer.image = img
-                }
+                self.OverlayLayer.image = img
             }).disposed(by: disposeBag)
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        DispatchQueue.main.async {
-            self.viewModel!.video.resumeProcessing()
-        }
+        self.viewModel!.video.resumeProcessing()
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        DispatchQueue.main.async {
-            self.viewModel!.video.pauseProcessing()
-        }
+        self.viewModel!.video.pauseProcessing()
     }
 }

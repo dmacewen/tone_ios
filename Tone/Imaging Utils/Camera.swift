@@ -21,7 +21,9 @@ class Camera: NSObject {
         self.cameraState = cameraState
     }
     
-    func capturePhoto(_ flashSettings: FlashSettings) -> PublishSubject<(AVCapturePhoto, FlashSettings)> {
+    //func capturePhoto(_ flashSettings: FlashSettings) -> PublishSubject<(AVCapturePhoto, FlashSettings)> {
+    func capturePhoto(_ flashSettings: FlashSettings) -> Observable<(AVCapturePhoto, FlashSettings)> {
+
         print("Beginning to capture photo!")
         self.flashSettings = flashSettings
         
@@ -31,11 +33,24 @@ class Camera: NSObject {
         isDoneDrawingFlash
             .filter { $0 }
         */
-        Observable.combineLatest(cameraState.isAdjustingExposure, cameraState.isAdjustingWB, flashTask.isDone.observeOn(MainScheduler.instance)) { $0 || $1 || !$2 }
+        return Observable.combineLatest(cameraState.isAdjustingExposure, cameraState.isAdjustingWB, flashTask.isDone.observeOn(MainScheduler.instance)) { $0 || $1 || !$2 }
             .observeOn(MainScheduler.instance)
-            //.subscribeOn(MainScheduler.instance)
+            .subscribeOn(MainScheduler.instance)
             .filter { !$0 }
             .take(1)
+            .map { _ in
+                print("Captuing Photo with Flash Settings :: \(flashSettings.area) \(flashSettings.areas)")
+                print("Getting Photo Settings!")
+                let photoSettings = self.cameraState.capturePhotoOutput.preparedPhotoSettingsArray.count >= self.cameraState.photoSettingsIndex
+                    ? self.cameraState.capturePhotoOutput.preparedPhotoSettingsArray[self.cameraState.photoSettingsIndex]
+                    : getPhotoSettings()
+                
+                self.cameraState.photoSettingsIndex += 1
+                print("Capturing!")
+                self.cameraState.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
+            }
+            .flatMap { _ in self.capture }
+            /*
             .subscribe(onNext: { _ in
                 print("Captuing Photo with Flash Settings :: \(flashSettings.area) \(flashSettings.areas)")
                 print("Getting Photo Settings!")
@@ -47,10 +62,12 @@ class Camera: NSObject {
                 print("Capturing!")
                 self.cameraState.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
             }).disposed(by: disposeBag)
+ */
         
         //return capture.take(1)
         //return capture//.take(1)
-        return capture
+        //print("Returning!")
+        //return capture
     }
 }
 

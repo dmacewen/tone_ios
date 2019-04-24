@@ -31,7 +31,6 @@ class RootNavigationViewController: UINavigationController {
                     }
                     
                 case .push(let viewModel, let animated):
-                    print("Current View Controller :: \(self!.viewControllers.last!)")
                     guard let viewController = viewController(forViewModel: viewModel) else { return }
                     DispatchQueue.main.async {
                         self?.pushViewController(viewController, animated: animated)
