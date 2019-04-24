@@ -34,10 +34,11 @@ class Camera: NSObject {
                 .filter { $0 }
             */
             return Observable.combineLatest(self.cameraState.isAdjustingExposure, self.cameraState.isAdjustingWB, flashTask.isDone.observeOn(MainScheduler.instance)) { $0 || $1 || !$2 }
-                .observeOn(MainScheduler.instance)
-                .subscribeOn(MainScheduler.instance)
+                //.observeOn(MainScheduler.instance)
+                //.subscribeOn(MainScheduler.instance)
                 .filter { !$0 }
                 .take(1)
+                .flatMap { _ in self.cameraState.lockCameraSettings() }
                 .map { _ in
                     print("Captuing Photo with Flash Settings :: \(flashSettings.area) \(flashSettings.areas)")
                     print("Getting Photo Settings!")
