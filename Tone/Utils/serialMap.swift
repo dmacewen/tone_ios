@@ -18,7 +18,7 @@ extension ObservableType {
         
         var taskQueue: [E] = []
         var callbackQueue: [PublishSubject<[R]>] = []
-        var completedCallback = PublishSubject<Bool>()
+        var completedCallback = BehaviorSubject<Bool>(value: false)
 
         let workerA = PublishSubject<E>()
         let workerB = PublishSubject<E>()
@@ -58,10 +58,14 @@ extension ObservableType {
                                 //print("Completed on A")
                                 taskQueue.removeFirst()
                                 let callback = callbackQueue.removeFirst()
+                                callback.onCompleted()
                                 if !taskQueue.isEmpty {
                                     workerB.onNext(taskQueue.first!)
+                                } else {
+                                    if try! completedCallback.value() {
+                                        completedCallback.onCompleted()
+                                    }
                                 }
-                                callback.onCompleted()
                         }).disposed(by:disposeBag)
                 }
             })
@@ -86,10 +90,14 @@ extension ObservableType {
                             //print("Completed on B")
                             taskQueue.removeFirst()
                             let callback = callbackQueue.removeFirst()
+                            callback.onCompleted()
                             if !taskQueue.isEmpty {
                                 workerA.onNext(taskQueue.first!)
+                            } else {
+                                if try! completedCallback.value() {
+                                    completedCallback.onCompleted()
+                                }
                             }
-                            callback.onCompleted()
                         }).disposed(by:disposeBag)
                 }
             })
@@ -118,7 +126,14 @@ extension ObservableType {
                     observer.on(.error(error))
                 case .completed:
                     print("Received Completed Call in Serial Map")
-                    completedCallback.subscribe(onCompleted: { observer.on(.completed) }).disposed(by: disposeBag)
+                    completedCallback.onNext(true)
+                    if taskQueue.isEmpty {
+                        observer.onCompleted()
+                    } else {
+                        completedCallback
+                            .subscribe(onCompleted: { observer.on(.completed) })
+                            .disposed(by: disposeBag)
+                    }
                 }
             }
             
