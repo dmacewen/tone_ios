@@ -13,7 +13,9 @@ class FlashUIImageView: UIImageView {
     let isInSuperview = BehaviorSubject<Bool>(value: false)
     
     override func didMoveToSuperview() {
-        DispatchQueue.main.async {
+        //Just... gah... annoyingly cant sync the screen rendering and the camera flash
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        //DispatchQueue.main.async {
             print("In Superview!")
             self.isInSuperview.onNext(true)
         }

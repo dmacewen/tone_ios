@@ -33,7 +33,17 @@ class Camera: NSObject {
             isDoneDrawingFlash
                 .filter { $0 }
             */
+            /*
+            flashTask.isDone
+                .subscribe(onNext: { isDone in
+                    print("IS DONE :: \(isDone)")
+                }).disposed(by: self.disposeBag)
+            */
             return Observable.combineLatest(self.cameraState.isAdjustingExposure, self.cameraState.isAdjustingWB, flashTask.isDone) { $0 || $1 || !$2 }
+                .distinctUntilChanged()
+                .do(onNext: { combined in
+                    print("(is Adjusting Ex) and (is Adjusting WB) and (is not Done) :: \(combined)")
+                })
                 .filter { !$0 }
                 .take(1)
                 .flatMap { _ in self.cameraState.lockCameraSettings() }

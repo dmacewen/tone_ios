@@ -36,10 +36,11 @@ class FlashViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
       
                 self.getUILayer(for: flashSettingTask.flashSettings, renderer: flashRenderer)
                     .flatMap { currentFlashLayer in self.addToParent(currentFlashLayer) }
-                    .flatMap { currentFlashLayer in currentFlashLayer.isInSuperview }
-                    .do(onNext: { isInSuperview in print("Is in superview??? :: \(isInSuperview)")})
-                    .filter { $0 }
-                    .take(1)
+                    //.flatMap { currentFlashLayer in currentFlashLayer.isInSuperview }
+                    //.do(onNext: { isInSuperview in print("Is in superview??? :: \(isInSuperview)")})
+                    //.filter { $0 }
+                    //.take(1)
+                    .single()
                     .subscribe(onNext: { isVisible in
                         flashSettingTask.isDone.onNext(true)
                         flashSettingTask.isDone.onCompleted()
@@ -48,26 +49,38 @@ class FlashViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
             }).disposed(by: self.disposeBag)
     }
     
-    private func getUILayer(for flashSetting: FlashSettings, renderer: UIGraphicsImageRenderer) -> Observable<FlashUIImageView> {
-        return Observable<FlashUIImageView>.create { observable in
+    private func getUILayer(for flashSetting: FlashSettings, renderer: UIGraphicsImageRenderer) -> Observable<UIImageView> {
+        return Observable<UIImageView>.create { observable in
             DispatchQueue.main.async {
                 let img = getFlashImage(flashSetting: flashSetting, size: self.FlashHostLayer.bounds.size, renderer: renderer)
-                observable.onNext(FlashUIImageView(image: img))
+                //observable.onNext(FlashUIImageView(image: img))
+                observable.onNext(UIImageView(image: img))
                 observable.onCompleted()
             }
             return Disposables.create()
         }
     }
     
-    private func addToParent(_ currentFlashLayer: FlashUIImageView) -> Observable<FlashUIImageView> {
+    private func addToParent(_ currentFlashLayer: UIImageView) -> Observable<UIImageView> {
         return Observable.create { observable in
             DispatchQueue.main.async {
+                CATransaction.begin()
+                CATransaction.setCompletionBlock( {
+                    //Really just gross.. having a hard time syncing the screen flash with the camera
+                    //DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        //currentFlashLayer.didMoveToSuperview()
+                        observable.onNext(currentFlashLayer)
+                        observable.onCompleted()
+                    //}
+                })
                 self.ParentLayer.layer.insertSublayer(currentFlashLayer.layer, above: self.ParentLayer.layer)
+                self.ParentLayer.layer.setNeedsDisplay()
+                //currentFlashLayer.layer.setNeedsDisplay()
+                CATransaction.commit()
+                CATransaction.flush()
                 
                 //self.ParentLayer.bringSubviewToFront(currentFlashLayer)
-                currentFlashLayer.didMoveToSuperview()
-                observable.onNext(currentFlashLayer)
-                observable.onCompleted()
+                
             }
             return Disposables.create()
         }

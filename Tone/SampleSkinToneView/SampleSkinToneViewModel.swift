@@ -212,12 +212,12 @@ class SampleSkinToneViewModel {
         events.onNext(.beginFlash)
         
         DispatchQueue.global(qos: .userInitiated).async {
+        //DispatchQueue.main.async {
             Observable.just(self.screenFlashSettings.count)
                 .flatMap { numberOfCaptures in self.cameraState.preparePhotoSettings(numPhotos: numberOfCaptures) }
                 .flatMap { _ in Observable.from(self.screenFlashSettings) }
                 .map { flashSetting in (Camera(cameraState: self.cameraState), flashSetting) }
-                //.serialFlatMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
-                .serialMap { (camera, flashSetting) in camera.capturePhoto(flashSetting) }
+                .concatMap {(camera, flashSetting) in camera.capturePhoto(flashSetting) }
                 .do(onCompleted: { self.events.onNext(.beginProcessing) })
                 .flatMap { photoData -> Observable<FaceCapture?> in
                     let (capturePhoto, flashSettings) = photoData
