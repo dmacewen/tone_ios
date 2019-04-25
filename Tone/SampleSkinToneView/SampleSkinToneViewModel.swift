@@ -112,7 +112,7 @@ class SampleSkinToneViewModel {
     var disposeBag = DisposeBag()
         
     //Shared Between Flash and Draw Overlay
-    let renderer = UIGraphicsImageRenderer(size: UIScreen.main.bounds.size)
+    let videoOverlayRenderer = UIGraphicsImageRenderer(size: UIScreen.main.bounds.size)
     let context = CIContext() //For processing PNGs
     
     init(user: User) {

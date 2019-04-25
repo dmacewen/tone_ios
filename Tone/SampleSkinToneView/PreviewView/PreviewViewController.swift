@@ -67,7 +67,7 @@ class PreviewViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
                     let size = 5
                     let halfSize = 2 //floor size/2
                     
-                    let img = self.viewModel!.renderer.image { ctx in
+                    let img = self.viewModel!.videoOverlayRenderer.image { ctx in
                         for point in points {
                             ctx.cgContext.setFillColor(point.color)
                             ctx.cgContext.fill(CGRect(x: Int(point.x) - halfSize, y: Int(point.y) - halfSize, width: size, height: size))

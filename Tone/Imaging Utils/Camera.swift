@@ -50,26 +50,7 @@ class Camera: NSObject {
                 }
                 .flatMap { _ in self.capture }
                 .subscribe(onNext: { observer.onNext($0) }, onError: { observer.onError($0) }, onCompleted: { observer.onCompleted() })
-                //.disposed(by: self.disposeBag)
         }
-            /*
-            .subscribe(onNext: { _ in
-                print("Captuing Photo with Flash Settings :: \(flashSettings.area) \(flashSettings.areas)")
-                print("Getting Photo Settings!")
-                let photoSettings = self.cameraState.capturePhotoOutput.preparedPhotoSettingsArray.count >= self.cameraState.photoSettingsIndex
-                    ? self.cameraState.capturePhotoOutput.preparedPhotoSettingsArray[self.cameraState.photoSettingsIndex]
-                    : getPhotoSettings()
-                
-                self.cameraState.photoSettingsIndex += 1
-                print("Capturing!")
-                self.cameraState.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
-            }).disposed(by: disposeBag)
- */
-        
-        //return capture.take(1)
-        //return capture//.take(1)
-        //print("Returning!")
-        //return capture
     }
 }
 
