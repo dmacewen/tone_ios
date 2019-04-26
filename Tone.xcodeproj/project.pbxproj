@@ -51,8 +51,6 @@
 		86F1BCA6218D0F1F00A18457 /* RxSwiftExt.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 869FB6D0218D0DDC00B257D2 /* RxSwiftExt.framework */; };
 		86F1BCA8218D0F2700A18457 /* RxSwiftExt.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 869FB6D0218D0DDC00B257D2 /* RxSwiftExt.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		86F1BCAA218D219E00A18457 /* serialMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F1BCA9218D219E00A18457 /* serialMap.swift */; };
-		86F2BC73227147C7009B5D6F /* FlashUIImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F2BC72227147C7009B5D6F /* FlashUIImageView.swift */; };
-		86F2BC7522714AE2009B5D6F /* FlashUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F2BC7422714AE2009B5D6F /* FlashUtils.swift */; };
 		86F9E729225E9C5C00E6E52E /* CGExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F9E728225E9C5C00E6E52E /* CGExtensions.swift */; };
 		86F9E72B225EA1E200E6E52E /* Metadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F9E72A225EA1E200E6E52E /* Metadata.swift */; };
 /* End PBXBuildFile section */
@@ -142,8 +140,6 @@
 		86F138DC21877F89004C6092 /* RxAlamofire.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxAlamofire.framework; path = Carthage/Build/iOS/RxAlamofire.framework; sourceTree = "<group>"; };
 		86F138DD21877F89004C6092 /* Carthage */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Carthage; sourceTree = "<group>"; };
 		86F1BCA9218D219E00A18457 /* serialMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = serialMap.swift; sourceTree = "<group>"; };
-		86F2BC72227147C7009B5D6F /* FlashUIImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlashUIImageView.swift; sourceTree = "<group>"; };
-		86F2BC7422714AE2009B5D6F /* FlashUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlashUtils.swift; sourceTree = "<group>"; };
 		86F9E728225E9C5C00E6E52E /* CGExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGExtensions.swift; sourceTree = "<group>"; };
 		86F9E72A225EA1E200E6E52E /* Metadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Metadata.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -260,8 +256,6 @@
 			isa = PBXGroup;
 			children = (
 				86AC4537226E61B600324067 /* FlashViewController.swift */,
-				86F2BC72227147C7009B5D6F /* FlashUIImageView.swift */,
-				86F2BC7422714AE2009B5D6F /* FlashUtils.swift */,
 			);
 			path = FlashView;
 			sourceTree = "<group>";
@@ -552,7 +546,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				86AC4538226E61B600324067 /* FlashViewController.swift in Sources */,
-				86F2BC7522714AE2009B5D6F /* FlashUtils.swift in Sources */,
 				8685ADA5219CA7B900B66F90 /* Camera.swift in Sources */,
 				86F9E72B225EA1E200E6E52E /* Metadata.swift in Sources */,
 				86213F9B2187F56600A622FB /* KeyboardHeightObservable.swift in Sources */,
@@ -579,7 +572,6 @@
 				86AC4534226E61A000324067 /* PreviewViewController.swift in Sources */,
 				8694A0812187BF4300615BE3 /* RootNavigationViewController.swift in Sources */,
 				86F9E729225E9C5C00E6E52E /* CGExtensions.swift in Sources */,
-				86F2BC73227147C7009B5D6F /* FlashUIImageView.swift in Sources */,
 				866C405F21911709007BABDE /* ImageDataUpload.swift in Sources */,
 				8619C7A922684CEE003E4054 /* SettingsViewController.swift in Sources */,
 				86F138AA218768C2004C6092 /* AppDelegate.swift in Sources */,

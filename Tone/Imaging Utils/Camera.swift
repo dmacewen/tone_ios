@@ -51,7 +51,6 @@ class Camera: NSObject {
                     print("Capturing!")
                     DispatchQueue.main.async {
                     //DispatchQueue.global(qos: .background).async {
-
                         print("Called Capture")
                         self.cameraState.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
                     }

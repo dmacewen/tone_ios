@@ -13,10 +13,8 @@ import RxSwift
 import RxCocoa
 
 class FlashViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
-    //var viewModel: SampleSkinToneViewModel!
     let disposeBag = DisposeBag()
 
-    @IBOutlet weak var ParentLayer: UIView!
     @IBOutlet weak var FlashHostLayer: UIView!
     
     override func viewDidLoad() {
@@ -79,8 +77,8 @@ class FlashViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
                     
                     //}
                 })
-                self.ParentLayer.layer.insertSublayer(currentFlashLayer.layer, above: self.ParentLayer.layer)
-                self.ParentLayer.layer.setNeedsDisplay()
+                self.FlashHostLayer.layer.insertSublayer(currentFlashLayer.layer, above: self.FlashHostLayer.layer)
+                self.FlashHostLayer.layer.setNeedsDisplay()
                 //currentFlashLayer.layer.setNeedsDisplay()
                 CATransaction.commit()
                 CATransaction.flush()

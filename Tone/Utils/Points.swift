@@ -122,14 +122,29 @@ struct NormalizedImagePoint {
     var y: CGFloat { return self.point.y }
     
     init(_ point: CGPoint) {
+        /* Landmarks can return points larger than 1.0. Display seems to handle them fine
+        precondition(point.x < 1.0)
+        precondition(point.y < 1.0)
+         */
+        
         self.point = point
     }
     
     init(x: CGFloat, y: CGFloat) {
+        /* Landmarks can return points larger than 1.0. Display seems to handle them fine
+        precondition(x < 1.0)
+        precondition(y < 1.0)
+         */
+        
         self.point = CGPoint.init(x: x, y: y)
     }
     
     init(x: Int, y: Int) {
+        /* Landmarks can return points larger than 1.0. Display seems to handle them fine
+        precondition(x < 1)
+        precondition(y < 1)
+        */
+        
         self.point = CGPoint.init(x: x, y: y)
     }
 }
