@@ -100,6 +100,7 @@ class SampleSkinToneViewModel {
     let drawPointsStream = BehaviorSubject<[DisplayPoint]>(value: [])
     
     let flashSettingsTaskStream = PublishSubject<FlashSettingsTask>()
+    let didFlashViewLoad = PublishSubject<Bool>()
     
     let events = BehaviorSubject<Event>(value: .beginSetUp)
     
@@ -209,13 +210,15 @@ class SampleSkinToneViewModel {
     func takeSample() {
         print("TAKING SAMPLE, BEGINNING FLASH!")
 
-        events.onNext(.beginFlash)
         
-        DispatchQueue.global(qos: .userInitiated).async {
+        //DispatchQueue.global(qos: .userInitiated).async {
         //DispatchQueue.main.async {
-            Observable.just(self.screenFlashSettings.count)
-                .flatMap { numberOfCaptures in self.cameraState.preparePhotoSettings(numPhotos: numberOfCaptures) }
+            self.didFlashViewLoad
+                .observeOn(MainScheduler.instance)
+                .filter { $0 }
+                .flatMap { _ in self.cameraState.preparePhotoSettings(numPhotos: self.screenFlashSettings.count) }
                 .flatMap { _ in Observable.from(self.screenFlashSettings) }
+                .take(self.screenFlashSettings.count) //Need to issue that completed somewhere
                 .map { flashSetting in (Camera(cameraState: self.cameraState), flashSetting) }
                 .concatMap {(camera, flashSetting) in camera.capturePhoto(flashSetting) }
                 .do(onCompleted: { self.events.onNext(.beginProcessing) })
@@ -300,7 +303,9 @@ class SampleSkinToneViewModel {
                         self.cameraState.resetCameraState()
                     }
                 }).disposed(by: self.disposeBag)
-        }
+        //}
+        
+        events.onNext(.beginFlash)
     }
     
     func cancel() {

@@ -44,6 +44,7 @@ class FlashViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         print("View Appeared!")
+        self.viewModel!.didFlashViewLoad.onNext(true)
     }
     
     override func viewDidDisappear(_ animated: Bool) {
