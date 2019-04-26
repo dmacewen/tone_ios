@@ -61,43 +61,45 @@ class FaceCapture {
 
     private static func getFaceLandmarks(_ pixelBuffer: CVPixelBuffer, _ orientation: CGImagePropertyOrientation) -> Observable<VNFaceLandmarks2D?> {
         return Observable<VNFaceLandmarks2D?>.create { observable in
-            var requestHandlerOptions: [VNImageOption: AnyObject] = [:]
-            
-            let cameraIntrinsicData = CMGetAttachment(pixelBuffer, key: kCMSampleBufferAttachmentKey_CameraIntrinsicMatrix, attachmentModeOut: nil)
-            if cameraIntrinsicData != nil {
-                requestHandlerOptions[VNImageOption.cameraIntrinsics] = cameraIntrinsicData
-            }
-            
-            let faceLandmarksRequest = VNDetectFaceLandmarksRequest(completionHandler: { (request, error) in
-                if error != nil {
-                    print("FaceLandmarks error: \(String(describing: error)).")
+            DispatchQueue.global(qos: .userInitiated).async {
+                var requestHandlerOptions: [VNImageOption: AnyObject] = [:]
+                
+                let cameraIntrinsicData = CMGetAttachment(pixelBuffer, key: kCMSampleBufferAttachmentKey_CameraIntrinsicMatrix, attachmentModeOut: nil)
+                if cameraIntrinsicData != nil {
+                    requestHandlerOptions[VNImageOption.cameraIntrinsics] = cameraIntrinsicData
                 }
                 
-                guard let landmarksRequest = request as? VNDetectFaceLandmarksRequest,
-                    let results = landmarksRequest.results as? [VNFaceObservation] else {
+                let faceLandmarksRequest = VNDetectFaceLandmarksRequest(completionHandler: { (request, error) in
+                    if error != nil {
+                        print("FaceLandmarks error: \(String(describing: error)).")
+                    }
+                    
+                    guard let landmarksRequest = request as? VNDetectFaceLandmarksRequest,
+                        let results = landmarksRequest.results as? [VNFaceObservation] else {
+                            observable.onNext(nil)
+                            observable.onCompleted()
+                            return
+                    }
+                    
+                    if results.count > 0 {
+                        observable.onNext(results[0].landmarks)
+                        observable.onCompleted()
+                    } else {
                         observable.onNext(nil)
                         observable.onCompleted()
-                        return
-                }
+                    }
+                })
                 
-                if results.count > 0 {
-                    observable.onNext(results[0].landmarks)
-                    observable.onCompleted()
-                } else {
-                    observable.onNext(nil)
-                    observable.onCompleted()
+                let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer,
+                                                                orientation: orientation,
+                                                                options: requestHandlerOptions)
+                
+                do {
+                    try imageRequestHandler.perform([faceLandmarksRequest])
+                } catch let error as NSError {
+                    NSLog("Failed to perform FaceLandmarkRequest: %@", error)
+                    fatalError("Error Landmarking")
                 }
-            })
-            
-            let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer,
-                                                            orientation: orientation,
-                                                            options: requestHandlerOptions)
-            
-            do {
-                try imageRequestHandler.perform([faceLandmarksRequest])
-            } catch let error as NSError {
-                NSLog("Failed to perform FaceLandmarkRequest: %@", error)
-                fatalError("Error Landmarking")
             }
             
             return Disposables.create()
