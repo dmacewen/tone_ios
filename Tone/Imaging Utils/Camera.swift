@@ -29,18 +29,11 @@ class Camera: NSObject {
             
             let flashTask = FlashSettingsTask(flashSettings: flashSettings)
             self.cameraState.flashTaskStream.onNext(flashTask)
-            /*
-            isDoneDrawingFlash
-                .filter { $0 }
-            */
-            /*
-            flashTask.isDone
-                .subscribe(onNext: { isDone in
-                    print("IS DONE :: \(isDone)")
-                }).disposed(by: self.disposeBag)
-            */
+            
+            print("Waiting for flash to set")
             return Observable.combineLatest(self.cameraState.isAdjustingExposure, self.cameraState.isAdjustingWB, flashTask.isDone) { $0 || $1 || !$2 }
                 .distinctUntilChanged()
+                .do(onNext: { isDoneSetting in print("Is Done Setting Flash :: \(isDoneSetting)") })
                 .do(onNext: { combined in
                     print("(is Adjusting Ex) and (is Adjusting WB) and (is not Done) :: \(combined)")
                 })
@@ -56,7 +49,12 @@ class Camera: NSObject {
                     
                     self.cameraState.photoSettingsIndex += 1
                     print("Capturing!")
-                    self.cameraState.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
+                    //DispatchQueue.main.async {
+                    DispatchQueue.global(qos: .background).async {
+
+                        print("Called Capture")
+                        self.cameraState.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
+                    }
                 }
                 .flatMap { _ in self.capture }
                 .subscribe(onNext: { observer.onNext($0) }, onError: { observer.onError($0) }, onCompleted: { observer.onCompleted() })

@@ -5,7 +5,7 @@
 //  Created by Doug MacEwen on 4/24/19.
 //  Copyright © 2019 Doug MacEwen. All rights reserved.
 //
-
+/*
 import Foundation
 import AVFoundation
 import UIKit
@@ -70,3 +70,4 @@ func getFlashImage(flashSetting: FlashSettings, size: CGSize, renderer: UIGraphi
     
     return img
 }
+*/

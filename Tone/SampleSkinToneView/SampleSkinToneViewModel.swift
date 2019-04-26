@@ -241,7 +241,7 @@ class SampleSkinToneViewModel {
                     let scaledFaceBBs = faceBBs.map { $0.scaleToSize(size: faceCropSize, imgSize: faceCaptures[0].imageSize.size) }
                     let encapsulatingMaxX = scaledFaceBBs.map { $0.maxX }.max()!
                     let faceCropWidth = encapsulatingMaxX
-                    
+
                     return faceCaptures.map { faceCapture -> ImageData in
                         let leftEyeCrop = faceCapture.getLeftEyeImageBB()!.scaleToSize(size: leftEyeCropSize, imgSize: faceCapture.imageSize.size)
                         let rightEyeCrop = faceCapture.getRightEyeImageBB()!.scaleToSize(size: rightEyeCropSize, imgSize: faceCapture.imageSize.size)

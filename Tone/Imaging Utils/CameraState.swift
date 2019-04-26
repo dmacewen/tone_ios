@@ -191,40 +191,47 @@ class CameraState {
         return Observable.combineLatest(isAdjustingExposure, isAdjustingWB) { $0 || $1 }
             .filter { !$0 }
             .take(1)
-            .flatMap { _ in self.lockWhiteBalance() }
+            .observeOn(MainScheduler.instance)
             .flatMap { _ in self.lockExposure() }
+            .flatMap { _ in self.lockWhiteBalance() }
             .flatMap { _ in self.lockExposureBias() }
             .do(onNext: { _ in self.areSettingsLocked = true })
     }
     
     private func lockWhiteBalance() -> Observable<Bool> {
         return Observable.create { observable in
-            self.captureDevice.setWhiteBalanceModeLocked(with: AVCaptureDevice.currentWhiteBalanceGains, completionHandler: { time in
-                observable.onNext(true)
-                observable.onCompleted()
-            })
+            DispatchQueue.main.async {
+                self.captureDevice.setWhiteBalanceModeLocked(with: AVCaptureDevice.currentWhiteBalanceGains, completionHandler: { time in
+                    observable.onNext(true)
+                    observable.onCompleted()
+                })
+            }
             return Disposables.create()
         }
     }
     
     private func lockExposure() -> Observable<Bool> {
         return Observable.create { observable in
-            self.captureDevice.exposureMode = AVCaptureDevice.ExposureMode.custom
-            let (targetExposureDuration, targetISO) = self.calculateTargetExposure()
-            self.captureDevice.setExposureModeCustom(duration: targetExposureDuration, iso: targetISO, completionHandler: { time in
-                observable.onNext(true)
-                observable.onCompleted()
-            })
+            DispatchQueue.main.async {
+                self.captureDevice.exposureMode = AVCaptureDevice.ExposureMode.custom
+                let (targetExposureDuration, targetISO) = self.calculateTargetExposure()
+                self.captureDevice.setExposureModeCustom(duration: targetExposureDuration, iso: targetISO, completionHandler: { time in
+                    observable.onNext(true)
+                    observable.onCompleted()
+                })
+            }
             return Disposables.create()
         }
     }
     
     private func lockExposureBias() -> Observable<Bool> {
         return Observable.create { observable in
-            self.captureDevice.setExposureTargetBias(-0.5, completionHandler: { time in
-                observable.onNext(true)
-                observable.onCompleted()
-            })
+            DispatchQueue.main.async {
+                self.captureDevice.setExposureTargetBias(-0.5, completionHandler: { time in
+                    observable.onNext(true)
+                    observable.onCompleted()
+                })
+            }
             return Disposables.create()
         }
     }

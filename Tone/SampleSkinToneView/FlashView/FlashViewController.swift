@@ -30,62 +30,17 @@ class FlashViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
         UIScreen.main.brightness = CGFloat(1.0)
         
         self.viewModel!.flashSettingsTaskStream
-            .subscribe(onNext: { flashSettingTask in
-                
-                print("Received Flash Task!")
-      
-                self.getUILayer(for: flashSettingTask.flashSettings, renderer: flashRenderer)
-                    .flatMap { currentFlashLayer in self.addToParent(currentFlashLayer) }
-                    //.flatMap { currentFlashLayer in currentFlashLayer.isInSuperview }
-                    //.do(onNext: { isInSuperview in print("Is in superview??? :: \(isInSuperview)")})
-                    //.filter { $0 }
-                    //.take(1)
-                    .single()
-                    .subscribe(onNext: { isVisible in
-                        flashSettingTask.isDone.onNext(true)
-                        flashSettingTask.isDone.onCompleted()
-                }).disposed(by: self.disposeBag)
-                
-            }).disposed(by: self.disposeBag)
+            .do(onNext: { _ in print("Recieved Flash Setting Task in Flash Controller!")})
+            .flatMap { flashSettingTask in self.getUILayer(for: flashSettingTask, renderer: flashRenderer) }
+            .flatMap { (flashSettingTask, currentFlashLayer) in self.addToParent(flashSettingTask, currentFlashLayer) }
+            .do(onNext: { _ in print("After adding to parent... maybe its the single thats mesing things up")})
+            .subscribe(onNext: { (flashSettingTask, currentFlashLayer) in
+                flashSettingTask.isDone.onNext(true)
+                flashSettingTask.isDone.onCompleted()
+        }).disposed(by: self.disposeBag)
     }
-    
-    private func getUILayer(for flashSetting: FlashSettings, renderer: UIGraphicsImageRenderer) -> Observable<UIImageView> {
-        return Observable<UIImageView>.create { observable in
-            DispatchQueue.main.async {
-                let img = getFlashImage(flashSetting: flashSetting, size: self.FlashHostLayer.bounds.size, renderer: renderer)
-                //observable.onNext(FlashUIImageView(image: img))
-                observable.onNext(UIImageView(image: img))
-                observable.onCompleted()
-            }
-            return Disposables.create()
-        }
-    }
-    
-    private func addToParent(_ currentFlashLayer: UIImageView) -> Observable<UIImageView> {
-        return Observable.create { observable in
-            DispatchQueue.main.async {
-                CATransaction.begin()
-                CATransaction.setCompletionBlock( {
-                    //Really just gross.. having a hard time syncing the screen flash with the camera
-                    //DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        //currentFlashLayer.didMoveToSuperview()
-                        observable.onNext(currentFlashLayer)
-                        observable.onCompleted()
-                    //}
-                })
-                self.ParentLayer.layer.insertSublayer(currentFlashLayer.layer, above: self.ParentLayer.layer)
-                self.ParentLayer.layer.setNeedsDisplay()
-                //currentFlashLayer.layer.setNeedsDisplay()
-                CATransaction.commit()
-                CATransaction.flush()
-                
-                //self.ParentLayer.bringSubviewToFront(currentFlashLayer)
-                
-            }
-            return Disposables.create()
-        }
-    }
-    
+    //.observeOn(ConcurrentDispatchQueueScheduler.init(qos: .userInitiated))
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         print("View Appeared!")
@@ -94,5 +49,103 @@ class FlashViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         UIScreen.main.brightness = self.viewModel!.originalScreenBrightness
+    }
+    
+    private func getUILayer(for flashSettingTask: FlashSettingsTask, renderer: UIGraphicsImageRenderer) -> Observable<(FlashSettingsTask, UIImageView)> {
+        return Observable<(FlashSettingsTask, UIImageView)>.create { observable in
+            DispatchQueue.main.async {
+                let img = self.getFlashImage(flashSetting: flashSettingTask.flashSettings, renderer: renderer)
+                observable.onNext((flashSettingTask, UIImageView(image: img)))
+                observable.onCompleted()
+            }
+            return Disposables.create()
+        }
+    }
+    
+    private func addToParent(_ flashSettingTask: FlashSettingsTask, _ currentFlashLayer: UIImageView) -> Observable<(FlashSettingsTask, UIImageView)> {
+        return Observable.create { observable in
+            DispatchQueue.main.async {
+                CATransaction.begin()
+                CATransaction.setCompletionBlock( {
+                    //Really just gross.. having a hard time syncing the screen flash with the camera
+                    //DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        //currentFlashLayer.didMoveToSuperview()
+                    //DispatchQueue.global(qos: .userInitiated).async {
+                        print("Done adding to parent")
+                        observable.onNext((flashSettingTask, currentFlashLayer))
+                        observable.onCompleted()
+                    //}
+                    
+                    //}
+                })
+                self.ParentLayer.layer.insertSublayer(currentFlashLayer.layer, above: self.ParentLayer.layer)
+                self.ParentLayer.layer.setNeedsDisplay()
+                //currentFlashLayer.layer.setNeedsDisplay()
+                CATransaction.commit()
+                CATransaction.flush()
+            }
+            return Disposables.create()
+        }
+    }
+    
+    private func getFlashImage(flashSetting: FlashSettings, renderer: UIGraphicsImageRenderer) -> UIImage {
+        let area = flashSetting.area
+        let areas = flashSetting.areas
+        
+        let checkerSize = 10
+        let width = self.FlashHostLayer.bounds.size.width
+        let columns = Int((width / CGFloat(checkerSize)))
+        
+        let height = self.FlashHostLayer.bounds.size.height
+        let rows = Int((height / CGFloat(checkerSize)))
+        
+        //let renderer = UIGraphicsImageRenderer(size: CGSize(width: (columns * checkerSize), height: (rows * checkerSize)))
+        //Replace with Checkerboard CIFilter?
+        let img = renderer.image { ctx in
+            ctx.cgContext.setFillColor(UIColor.white.cgColor)
+            ctx.cgContext.fill(CGRect(x: 0, y: 0, width: width, height: height))
+            
+            ctx.cgContext.setFillColor(UIColor.black.cgColor)
+            
+            let whiteRatio = area
+            let blackRatio = areas - area
+            let numLocations = rows * columns
+            
+            var location = 0
+            var white = whiteRatio
+            var black = blackRatio
+            
+            while location <= numLocations {
+                
+                if white > 0 {
+                    location += 1
+                    white -= 1
+                }
+                
+                if black > 0 {
+                    let row = location / columns
+                    let column = location % columns
+                    ctx.cgContext.fill(CGRect(x: (column * checkerSize), y: (row * checkerSize), width: checkerSize, height: checkerSize))
+                    
+                    location += 1
+                    black -= 1
+                }
+                
+                if (white == 0) && (black == 0) {
+                    white = whiteRatio
+                    black = blackRatio
+                }
+            }
+            //Draw Focus Point where we want users to look
+            let focusPointY = Int(round(height * 0.2)) - 3
+            let focusPointX = Int(width * 0.5) - 3
+            ctx.cgContext.setFillColor(UIColor.blue.cgColor)
+            ctx.cgContext.fill(CGRect(x: focusPointX, y: focusPointY, width: 7, height: 7))
+            
+            ctx.cgContext.setFillColor(UIColor.black.cgColor)
+            print("Done Rendering Flash \(flashSetting.area) / \(flashSetting.areas)")
+        }
+        
+        return img
     }
 }
