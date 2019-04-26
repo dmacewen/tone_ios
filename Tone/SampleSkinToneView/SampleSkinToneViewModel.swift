@@ -149,7 +149,7 @@ class SampleSkinToneViewModel {
                     if try! user.settings.showBalanceLandmarks.value() { self.drawPointsStream.onNext(realtimeData.balancePoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)}) }
                     if try! user.settings.showBrightnessLandmarks.value() { self.drawPointsStream.onNext(realtimeData.brightnessPoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)}) }
                     if try! user.settings.showFacingCameraLandmarks.value() { self.drawPointsStream.onNext(realtimeData.facingCameraPoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)}) }
-                    /*
+
                     let xImageValues = realtimeData.landmarks.map { $0.point.x }
                     let yImageValues = realtimeData.landmarks.map { $0.point.y }
                     
@@ -199,7 +199,7 @@ class SampleSkinToneViewModel {
                         self.userFaceState.onNext(.faceGradient)
                         return
                     }
-*/
+
                     self.userFaceState.onNext(.ok)
                 }).disposed(by: self.disposeBag)
             

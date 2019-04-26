@@ -107,7 +107,7 @@ class RootNavigationViewModel {
                 case .resumePreview:
                     print("SETTING VIEW: Resume Preview")
                     self!.navigationStackActions.onNext(.set(viewModels: savedNavigationStack, animated: false))
-                    self!.navigationStackActions.onNext(.push(viewModel: sampleSkinToneViewModel, animated: false))
+                    //self!.navigationStackActions.onNext(.push(viewModel: sampleSkinToneViewModel, animated: false))
                 }
             }).disposed(by: disposeBag)
         

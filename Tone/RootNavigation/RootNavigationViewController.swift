@@ -48,9 +48,6 @@ class RootNavigationViewController: UINavigationController {
                     DispatchQueue.main.async {
                         self?.viewControllers[self!.viewControllers.count - 1] = viewController
                     }
-
-                        //self?.pushViewController(viewController, animated: animated)
-                    //}
                 }
             })
             .disposed(by: disposeBag)
