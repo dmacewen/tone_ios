@@ -61,6 +61,7 @@ class FaceCapture {
 
     private static func getFaceLandmarks(_ pixelBuffer: CVPixelBuffer, _ orientation: CGImagePropertyOrientation) -> Observable<VNFaceLandmarks2D?> {
         return Observable<VNFaceLandmarks2D?>.create { observable in
+            DispatchQueue.global(qos: .userInitiated).async {
             var requestHandlerOptions: [VNImageOption: AnyObject] = [:]
             
             let cameraIntrinsicData = CMGetAttachment(pixelBuffer, key: kCMSampleBufferAttachmentKey_CameraIntrinsicMatrix, attachmentModeOut: nil)
@@ -75,17 +76,25 @@ class FaceCapture {
                 
                 guard let landmarksRequest = request as? VNDetectFaceLandmarksRequest,
                     let results = landmarksRequest.results as? [VNFaceObservation] else {
+                        //DispatchQueue.main.async {
                         observable.onNext(nil)
                         observable.onCompleted()
+                        //}
                         return
                 }
                 
                 if results.count > 0 {
+                    print("FOUND LANDMARKS!")
+                    //DispatchQueue.main.async {
+                        print("RETURNING THOSE LANDMARKES")
                     observable.onNext(results[0].landmarks)
                     observable.onCompleted()
+                    //}
                 } else {
+                    //DispatchQueue.main.async {
                     observable.onNext(nil)
                     observable.onCompleted()
+                    //}
                 }
             })
             
@@ -98,6 +107,7 @@ class FaceCapture {
             } catch let error as NSError {
                 NSLog("Failed to perform FaceLandmarkRequest: %@", error)
                 fatalError("Error Landmarking")
+            }
             }
             
             return Disposables.create()

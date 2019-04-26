@@ -557,45 +557,22 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="JVR-NZ-Lpg" userLabel="Parent Layer">
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="JVR-NZ-Lpg" userLabel="Flash Host Layer">
                                 <rect key="frame" x="0.0" y="44" width="375" height="734"/>
-                                <subviews>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qTD-pR-lDm" userLabel="Flash Host Layer">
-                                        <rect key="frame" x="0.0" y="0.0" width="375" height="734"/>
-                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    </view>
-                                </subviews>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="y27-qh-4VI" userLabel="Flash Layer">
-                                <rect key="frame" x="0.0" y="44" width="375" height="734"/>
-                            </imageView>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="y27-qh-4VI" firstAttribute="trailing" secondItem="BEL-XI-IzM" secondAttribute="trailing" id="C2i-AM-WGw"/>
-                            <constraint firstItem="qTD-pR-lDm" firstAttribute="bottom" secondItem="BEL-XI-IzM" secondAttribute="bottom" id="Eo1-np-gPr"/>
-                            <constraint firstItem="qTD-pR-lDm" firstAttribute="leading" secondItem="BEL-XI-IzM" secondAttribute="leading" id="Fkr-Bb-zz3"/>
-                            <constraint firstItem="y27-qh-4VI" firstAttribute="top" secondItem="BEL-XI-IzM" secondAttribute="top" id="J6W-gC-73D"/>
-                            <constraint firstItem="y27-qh-4VI" firstAttribute="bottom" secondItem="BEL-XI-IzM" secondAttribute="bottom" id="Www-NM-tPg"/>
-                            <constraint firstItem="y27-qh-4VI" firstAttribute="leading" secondItem="BEL-XI-IzM" secondAttribute="leading" id="Z3N-wL-K1d"/>
                             <constraint firstItem="JVR-NZ-Lpg" firstAttribute="top" secondItem="BEL-XI-IzM" secondAttribute="top" id="ZoB-aw-zF7"/>
-                            <constraint firstItem="qTD-pR-lDm" firstAttribute="top" secondItem="BEL-XI-IzM" secondAttribute="top" id="jFe-6J-xPw"/>
                             <constraint firstItem="JVR-NZ-Lpg" firstAttribute="leading" secondItem="BEL-XI-IzM" secondAttribute="leading" id="o5N-kQ-sHw"/>
                             <constraint firstItem="JVR-NZ-Lpg" firstAttribute="trailing" secondItem="BEL-XI-IzM" secondAttribute="trailing" id="ouZ-qY-hsE"/>
-                            <constraint firstItem="qTD-pR-lDm" firstAttribute="trailing" secondItem="BEL-XI-IzM" secondAttribute="trailing" id="sk1-SN-Z0v"/>
                             <constraint firstItem="JVR-NZ-Lpg" firstAttribute="bottom" secondItem="BEL-XI-IzM" secondAttribute="bottom" id="u1n-j9-zNf"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="BEL-XI-IzM"/>
-                        <variation key="default">
-                            <mask key="subviews">
-                                <exclude reference="y27-qh-4VI"/>
-                            </mask>
-                        </variation>
                     </view>
                     <connections>
-                        <outlet property="FlashHostLayer" destination="qTD-pR-lDm" id="2Zp-e7-Vaw"/>
-                        <outlet property="ParentLayer" destination="JVR-NZ-Lpg" id="BQI-J3-Dys"/>
+                        <outlet property="FlashHostLayer" destination="JVR-NZ-Lpg" id="haY-Zi-EIO"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="5Ac-9l-v1w" userLabel="First Responder" sceneMemberID="firstResponder"/>

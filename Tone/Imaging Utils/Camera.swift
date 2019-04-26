@@ -28,18 +28,11 @@ class Camera: NSObject {
             self.flashSettings = flashSettings
             
             let flashTask = FlashSettingsTask(flashSettings: flashSettings)
-            self.cameraState.flashTaskStream.onNext(flashTask)
-            /*
-            isDoneDrawingFlash
-                .filter { $0 }
-            */
-            /*
-            flashTask.isDone
-                .subscribe(onNext: { isDone in
-                    print("IS DONE :: \(isDone)")
-                }).disposed(by: self.disposeBag)
-            */
-            return Observable.combineLatest(self.cameraState.isAdjustingExposure, self.cameraState.isAdjustingWB, flashTask.isDone) { $0 || $1 || !$2 }
+            DispatchQueue.main.async {
+                self.cameraState.flashTaskStream.onNext(flashTask)
+            }
+            DispatchQueue.global(qos: .userInitiated).async {
+            let disposed = Observable.combineLatest(self.cameraState.isAdjustingExposure, self.cameraState.isAdjustingWB, flashTask.isDone) { $0 || $1 || !$2 }
                 .distinctUntilChanged()
                 .do(onNext: { combined in
                     print("(is Adjusting Ex) and (is Adjusting WB) and (is not Done) :: \(combined)")
@@ -59,7 +52,11 @@ class Camera: NSObject {
                     self.cameraState.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
                 }
                 .flatMap { _ in self.capture }
-                .subscribe(onNext: { observer.onNext($0) }, onError: { observer.onError($0) }, onCompleted: { observer.onCompleted() })
+                .subscribe(onNext: { capture in DispatchQueue.global().async { observer.onNext(capture) } }, onError: { observer.onError($0) }, onCompleted: { DispatchQueue.global().async { observer.onCompleted() } })
+            }
+            //return Disposables.create([disposed])
+            return Disposables.create()
+
         }
     }
 }

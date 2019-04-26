@@ -61,7 +61,7 @@ class PreviewViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
             .bind(to: self.takeSampleButton.rx.isEnabled)
             .disposed(by: disposeBag)
         
-        DispatchQueue.global(qos: .userInteractive).async {
+        //DispatchQueue.global(qos: .userInteractive).async {
             self.viewModel!.drawPointsStream
                 .subscribe(onNext: { points in
                     let size = 5
@@ -77,7 +77,7 @@ class PreviewViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
                         self.OverlayLayer.image = img
                     }
                 }).disposed(by: self.disposeBag)
-        }
+        //}
     }
     
     override func viewDidAppear(_ animated: Bool) {

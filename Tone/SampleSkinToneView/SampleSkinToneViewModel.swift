@@ -100,6 +100,7 @@ class SampleSkinToneViewModel {
     let drawPointsStream = BehaviorSubject<[DisplayPoint]>(value: [])
     
     let flashSettingsTaskStream = PublishSubject<FlashSettingsTask>()
+    let didFlashViewModelAppear = BehaviorSubject<Bool>(value: false)
     
     let events = BehaviorSubject<Event>(value: .beginSetUp)
     
@@ -123,7 +124,7 @@ class SampleSkinToneViewModel {
         }).disposed(by: disposeBag)
         
         //Asynchronously load the video stream. Lets the views load first
-        DispatchQueue.global(qos: .userInitiated).async {
+        //DispatchQueue.global(qos: .userInitiated).async {
             self.video.realtimeDataStream
                 .subscribe(onNext: { realtimeDataOptional in
 
@@ -203,7 +204,7 @@ class SampleSkinToneViewModel {
             
             self.events.onNext(.beginPreview)
 
-        }
+        //}
     }
     
     func takeSample() {
@@ -211,96 +212,105 @@ class SampleSkinToneViewModel {
 
         events.onNext(.beginFlash)
         
-        DispatchQueue.global(qos: .userInitiated).async {
+        //DispatchQueue.global(qos: .userInitiated).async {
+        //DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        //DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.5) {
         //DispatchQueue.main.async {
-            Observable.just(self.screenFlashSettings.count)
-                .flatMap { numberOfCaptures in self.cameraState.preparePhotoSettings(numPhotos: numberOfCaptures) }
-                .flatMap { _ in Observable.from(self.screenFlashSettings) }
-                .map { flashSetting in (Camera(cameraState: self.cameraState), flashSetting) }
-                .concatMap {(camera, flashSetting) in camera.capturePhoto(flashSetting) }
-                .do(onCompleted: { self.events.onNext(.beginProcessing) })
-                .flatMap { photoData -> Observable<FaceCapture?> in
-                    let (capturePhoto, flashSettings) = photoData
-                    return FaceCapture.create(capturePhoto: capturePhoto, orientation: self.cameraState.exifOrientationForCurrentDeviceOrientation(), videoPreviewLayer: try! self.videoPreviewLayerStream.value()!, flashSettings: flashSettings)
-                }
-                .map { $0! } //TODO: Better error handling... All faces must have landmarks
-                .toArray()
-                .map { faceCaptures -> [ImageData] in
-                    //Find Face Crops and Left, Right Eye Crops
-                    //let leftEyeBBs = faceCaptures.map { bufferBoundingBox($0.getLeftEyeImageBB()!, imgSize: $0.imageSize) }
-                    let leftEyeSizes = faceCaptures.map { $0.getLeftEyeImageSize()! }
-                    let leftEyeCropSize = self.getEncapsulatingSize(sizes: leftEyeSizes) * 1.5 //Add a buffer of 25%
-                    
-                    let rightEyeSizes = faceCaptures.map { $0.getRightEyeImageSize()! }
-                    let rightEyeCropSize = self.getEncapsulatingSize(sizes: rightEyeSizes) * 1.5 //Add a buffer of 25%
-                    
-                    //We ultimately want a crop that crops from the right jaw to the left, top of the image to the bottom of the chin (want hair in image)
-                    let faceSizes = faceCaptures.map { $0.getAllPointsSize()! }
-                    let faceCropSize = self.getEncapsulatingSize(sizes: faceSizes) * 1.10
-                    let faceBBs = faceCaptures.map { $0.getAllPointsBB()! }
-                    let scaledFaceBBs = faceBBs.map { $0.scaleToSize(size: faceCropSize, imgSize: faceCaptures[0].imageSize.size) }
-                    let encapsulatingMaxX = scaledFaceBBs.map { $0.maxX }.max()!
-                    let faceCropWidth = encapsulatingMaxX
-                    
-                    return faceCaptures.map { faceCapture -> ImageData in
-                        let leftEyeCrop = faceCapture.getLeftEyeImageBB()!.scaleToSize(size: leftEyeCropSize, imgSize: faceCapture.imageSize.size)
-                        let rightEyeCrop = faceCapture.getRightEyeImageBB()!.scaleToSize(size: rightEyeCropSize, imgSize: faceCapture.imageSize.size)
-                        var faceCrop = faceCapture.getAllPointsBB()!.scaleToSize(size: faceCropSize, imgSize: faceCapture.imageSize.size)
-                        //faceCrop = CGRect.init(x: faceCrop.minX, y: 0, width: faceCrop.width, height: faceCropHeight)
-                        faceCrop = CGRect.init(x: 0, y: faceCrop.minY, width: faceCropWidth, height: faceCrop.height)
-                        
-                        let faceImage = faceCapture.getImage()
-                        let leftEyeImage = Image.from(image: faceImage, crop: leftEyeCrop, landmarks: Array(faceImage.landmarks[8...15]))
-                        let rightEyeImage = Image.from(image: faceImage, crop: rightEyeCrop, landmarks: Array(faceImage.landmarks[16...23]))
-                        faceImage.crop(faceCrop)
-                        leftEyeImage.updateParentBB(parentCrop: faceCrop)
-                        rightEyeImage.updateParentBB(parentCrop: faceCrop)
-                        
-                        let longSide = [faceCrop.width, faceCrop.height].max()!
-                        let scaleRatio = 1080 / longSide
-                        faceImage.scale(scaleRatio) //Dont forget to scale BB to eventually let you crop after scaling!
-                        //leftEyeImage.updateParentBB(parentScale: scaleRatio)
-                        //rightEyeImage.updateParentBB(parentScale: scaleRatio)
-                        
-                        faceImage.rotate()
-                        leftEyeImage.rotate()
-                        rightEyeImage.rotate()
-                        
-                        leftEyeImage.updateParentBB(rotate: true)
-                        rightEyeImage.updateParentBB(rotate: true)
-                        
-                        let pngDataFace = self.context.pngRepresentation(of: faceImage.image, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])!
-                        
-                        let pngDataLeftEye = self.context.pngRepresentation(of: leftEyeImage.image, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])!
-                        
-                        let pngDataRightEye = self.context.pngRepresentation(of: rightEyeImage.image, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])!
-                        
-                        let setMetadata = SetMetadata.getFrom(faceImage: faceImage, leftEyeImage: leftEyeImage, rightEyeImage: rightEyeImage, flashSettings: faceCapture.flashSettings, cameraState: self.cameraState, rawMetadata: faceCapture.rawMetadata)
-                        
-                        return ImageData(faceData: pngDataFace, leftEyeData: pngDataLeftEye, rightEyeData: pngDataRightEye, setMetadata: setMetadata)
-                        //DONT FORGET TO TRANSFER EYE WIDTH AS WELL!
+        didFlashViewModelAppear
+            .filter { $0 }
+                //Observable.just(self.screenFlashSettings.count)
+                    .flatMap { _ in self.cameraState.preparePhotoSettings(numPhotos: self.screenFlashSettings.count) }
+                    .flatMap { _ in Observable.from(self.screenFlashSettings) }
+                    .map { flashSetting in (Camera(cameraState: self.cameraState), flashSetting) }
+                    .concatMap {(camera, flashSetting) in camera.capturePhoto(flashSetting) }
+                    .do(onCompleted: { self.events.onNext(.beginProcessing) })
+                    .flatMap { photoData -> Observable<FaceCapture?> in
+                        let (capturePhoto, flashSettings) = photoData
+                        print("Creating face capture!")
+                        return FaceCapture.create(capturePhoto: capturePhoto, orientation: self.cameraState.exifOrientationForCurrentDeviceOrientation(), videoPreviewLayer: try! self.videoPreviewLayerStream.value()!, flashSettings: flashSettings)
                     }
-                }
-                .do(onCompleted: { self.events.onNext(.beginUpload) })
-                .flatMap { imageData -> Observable<UploadStatus> in
-                    self.uploadProgress.onNext(0.0)
-                    print("Uploading Images!")
-                    for photo in imageData {
-                        photo.setMetadata.prettyPrint()
+                    .map { $0! } //TODO: Better error handling... All faces must have landmarks
+                    .take(self.screenFlashSettings.count)
+                    .toArray()
+                    .map { faceCaptures -> [ImageData] in
+                        
+                        //let faceCaptures = faceCapturesOpt.map { $0!}
+                        
+                        //Find Face Crops and Left, Right Eye Crops
+                        //let leftEyeBBs = faceCaptures.map { bufferBoundingBox($0.getLeftEyeImageBB()!, imgSize: $0.imageSize) }
+                        let leftEyeSizes = faceCaptures.map { $0.getLeftEyeImageSize()! }
+                        let leftEyeCropSize = self.getEncapsulatingSize(sizes: leftEyeSizes) * 1.5 //Add a buffer of 25%
+                        
+                        let rightEyeSizes = faceCaptures.map { $0.getRightEyeImageSize()! }
+                        let rightEyeCropSize = self.getEncapsulatingSize(sizes: rightEyeSizes) * 1.5 //Add a buffer of 25%
+                        
+                        //We ultimately want a crop that crops from the right jaw to the left, top of the image to the bottom of the chin (want hair in image)
+                        let faceSizes = faceCaptures.map { $0.getAllPointsSize()! }
+                        let faceCropSize = self.getEncapsulatingSize(sizes: faceSizes) * 1.10
+                        let faceBBs = faceCaptures.map { $0.getAllPointsBB()! }
+                        let scaledFaceBBs = faceBBs.map { $0.scaleToSize(size: faceCropSize, imgSize: faceCaptures[0].imageSize.size) }
+                        let encapsulatingMaxX = scaledFaceBBs.map { $0.maxX }.max()!
+                        let faceCropWidth = encapsulatingMaxX
+                        
+                        return faceCaptures.map { faceCapture -> ImageData in
+                            let leftEyeCrop = faceCapture.getLeftEyeImageBB()!.scaleToSize(size: leftEyeCropSize, imgSize: faceCapture.imageSize.size)
+                            let rightEyeCrop = faceCapture.getRightEyeImageBB()!.scaleToSize(size: rightEyeCropSize, imgSize: faceCapture.imageSize.size)
+                            var faceCrop = faceCapture.getAllPointsBB()!.scaleToSize(size: faceCropSize, imgSize: faceCapture.imageSize.size)
+                            //faceCrop = CGRect.init(x: faceCrop.minX, y: 0, width: faceCrop.width, height: faceCropHeight)
+                            faceCrop = CGRect.init(x: 0, y: faceCrop.minY, width: faceCropWidth, height: faceCrop.height)
+                            
+                            let faceImage = faceCapture.getImage()
+                            let leftEyeImage = Image.from(image: faceImage, crop: leftEyeCrop, landmarks: Array(faceImage.landmarks[8...15]))
+                            let rightEyeImage = Image.from(image: faceImage, crop: rightEyeCrop, landmarks: Array(faceImage.landmarks[16...23]))
+                            faceImage.crop(faceCrop)
+                            leftEyeImage.updateParentBB(parentCrop: faceCrop)
+                            rightEyeImage.updateParentBB(parentCrop: faceCrop)
+                            
+                            let longSide = [faceCrop.width, faceCrop.height].max()!
+                            let scaleRatio = 1080 / longSide
+                            faceImage.scale(scaleRatio) //Dont forget to scale BB to eventually let you crop after scaling!
+                            //leftEyeImage.updateParentBB(parentScale: scaleRatio)
+                            //rightEyeImage.updateParentBB(parentScale: scaleRatio)
+                            
+                            faceImage.rotate()
+                            leftEyeImage.rotate()
+                            rightEyeImage.rotate()
+                            
+                            leftEyeImage.updateParentBB(rotate: true)
+                            rightEyeImage.updateParentBB(rotate: true)
+                            
+                            let pngDataFace = self.context.pngRepresentation(of: faceImage.image, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])!
+                            
+                            let pngDataLeftEye = self.context.pngRepresentation(of: leftEyeImage.image, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])!
+                            
+                            let pngDataRightEye = self.context.pngRepresentation(of: rightEyeImage.image, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])!
+                            
+                            let setMetadata = SetMetadata.getFrom(faceImage: faceImage, leftEyeImage: leftEyeImage, rightEyeImage: rightEyeImage, flashSettings: faceCapture.flashSettings, cameraState: self.cameraState, rawMetadata: faceCapture.rawMetadata)
+                            
+                            return ImageData(faceData: pngDataFace, leftEyeData: pngDataLeftEye, rightEyeData: pngDataRightEye, setMetadata: setMetadata)
+                            //DONT FORGET TO TRANSFER EYE WIDTH AS WELL!
+                        }
                     }
-                    
-                    return uploadImageData(imageData: imageData, progressBar: self.uploadProgress, user: self.user)
-                }
-                .subscribe(onNext: { uploadStatus in
-                    if uploadStatus.doneUpload && !uploadStatus.responseRecieved {
-                        self.events.onNext(.beginProcessing)
-                    } else if uploadStatus.doneUpload && uploadStatus.responseRecieved {
-                        print("Done Uploading \(self.user.email)")
-                        self.events.onNext(.resumePreview)
-                        self.cameraState.resetCameraState()
+                    .do(onCompleted: { DispatchQueue.main.async { self.events.onNext(.beginUpload) } } )
+                    .flatMap { imageData -> Observable<UploadStatus> in
+                        self.uploadProgress.onNext(0.0)
+                        print("Uploading Images!")
+                        for photo in imageData {
+                            photo.setMetadata.prettyPrint()
+                        }
+                        
+                        return uploadImageData(imageData: imageData, progressBar: self.uploadProgress, user: self.user)
                     }
-                }).disposed(by: self.disposeBag)
-        }
+                    .subscribe(onNext: { uploadStatus in
+                        if uploadStatus.doneUpload && !uploadStatus.responseRecieved {
+                            self.events.onNext(.beginProcessing)
+                        } else if uploadStatus.doneUpload && uploadStatus.responseRecieved {
+                            print("Done Uploading \(self.user.email)")
+                            self.events.onNext(.resumePreview)
+                            self.cameraState.resetCameraState()
+                        }
+                    }).disposed(by: self.disposeBag)
+        //}
     }
     
     func cancel() {
