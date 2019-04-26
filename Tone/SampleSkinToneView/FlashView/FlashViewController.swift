@@ -28,6 +28,8 @@ class FlashViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
         UIScreen.main.brightness = CGFloat(1.0)
         
         self.viewModel!.flashSettingsTaskStream
+            //.observeOn(MainScheduler.instance)
+            .observeOn(MainScheduler.asyncInstance)
             .do(onNext: { _ in print("Recieved Flash Setting Task in Flash Controller!")})
             .flatMap { flashSettingTask in self.getUILayer(for: flashSettingTask, renderer: flashRenderer) }
             .flatMap { (flashSettingTask, currentFlashLayer) in self.addToParent(flashSettingTask, currentFlashLayer) }
@@ -52,37 +54,30 @@ class FlashViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
     
     private func getUILayer(for flashSettingTask: FlashSettingsTask, renderer: UIGraphicsImageRenderer) -> Observable<(FlashSettingsTask, UIImageView)> {
         return Observable<(FlashSettingsTask, UIImageView)>.create { observable in
-            DispatchQueue.main.async {
+            //DispatchQueue.main.async {
                 let img = self.getFlashImage(flashSetting: flashSettingTask.flashSettings, renderer: renderer)
                 observable.onNext((flashSettingTask, UIImageView(image: img)))
                 observable.onCompleted()
-            }
+            //}
             return Disposables.create()
         }
     }
     
     private func addToParent(_ flashSettingTask: FlashSettingsTask, _ currentFlashLayer: UIImageView) -> Observable<(FlashSettingsTask, UIImageView)> {
         return Observable.create { observable in
-            DispatchQueue.main.async {
-                CATransaction.begin()
-                CATransaction.setCompletionBlock( {
-                    //Really just gross.. having a hard time syncing the screen flash with the camera
-                    //DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        //currentFlashLayer.didMoveToSuperview()
-                    //DispatchQueue.global(qos: .userInitiated).async {
-                        print("Done adding to parent")
-                        observable.onNext((flashSettingTask, currentFlashLayer))
-                        observable.onCompleted()
-                    //}
-                    
-                    //}
-                })
-                self.FlashHostLayer.layer.insertSublayer(currentFlashLayer.layer, above: self.FlashHostLayer.layer)
-                self.FlashHostLayer.layer.setNeedsDisplay()
-                //currentFlashLayer.layer.setNeedsDisplay()
-                CATransaction.commit()
-                CATransaction.flush()
+            self.FlashHostLayer.layer.insertSublayer(currentFlashLayer.layer, above: self.FlashHostLayer.layer)
+            currentFlashLayer.setNeedsDisplay()
+            self.FlashHostLayer.layer.setNeedsDisplay()
+            CATransaction.flush()
+
+            //Really just gross.. having a hard time syncing the screen flash with the camera
+            //DispatchQueue.main.async {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                print("Done adding to parent")
+                observable.onNext((flashSettingTask, currentFlashLayer))
+                observable.onCompleted()
             }
+
             return Disposables.create()
         }
     }

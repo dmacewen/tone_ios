@@ -195,6 +195,7 @@ class CameraState {
             .flatMap { _ in self.lockExposure() }
             .flatMap { _ in self.lockWhiteBalance() }
             .flatMap { _ in self.lockExposureBias() }
+            //.flatMap { _ in self.delay() }
             .do(onNext: { _ in self.areSettingsLocked = true })
     }
     
@@ -231,6 +232,16 @@ class CameraState {
                     observable.onNext(true)
                     observable.onCompleted()
                 })
+            }
+            return Disposables.create()
+        }
+    }
+    
+    private func delay() -> Observable<Bool> {
+        return Observable.create { observer in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                observer.onNext(true)
+                observer.onCompleted()
             }
             return Disposables.create()
         }

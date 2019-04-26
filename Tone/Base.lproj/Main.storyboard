@@ -157,7 +157,7 @@
                                     <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 </state>
                             </button>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Welcome!" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="gYo-Cc-MvD">
+                            <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Welcome!" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="gYo-Cc-MvD">
                                 <rect key="frame" x="37.666666666666657" y="124.66666666666669" width="300" height="41"/>
                                 <nil key="textColor"/>
                                 <fontDescription key="fontDescription" type="system" weight="ultraLight" pointSize="34"/>
@@ -221,7 +221,7 @@
                                             <activityIndicatorView opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="HxT-G1-vGI" userLabel="Is Setting Up">
                                                 <rect key="frame" x="115" y="66.666666666666657" width="20" height="20"/>
                                             </activityIndicatorView>
-                                            <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Preparing" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="DPH-ZT-p52" userLabel="Setting Up">
+                                            <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Setting Up" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="DPH-ZT-p52" userLabel="Setting Up">
                                                 <rect key="frame" x="13.666666666666657" y="18" width="139" height="32"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="139" id="PtG-fR-RbA"/>
@@ -240,7 +240,7 @@
                                             <constraint firstAttribute="height" constant="102.33" id="voT-ZM-RYi"/>
                                         </constraints>
                                     </view>
-                                    <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Hold Tight..." minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="oSn-Xp-ukO">
+                                    <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="One Moment" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="oSn-Xp-ukO">
                                         <rect key="frame" x="37.666666666666657" y="124.66666666666669" width="300" height="41"/>
                                         <nil key="textColor"/>
                                         <fontDescription key="fontDescription" type="system" weight="ultraLight" pointSize="34"/>
