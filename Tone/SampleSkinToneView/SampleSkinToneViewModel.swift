@@ -202,7 +202,6 @@ class SampleSkinToneViewModel {
 
                     self.userFaceState.onNext(.ok)
                 }).disposed(by: self.disposeBag)
-            
             self.events.onNext(.beginPreview)
 
         }
