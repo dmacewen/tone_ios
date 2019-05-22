@@ -147,6 +147,12 @@ struct NormalizedImagePoint {
         
         self.point = CGPoint.init(x: x, y: y)
     }
+    
+    func toImagePoint(size: ImageSize) -> ImagePoint {
+        let x = self.x * size.width
+        let y = self.y * size.height
+        return ImagePoint.init(x: x, y: y)
+    }
 }
 
 struct ImageSize {

@@ -220,8 +220,8 @@ class SampleSkinToneViewModel {
             .concatMap {(camera, flashSetting) in camera.capturePhoto(flashSetting) }
             .do(onCompleted: { self.events.onNext(.beginProcessing) })
             .flatMap { photoData -> Observable<FaceCapture?> in
-                let (capturePhoto, flashSettings) = photoData
-                return FaceCapture.create(capturePhoto: capturePhoto, orientation: self.cameraState.exifOrientationForCurrentDeviceOrientation(), videoPreviewLayer: try! self.videoPreviewLayerStream.value()!, flashSettings: flashSettings)
+                let (capturePhoto, flashSettings, exposurePoint) = photoData
+                return FaceCapture.create(capturePhoto: capturePhoto, orientation: self.cameraState.exifOrientationForCurrentDeviceOrientation(), videoPreviewLayer: try! self.videoPreviewLayerStream.value()!, flashSettings: flashSettings, exposurePoint: exposurePoint)
             }
             .map { $0! } //TODO: Better error handling... All faces must have landmarks
             .toArray()
@@ -249,6 +249,9 @@ class SampleSkinToneViewModel {
                     //faceCrop = CGRect.init(x: faceCrop.minX, y: 0, width: faceCrop.width, height: faceCropHeight)
                     faceCrop = CGRect.init(x: 0, y: faceCrop.minY, width: faceCropWidth, height: faceCrop.height)
                     
+                    let exposurePoint = faceCapture.exposurePoint!.toImagePoint(size: faceCapture.imageSize)
+                    let croppedExposurePoint = ImagePoint.init(x: exposurePoint.x - faceCrop.minX, y: exposurePoint.y - faceCrop.minY).toNormalizedImagePoint(size: ImageSize.init(faceCrop.size))
+                    
                     let faceImage = faceCapture.getImage()
                     let leftEyeImage = Image.from(image: faceImage, crop: leftEyeCrop, landmarks: Array(faceImage.landmarks[8...15]))
                     let rightEyeImage = Image.from(image: faceImage, crop: rightEyeCrop, landmarks: Array(faceImage.landmarks[16...23]))
@@ -265,6 +268,7 @@ class SampleSkinToneViewModel {
                     faceImage.rotate()
                     leftEyeImage.rotate()
                     rightEyeImage.rotate()
+                    let rotatedCroppedExposurePoint = NormalizedImagePoint.init(x: 1 - croppedExposurePoint.y, y: croppedExposurePoint.x)
                     
                     leftEyeImage.updateParentBB(rotate: true)
                     rightEyeImage.updateParentBB(rotate: true)
@@ -275,7 +279,7 @@ class SampleSkinToneViewModel {
                     
                     let pngDataRightEye = self.context.pngRepresentation(of: rightEyeImage.image, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])!
                     
-                    let setMetadata = SetMetadata.getFrom(faceImage: faceImage, leftEyeImage: leftEyeImage, rightEyeImage: rightEyeImage, flashSettings: faceCapture.flashSettings, cameraState: self.cameraState, rawMetadata: faceCapture.rawMetadata)
+                    let setMetadata = SetMetadata.getFrom(faceImage: faceImage, leftEyeImage: leftEyeImage, rightEyeImage: rightEyeImage, flashSettings: faceCapture.flashSettings, cameraState: self.cameraState, rawMetadata: faceCapture.rawMetadata, exposurePoint: rotatedCroppedExposurePoint)
                     
                     return ImageData(faceData: pngDataFace, leftEyeData: pngDataLeftEye, rightEyeData: pngDataRightEye, setMetadata: setMetadata)
                     //DONT FORGET TO TRANSFER EYE WIDTH AS WELL!

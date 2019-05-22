@@ -39,12 +39,13 @@ struct SetMetadata : Codable {
     let exposureTime: Float64
     let whiteBalance: WhiteBalance
     let flashSettings: FlashSettings
+    let exposurePoint: CGPoint
 
     let faceImageTransforms: ImageMetadata
     let leftEyeImageTransforms: ImageMetadata
     let rightEyeImageTransforms: ImageMetadata
     
-    init(iso: Float64, exposureTime: Float64, whiteBalance: WhiteBalance, flashSettings: FlashSettings, faceImageTransforms: ImageMetadata, leftEyeImageTransforms: ImageMetadata, rightEyeImageTransforms: ImageMetadata) {
+    init(iso: Float64, exposureTime: Float64, whiteBalance: WhiteBalance, flashSettings: FlashSettings, exposurePoint: NormalizedImagePoint, faceImageTransforms: ImageMetadata, leftEyeImageTransforms: ImageMetadata, rightEyeImageTransforms: ImageMetadata) {
         self.iso = iso
         self.exposureTime = exposureTime
         self.whiteBalance = whiteBalance
@@ -53,13 +54,14 @@ struct SetMetadata : Codable {
         self.faceImageTransforms = faceImageTransforms
         self.leftEyeImageTransforms = leftEyeImageTransforms
         self.rightEyeImageTransforms = rightEyeImageTransforms
+        self.exposurePoint = exposurePoint.point
     }
 
-    static func getFrom(faceImage: Image, leftEyeImage: Image, rightEyeImage: Image, flashSettings: FlashSettings, cameraState: CameraState, rawMetadata: [String: Any]) -> SetMetadata {
+    static func getFrom(faceImage: Image, leftEyeImage: Image, rightEyeImage: Image, flashSettings: FlashSettings, cameraState: CameraState, rawMetadata: [String: Any], exposurePoint: NormalizedImagePoint) -> SetMetadata {
         let (iso, exposure) = SetMetadata.extractRelevantMetadata(rawMetadata)
         let whiteBalance = WhiteBalance.getFrom(captureDevice: cameraState.captureDevice)
         
-        return SetMetadata(iso: iso, exposureTime: exposure, whiteBalance: whiteBalance, flashSettings: flashSettings, faceImageTransforms: faceImage.getImageMetadata(), leftEyeImageTransforms: leftEyeImage.getImageMetadata(), rightEyeImageTransforms: rightEyeImage.getImageMetadata())
+        return SetMetadata(iso: iso, exposureTime: exposure, whiteBalance: whiteBalance, flashSettings: flashSettings, exposurePoint: exposurePoint, faceImageTransforms: faceImage.getImageMetadata(), leftEyeImageTransforms: leftEyeImage.getImageMetadata(), rightEyeImageTransforms: rightEyeImage.getImageMetadata())
     }
     
     static private func extractRelevantMetadata(_ metadata: [String: Any]) -> (Float64, Float64) {
@@ -71,6 +73,6 @@ struct SetMetadata : Codable {
     }
     
     func prettyPrint() {
-        print("ISO :: \(iso) | Exposure Time :: \(exposureTime) | White Balance (x: \(whiteBalance.x), y: \(whiteBalance.y)) | Flash Settings :: \(flashSettings.area)/\(flashSettings.areas)")
+        print("ISO :: \(iso) | Exposure Time :: \(exposureTime) | White Balance (x: \(whiteBalance.x), y: \(whiteBalance.y)) | Flash Settings :: \(flashSettings.area)/\(flashSettings.areas) | Exposure Point :: \(exposurePoint)")
     }
 }
