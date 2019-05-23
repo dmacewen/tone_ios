@@ -52,6 +52,9 @@ class Camera: NSObject {
                     DispatchQueue.main.async {
                         print("Called Capture")
                         self.cameraState.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
+                        print("==> Camera Settings :: \(self.cameraState.captureDevice.iso) | \(self.cameraState.captureDevice.exposureDuration.seconds)")
+                        print("==> Camera Offset and Bias:: \(self.cameraState.captureDevice.exposureTargetOffset) | \(self.cameraState.captureDevice.exposureTargetBias)")
+                        self.cameraState.isExposureOffsetAboveThreshold.take(1).subscribe(onNext: { print("Is above threshold :: \($0)") }).disposed(by: self.disposeBag)
                     }
                 }
                 .flatMap { _ in self.capture }

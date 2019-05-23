@@ -46,6 +46,7 @@ class CameraState {
     
     let isAdjustingExposure: ConnectableObservable<Bool>//Variable<Bool>
     let isAdjustingWB: ConnectableObservable<Bool>//Variable<Bool>
+    let isExposureOffsetAboveThreshold: ConnectableObservable<Bool>
     let disposeBag: DisposeBag = DisposeBag()
     
     private var areSettingsLocked = false
@@ -106,8 +107,23 @@ class CameraState {
             .map { _ in captureDeviceLocal.isAdjustingWhiteBalance }
             .replay(1)
         
-        _ = isAdjustingWB.connect()
-        _ = isAdjustingExposure.connect()
+        isExposureOffsetAboveThreshold = self.captureDevice.rx.observe(AVCaptureDevice.self, "exposureTargetOffset")
+            .map { _ in captureDeviceLocal.exposureTargetOffset }
+            .buffer(timeSpan: 1.0, count: 5, scheduler: ConcurrentMainScheduler.instance)
+            .map { exposureOffsets in exposureOffsets.count == 0 ? [captureDeviceLocal.exposureTargetOffset] : exposureOffsets }
+            .map { exposureOffsets in
+                print("Expsure Offsets :: \(exposureOffsets)")
+                return abs(median(exposureOffsets)) > 0.25
+            }
+            .replay(1)
+        
+        //_ = isAdjustingWB.connect()
+        isAdjustingWB.connect().disposed(by: disposeBag)
+        //_ = isAdjustingExposure.connect()
+        isAdjustingExposure.connect().disposed(by: disposeBag)
+        //_ = isExposureOffsetAboveThreshold.connect()
+        isExposureOffsetAboveThreshold.connect().disposed(by: disposeBag)
+        
         /*
         isAdjustingExposure
             .distinctUntilChanged()
@@ -187,16 +203,18 @@ class CameraState {
         }
         
         print("LOCKING CAMERA SETTINGS")
-        
-        return Observable.combineLatest(isAdjustingExposure, isAdjustingWB) { $0 || $1 }
+        //Need to delay to allow a full buffer to clear through "Is Exposure Offset Above Threshold"...
+        return Observable.combineLatest(isAdjustingExposure, isAdjustingWB, isExposureOffsetAboveThreshold, isDelay()) { $0 || $1 || $2 || $3 }
             .filter { !$0 }
             .take(1)
             .observeOn(MainScheduler.instance)
             .flatMap { _ in self.lockExposure() }
             .flatMap { _ in self.lockWhiteBalance() }
             .flatMap { _ in self.lockExposureBias() }
-            //.flatMap { _ in self.delay() }
+            //.flatMap { _ in self.delay() } // test....
             .do(onNext: { _ in self.areSettingsLocked = true })
+            .do(onNext: { _ in print("OFFSET :: \(self.captureDevice.exposureTargetOffset)") })
+            .do(onNext: { _ in print("DONE LOCKING CAMERA SETTINGS") })
     }
     
     private func lockWhiteBalance() -> Observable<Bool> {
@@ -237,9 +255,20 @@ class CameraState {
         }
     }
     
+    private func isDelay() -> Observable<Bool> {
+        return Observable.create { observer in
+            observer.onNext(true)
+            DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() +  1.1) {
+                observer.onNext(false)
+                //observer.onCompleted()
+            }
+            return Disposables.create()
+        }
+    }
+    
     private func delay() -> Observable<Bool> {
         return Observable.create { observer in
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 1.0) {
                 observer.onNext(true)
                 observer.onCompleted()
             }

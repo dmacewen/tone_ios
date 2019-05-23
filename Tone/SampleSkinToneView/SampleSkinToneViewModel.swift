@@ -213,6 +213,7 @@ class SampleSkinToneViewModel {
         self.didFlashViewLoad
             .observeOn(MainScheduler.instance)
             .filter { $0 }
+            //.flatMap { _ in self.cameraState.delay() } // test....
             .flatMap { _ in self.cameraState.preparePhotoSettings(numPhotos: self.screenFlashSettings.count) }
             .flatMap { _ in Observable.from(self.screenFlashSettings) }
             .take(self.screenFlashSettings.count) //Need to issue that completed somewhere
