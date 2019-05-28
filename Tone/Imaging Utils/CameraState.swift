@@ -119,12 +119,20 @@ class CameraState {
         return self.sampleSettingsClock.map { _ in self.captureDevice.isAdjustingWhiteBalance }
     }
     
-    func isExposureOffsetAboveThreshold() -> Bool {
-        return (abs(self.captureDevice.exposureTargetOffset) > 0.15) || (self.captureDevice.exposureTargetOffset == 0.0)
+    func isExposureOffsetAboveThreshold(_ hasBeenNonZero:Bool = true) -> Bool {
+        //Zero value is unfortunately what 'exposureTargetOffset' is set to when it hasnt taken a measurement (or so it seems)
+        return (abs(self.captureDevice.exposureTargetOffset) > 0.15) || (!hasBeenNonZero && (self.captureDevice.exposureTargetOffset == 0.0))
     }
     
     func getIsExposureOffsetAboveThreshold() -> Observable<Bool> {
-        return self.sampleSettingsClock.map { _ in return self.isExposureOffsetAboveThreshold() }
+        var hasBeenNonZero = false
+        return self.sampleSettingsClock
+            .do(onNext: { _ in
+                if self.captureDevice.exposureTargetOffset != 0 {
+                    hasBeenNonZero = true
+                }
+            })
+            .map { _ in return self.isExposureOffsetAboveThreshold(hasBeenNonZero) }
             .do(onNext: { isAbove in
                 if isAbove {
                     self.captureDevice.exposureMode = AVCaptureDevice.ExposureMode.autoExpose

@@ -87,7 +87,6 @@ class PreviewViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        //print("VIDEO PAUSED.... THIS MIGHT BE THE CLUPRIT")
         self.viewModel!.video.pauseProcessing()
     }
 }
