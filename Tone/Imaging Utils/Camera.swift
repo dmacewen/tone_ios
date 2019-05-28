@@ -31,7 +31,7 @@ class Camera: NSObject {
             self.cameraState.flashTaskStream.onNext(flashTask)
             
             print("Waiting for flash to set")
-            return Observable.combineLatest(self.cameraState.isAdjustingExposure, self.cameraState.isAdjustingWB, flashTask.isDone) { $0 || $1 || !$2 }
+            return Observable.combineLatest(self.cameraState.getIsAdjustingExposure(), self.cameraState.getIsAdjustingWB(), flashTask.isDone) { $0 || $1 || !$2 }
                 .distinctUntilChanged()
                 .do(onNext: { isDoneSetting in print("Is Done Setting Flash :: \(isDoneSetting)") })
                 .do(onNext: { combined in
@@ -39,6 +39,7 @@ class Camera: NSObject {
                 })
                 .filter { !$0 }
                 .take(1)
+                .flatMap { _ in self.cameraState.lockExposureBias() } //Lock exposure bias before for proper metering
                 .flatMap { _ in self.cameraState.lockCameraSettings() }
                 .map { _ in
                     print("Captuing Photo with Flash Settings :: \(flashSettings.area) \(flashSettings.areas)")
@@ -54,7 +55,7 @@ class Camera: NSObject {
                         self.cameraState.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
                         print("==> Camera Settings :: \(self.cameraState.captureDevice.iso) | \(self.cameraState.captureDevice.exposureDuration.seconds)")
                         print("==> Camera Offset and Bias:: \(self.cameraState.captureDevice.exposureTargetOffset) | \(self.cameraState.captureDevice.exposureTargetBias)")
-                        self.cameraState.isExposureOffsetAboveThreshold.take(1).subscribe(onNext: { print("Is above threshold :: \($0)") }).disposed(by: self.disposeBag)
+                        print("Is above threshold :: \(self.cameraState.isExposureOffsetAboveThreshold())")
                     }
                 }
                 .flatMap { _ in self.capture }

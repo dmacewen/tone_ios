@@ -44,12 +44,17 @@ class CameraState {
     var isAvailable =  BehaviorSubject<Bool>(value: true)
     var photoSettingsIndex = 0
     
-    let isAdjustingExposure: ConnectableObservable<Bool>//Variable<Bool>
-    let isAdjustingWB: ConnectableObservable<Bool>//Variable<Bool>
-    let isExposureOffsetAboveThreshold: ConnectableObservable<Bool>
+    //let isAdjustingExposure: ConnectableObservable<Bool>//Variable<Bool>
+    //let isAdjustingWB: ConnectableObservable<Bool>//Variable<Bool>
+    //let isExposureOffsetAboveThreshold: ConnectableObservable<Bool>
+    
+    //let isAdjustingExposure: Observable<Bool>
+    //let isAdjustingWB: Observable<Bool>
+    //let isExposureOffsetAboveThreshold: Observable<Bool>
     let disposeBag: DisposeBag = DisposeBag()
     
     private var areSettingsLocked = false
+    private let sampleSettingsClock: Observable<Int>
     
     let exposurePointStream = BehaviorSubject<NormalizedImagePoint>(value: NormalizedImagePoint.init(x: 0.5, y: 0.5))
     
@@ -95,50 +100,8 @@ class CameraState {
         captureSession.commitConfiguration()
         print("Commited Capture Session")
         
-        //isAdjustingExposure = Variable(self.captureDevice.isAdjustingExposure)
-        //isAdjustingWB = Variable(self.captureDevice.isAdjustingWhiteBalance)
-        let captureDeviceLocal = captureDevice
-        
-        isAdjustingExposure = self.captureDevice.rx.observe(AVCaptureDevice.self, "adjustingExposure")
-            .map { _ in captureDeviceLocal.isAdjustingExposure }
-            .replay(1)
-        
-        isAdjustingWB = self.captureDevice.rx.observe(AVCaptureDevice.self, "adjustingWhiteBalance")
-            .map { _ in captureDeviceLocal.isAdjustingWhiteBalance }
-            .replay(1)
-        
-        isExposureOffsetAboveThreshold = self.captureDevice.rx.observe(AVCaptureDevice.self, "exposureTargetOffset")
-            .map { _ in captureDeviceLocal.exposureTargetOffset }
-            .buffer(timeSpan: 1.0, count: 5, scheduler: ConcurrentMainScheduler.instance)
-            .map { exposureOffsets in exposureOffsets.count == 0 ? [captureDeviceLocal.exposureTargetOffset] : exposureOffsets }
-            .map { exposureOffsets in
-                print("Expsure Offsets :: \(exposureOffsets)")
-                return abs(median(exposureOffsets)) > 0.25
-            }
-            .replay(1)
-        
-        //_ = isAdjustingWB.connect()
-        isAdjustingWB.connect().disposed(by: disposeBag)
-        //_ = isAdjustingExposure.connect()
-        isAdjustingExposure.connect().disposed(by: disposeBag)
-        //_ = isExposureOffsetAboveThreshold.connect()
-        isExposureOffsetAboveThreshold.connect().disposed(by: disposeBag)
-        
-        /*
-        isAdjustingExposure
-            .distinctUntilChanged()
-            .subscribe(onNext: { isAdjusting in
-                print("ADJUSTING EXPOSURE :: \(isAdjusting)")
-            })
-            .disposed(by: disposeBag)
-        
-        isAdjustingWB
-            .distinctUntilChanged()
-            .subscribe(onNext: { isAdjusting in
-                print("ADJUSTING WB :: \(isAdjusting)")
-            })
-            .disposed(by: disposeBag)
-        */
+        sampleSettingsClock = Observable.interval(0.1, scheduler: ConcurrentMainScheduler.instance)
+       
         exposurePointStream
             .filter { _ in !self.areSettingsLocked }
             .subscribe(onNext: {  exposurePoint in
@@ -146,6 +109,28 @@ class CameraState {
                 self.captureDevice.exposurePointOfInterest = exposurePoint.point
                 self.captureDevice.exposureMode = AVCaptureDevice.ExposureMode.autoExpose
             }).disposed(by: disposeBag)
+    }
+    
+    func getIsAdjustingExposure() -> Observable<Bool> {
+        return self.sampleSettingsClock.map { _ -> Bool in self.captureDevice.isAdjustingExposure }
+    }
+    
+    func getIsAdjustingWB() -> Observable<Bool> {
+        return self.sampleSettingsClock.map { _ in self.captureDevice.isAdjustingWhiteBalance }
+    }
+    
+    func isExposureOffsetAboveThreshold() -> Bool {
+        return (abs(self.captureDevice.exposureTargetOffset) > 0.15) || (self.captureDevice.exposureTargetOffset == 0.0)
+    }
+    
+    func getIsExposureOffsetAboveThreshold() -> Observable<Bool> {
+        return self.sampleSettingsClock.map { _ in return self.isExposureOffsetAboveThreshold() }
+            .do(onNext: { isAbove in
+                if isAbove {
+                    self.captureDevice.exposureMode = AVCaptureDevice.ExposureMode.autoExpose
+                    //self.captureDevice.exposureMode = AVCaptureDevice.ExposureMode.continuousAutoExposure
+                }
+            })
     }
     
     func resetCameraState() {
@@ -203,17 +188,16 @@ class CameraState {
         }
         
         print("LOCKING CAMERA SETTINGS")
-        //Need to delay to allow a full buffer to clear through "Is Exposure Offset Above Threshold"...
-        return Observable.combineLatest(isAdjustingExposure, isAdjustingWB, isExposureOffsetAboveThreshold, isDelay()) { $0 || $1 || $2 || $3 }
+        return Observable.combineLatest(self.getIsAdjustingExposure(), self.getIsAdjustingWB(), self.getIsExposureOffsetAboveThreshold()) { $0 || $1 || $2 }
             .filter { !$0 }
             .take(1)
             .observeOn(MainScheduler.instance)
             .flatMap { _ in self.lockExposure() }
             .flatMap { _ in self.lockWhiteBalance() }
-            .flatMap { _ in self.lockExposureBias() }
+            //.flatMap { _ in self.lockExposureBias() } //moved to capture in camera
             //.flatMap { _ in self.delay() } // test....
             .do(onNext: { _ in self.areSettingsLocked = true })
-            .do(onNext: { _ in print("OFFSET :: \(self.captureDevice.exposureTargetOffset)") })
+            //.do(onNext: { _ in print("OFFSET :: \(self.captureDevice.exposureTargetOffset)") })
             .do(onNext: { _ in print("DONE LOCKING CAMERA SETTINGS") })
     }
     
@@ -243,7 +227,7 @@ class CameraState {
         }
     }
     
-    private func lockExposureBias() -> Observable<Bool> {
+    func lockExposureBias() -> Observable<Bool> {
         return Observable.create { observable in
             DispatchQueue.main.async {
                 self.captureDevice.setExposureTargetBias(-0.5, completionHandler: { time in
