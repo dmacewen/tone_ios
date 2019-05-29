@@ -12,11 +12,18 @@ import RxSwift
 import UIKit
 import Vision
 
-struct ImageData {
+class ImageData {
     let faceData: Data
     let leftEyeData: Data
     let rightEyeData: Data
     let setMetadata: SetMetadata
+    
+    init(faceData: Data, leftEyeData: Data, rightEyeData: Data, setMetadata: SetMetadata) {
+        self.faceData = faceData
+        self.leftEyeData = leftEyeData
+        self.rightEyeData = rightEyeData
+        self.setMetadata = setMetadata
+    }
 }
 
 struct RealTimeFaceData {

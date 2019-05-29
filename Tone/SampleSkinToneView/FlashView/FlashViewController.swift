@@ -31,8 +31,8 @@ class FlashViewController: ReactiveUIViewController {
             //.observeOn(MainScheduler.instance)
             .observeOn(MainScheduler.asyncInstance)
             .do(onNext: { _ in print("Recieved Flash Setting Task in Flash Controller!")})
-            .flatMap { flashSettingTask in self.getUILayer(for: flashSettingTask, renderer: flashRenderer) }
-            .flatMap { (flashSettingTask, currentFlashLayer) in self.addToParent(flashSettingTask, currentFlashLayer) }
+            .flatMap { [unowned self] flashSettingTask in self.getUILayer(for: flashSettingTask, renderer: flashRenderer) }
+            .flatMap { [unowned self] (flashSettingTask, currentFlashLayer) in self.addToParent(flashSettingTask, currentFlashLayer) }
             .do(onNext: { _ in print("After adding to parent... maybe its the single thats mesing things up")})
             .subscribe(onNext: { (flashSettingTask, currentFlashLayer) in
                 flashSettingTask.isDone.onNext(true)
@@ -66,9 +66,9 @@ class FlashViewController: ReactiveUIViewController {
     private func addToParent(_ flashSettingTask: FlashSettingsTask, _ currentFlashLayer: UIImageView) -> Observable<(FlashSettingsTask, UIImageView)> {
         return Observable.create { observable in
             self.FlashHostLayer.layer.insertSublayer(currentFlashLayer.layer, above: self.FlashHostLayer.layer)
-            currentFlashLayer.setNeedsDisplay()
-            self.FlashHostLayer.layer.setNeedsDisplay()
-            CATransaction.flush()
+            //currentFlashLayer.setNeedsDisplay()
+            //self.FlashHostLayer.layer.setNeedsDisplay()
+            //CATransaction.flush()
 
             //Really just gross.. having a hard time syncing the screen flash with the camera
             //DispatchQueue.main.async {

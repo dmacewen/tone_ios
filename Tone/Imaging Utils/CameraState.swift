@@ -103,8 +103,8 @@ class CameraState {
         sampleSettingsClock = Observable.interval(0.1, scheduler: ConcurrentMainScheduler.instance)
        
         exposurePointStream
-            .filter { _ in !self.areSettingsLocked }
-            .subscribe(onNext: {  exposurePoint in
+            .filter {[unowned self] _ in !self.areSettingsLocked }
+            .subscribe(onNext: { [unowned self] exposurePoint in
             //NEEDS TO BE LOCKED FOR CONFIG
                 self.captureDevice.exposurePointOfInterest = exposurePoint.point
                 self.captureDevice.exposureMode = AVCaptureDevice.ExposureMode.autoExpose
@@ -112,11 +112,11 @@ class CameraState {
     }
     
     func getIsAdjustingExposure() -> Observable<Bool> {
-        return self.sampleSettingsClock.map { _ -> Bool in self.captureDevice.isAdjustingExposure }
+        return self.sampleSettingsClock.map { [unowned self] _ -> Bool in self.captureDevice.isAdjustingExposure }
     }
     
     func getIsAdjustingWB() -> Observable<Bool> {
-        return self.sampleSettingsClock.map { _ in self.captureDevice.isAdjustingWhiteBalance }
+        return self.sampleSettingsClock.map {[unowned self] _ in self.captureDevice.isAdjustingWhiteBalance }
     }
     
     func isExposureOffsetAboveThreshold(_ hasBeenNonZero:Bool = true) -> Bool {
@@ -127,13 +127,13 @@ class CameraState {
     func getIsExposureOffsetAboveThreshold() -> Observable<Bool> {
         var hasBeenNonZero = false
         return self.sampleSettingsClock
-            .do(onNext: { _ in
+            .do(onNext: { [unowned self] _ in
                 if self.captureDevice.exposureTargetOffset != 0 {
                     hasBeenNonZero = true
                 }
             })
-            .map { _ in return self.isExposureOffsetAboveThreshold(hasBeenNonZero) }
-            .do(onNext: { isAbove in
+            .map { [unowned self] _ in return self.isExposureOffsetAboveThreshold(hasBeenNonZero) }
+            .do(onNext: { [unowned self] isAbove in
                 if isAbove {
                     self.captureDevice.exposureMode = AVCaptureDevice.ExposureMode.autoExpose
                     //self.captureDevice.exposureMode = AVCaptureDevice.ExposureMode.continuousAutoExposure
