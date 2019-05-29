@@ -12,7 +12,7 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-class SetupViewController: ReactiveUIViewController<SampleSkinToneViewModel> {    
+class SetupViewController: ReactiveUIViewController {    
     @IBOutlet weak var setupSpinner: UIActivityIndicatorView!
     
     override func viewDidLoad() {

@@ -12,7 +12,7 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-class ProcessViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
+class ProcessViewController: ReactiveUIViewController {
     @IBOutlet weak var processSpinner: UIActivityIndicatorView!
     
     override func viewDidLoad() {

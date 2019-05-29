@@ -33,7 +33,7 @@ func viewController(forViewModel viewModel: Any) -> UIViewController? {
         return viewController
         
     case let viewModel as SampleSkinToneViewModel:
-        let viewController: ReactiveUIViewController<SampleSkinToneViewModel>?
+        let viewController: ReactiveUIViewController?
         print("VIEW MODEL STATE VALUE :: \(try! viewModel.events.value())")
         //switch try! viewModel.sampleState.value() {
         switch try! viewModel.events.value() {
@@ -49,8 +49,8 @@ func viewController(forViewModel viewModel: Any) -> UIViewController? {
             viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "processViewController") as? ProcessViewController
         case .beginUpload:
             viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "uploadViewController") as? UploadViewController
-        case .resumePreview:
-            viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "previewViewController") as? PreviewViewController
+        case .endSample:
+            viewController = nil//UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "previewViewController") as? PreviewViewController
         }
 
         viewController?.viewModel = viewModel

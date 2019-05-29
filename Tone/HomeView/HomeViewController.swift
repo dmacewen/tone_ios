@@ -12,7 +12,7 @@ import RxSwift
 import RxCocoa
 
 class HomeViewController: UIViewController {
-    var viewModel: HomeViewModel!
+    weak var viewModel: HomeViewModel!
     
     @IBOutlet weak var logoutButton: UIButton!
     @IBOutlet weak var settingsButton: UIButton!

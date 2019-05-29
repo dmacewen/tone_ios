@@ -74,6 +74,9 @@ class FaceCapture {
                 let faceLandmarksRequest = VNDetectFaceLandmarksRequest(completionHandler: { (request, error) in
                     if error != nil {
                         print("FaceLandmarks error: \(String(describing: error)).")
+                        observable.onNext(nil)
+                        observable.onCompleted()
+                        //fatalError("Error Landmarking")
                     }
                     
                     guard let landmarksRequest = request as? VNDetectFaceLandmarksRequest,
@@ -96,10 +99,13 @@ class FaceCapture {
                                                                 orientation: orientation,
                                                                 options: requestHandlerOptions)
                 
+                //try! imageRequestHandler.perform([faceLandmarksRequest])
+                
                 do {
                     try imageRequestHandler.perform([faceLandmarksRequest])
-                } catch let error as NSError {
-                    NSLog("Failed to perform FaceLandmarkRequest: %@", error)
+                //} catch let error as NSError {
+                } catch {
+                    print("Failed to perform FaceLandmarkRequest: \(error)")
                     fatalError("Error Landmarking")
                 }
             }

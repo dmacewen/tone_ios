@@ -12,7 +12,7 @@ import RxSwift
 import RxCocoa
 
 class LoginViewController: UIViewController {
-    var viewModel: LoginViewModel!
+    weak var viewModel: LoginViewModel!
     
     @IBOutlet weak var scrollView: UIScrollView!
     @IBOutlet weak var contentView: UIView!

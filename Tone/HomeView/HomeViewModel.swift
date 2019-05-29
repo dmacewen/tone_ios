@@ -37,4 +37,8 @@ class HomeViewModel {
         print("Starting Sample Skin Tone for \(user.email)")
         events.onNext(.sampleSkinTone)
     }
+    
+    deinit {
+        print("DESTROYING HOME CONTROLLER")
+    }
 }

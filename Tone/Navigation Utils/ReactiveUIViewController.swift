@@ -9,8 +9,8 @@
 import Foundation
 import UIKit
 
-class ReactiveUIViewController<T>: UIViewController {
-    var viewModel: T?
+class ReactiveUIViewController: UIViewController {
+    weak var viewModel: SampleSkinToneViewModel?
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)

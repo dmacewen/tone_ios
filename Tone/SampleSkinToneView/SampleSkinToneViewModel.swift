@@ -31,7 +31,7 @@ class SampleSkinToneViewModel {
         case beginFlash
         case beginProcessing
         case beginUpload
-        case resumePreview
+        case endSample
     }
     
     struct Message {
@@ -126,7 +126,7 @@ class SampleSkinToneViewModel {
         //Asynchronously load the video stream. Lets the views load first
         DispatchQueue.global(qos: .userInitiated).async {
             self.video.realtimeDataStream
-                .subscribe(onNext: { realtimeDataOptional in
+                .subscribe(onNext: { [unowned self] realtimeDataOptional in
 
                     guard let realtimeData = realtimeDataOptional else {
                         self.userFaceState.onNext(.noFaceFound)
@@ -214,19 +214,19 @@ class SampleSkinToneViewModel {
             .observeOn(MainScheduler.instance)
             .filter { $0 }
             //.flatMap { _ in self.cameraState.delay() } // test....
-            .flatMap { _ in self.cameraState.preparePhotoSettings(numPhotos: self.screenFlashSettings.count) }
-            .flatMap { _ in Observable.from(self.screenFlashSettings) }
+            .flatMap { [unowned self] _ in self.cameraState.preparePhotoSettings(numPhotos: self.screenFlashSettings.count) }
+            .flatMap { [unowned self] _ in Observable.from(self.screenFlashSettings) }
             .take(self.screenFlashSettings.count) //Need to issue that completed somewhere
-            .map { flashSetting in (Camera(cameraState: self.cameraState), flashSetting) }
+            .map { [unowned self] flashSetting in (Camera(cameraState: self.cameraState), flashSetting) }
             .concatMap {(camera, flashSetting) in camera.capturePhoto(flashSetting) }
-            .do(onCompleted: { self.events.onNext(.beginProcessing) })
-            .flatMap { photoData -> Observable<FaceCapture?> in
+            .do(onCompleted: { [unowned self] in self.events.onNext(.beginProcessing) })
+            .flatMap { [unowned self] photoData -> Observable<FaceCapture?> in
                 let (capturePhoto, flashSettings, exposurePoint) = photoData
                 return FaceCapture.create(capturePhoto: capturePhoto, orientation: self.cameraState.exifOrientationForCurrentDeviceOrientation(), videoPreviewLayer: try! self.videoPreviewLayerStream.value()!, flashSettings: flashSettings, exposurePoint: exposurePoint)
             }
             .map { $0! } //TODO: Better error handling... All faces must have landmarks
             .toArray()
-            .map { faceCaptures -> [ImageData] in
+            .map { [unowned self] faceCaptures -> [ImageData] in
                 //Find Face Crops and Left, Right Eye Crops
                 //let leftEyeBBs = faceCaptures.map { bufferBoundingBox($0.getLeftEyeImageBB()!, imgSize: $0.imageSize) }
                 let leftEyeSizes = faceCaptures.map { $0.getLeftEyeImageSize()! }
@@ -286,20 +286,20 @@ class SampleSkinToneViewModel {
                     //DONT FORGET TO TRANSFER EYE WIDTH AS WELL!
                 }
             }
-            .do(onCompleted: { self.events.onNext(.beginUpload) })
-            .flatMap { imageData -> Observable<UploadStatus> in
+            .do(onCompleted: { [unowned self] in self.events.onNext(.beginUpload) })
+            .flatMap { [unowned self] imageData -> Observable<UploadStatus> in
                 self.uploadProgress.onNext(0.0)
                 print("Uploading Images!")
                 for photo in imageData { photo.setMetadata.prettyPrint() }
                 return uploadImageData(imageData: imageData, progressBar: self.uploadProgress, user: self.user)
             }
-            .subscribe(onNext: { uploadStatus in
+            .subscribe(onNext: { [unowned self] uploadStatus in
                 if uploadStatus.doneUpload && !uploadStatus.responseRecieved {
                     self.events.onNext(.beginProcessing)
                 } else if uploadStatus.doneUpload && uploadStatus.responseRecieved {
                     print("Done Uploading \(self.user.email)")
-                    self.events.onNext(.resumePreview)
                     self.cameraState.resetCameraState()
+                    self.events.onNext(.endSample)
                 }
             }).disposed(by: self.disposeBag)
         
@@ -350,6 +350,10 @@ class SampleSkinToneViewModel {
         let maxWidth = sizes.map { $0.width }.max()!
         let maxHeight = sizes.map { $0.height }.max()!
         return CGSize.init(width: maxWidth, height: maxHeight)
+    }
+    
+    deinit {
+        print("DESTROYING SAMPLE SKIN TONE VIEW MODEL")
     }
 }
 

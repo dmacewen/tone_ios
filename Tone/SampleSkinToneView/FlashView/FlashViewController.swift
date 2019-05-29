@@ -12,7 +12,7 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-class FlashViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
+class FlashViewController: ReactiveUIViewController {
     let disposeBag = DisposeBag()
 
     @IBOutlet weak var FlashHostLayer: UIView!

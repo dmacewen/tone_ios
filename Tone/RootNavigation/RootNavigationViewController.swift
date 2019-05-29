@@ -12,7 +12,7 @@ import RxSwift
 
 class RootNavigationViewController: UINavigationController {
     
-    var viewModel: RootNavigationViewModel!
+    weak var viewModel: RootNavigationViewModel!
     
     private let disposeBag = DisposeBag()
     

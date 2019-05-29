@@ -12,7 +12,7 @@ import RxSwift
 import RxCocoa
 
 class SettingsViewController: UIViewController {
-    var viewModel: SettingsViewModel!
+    weak var viewModel: SettingsViewModel!
     
     @IBOutlet weak var backButton: UIButton!
     

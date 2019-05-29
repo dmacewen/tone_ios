@@ -12,7 +12,7 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-class PreviewViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
+class PreviewViewController: ReactiveUIViewController {
     let disposeBag = DisposeBag()
     
     @IBOutlet weak var rootView: UIView!

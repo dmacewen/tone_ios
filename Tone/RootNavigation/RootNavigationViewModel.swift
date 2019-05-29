@@ -65,7 +65,7 @@ class RootNavigationViewModel {
                     self!.navigationStackActions.onNext(.set(viewModels: [self!.createLoginViewModel()], animated: false))
                 case .sampleSkinTone:
                     print("Sample Skin Tone")
-                    _ = self!.createSampleSkinToneViewModel(withUser: user) //Temporary... Fix! it sets its own controller
+                    self!.createSampleSkinToneViewModel(withUser: user) //Temporary... Fix! it sets its own controller
                     //self!.navigationStackActions.onNext(.push(viewModel: self!.createSampleSkinToneViewModel(withUser: user), animated: false))
                 case .openSample(let sample):
                     print("Open Sample :: \(sample)")
@@ -78,10 +78,14 @@ class RootNavigationViewModel {
         return homeViewModel
     }
     
-    private func createSampleSkinToneViewModel(withUser user: User) -> SampleSkinToneViewModel {
-        let sampleSkinToneViewModel = SampleSkinToneViewModel(user: user)
-        var savedNavigationStack: [Any] = []
-        sampleSkinToneViewModel.events
+    private func createSampleSkinToneViewModel(withUser user: User) { //} -> SampleSkinToneViewModel {
+        var sampleSkinToneViewModel: SampleSkinToneViewModel? = SampleSkinToneViewModel(user: user)
+        
+        var isStillSampleSkinTone = true
+        var savedNavigationStack: [Any]? = []
+        
+        sampleSkinToneViewModel!.events
+            .takeWhile { _ in isStillSampleSkinTone }
             .subscribe(onNext: { [weak self] event in //Reference createLoginViewModel for how to reference Self
                 print("EVENTS \(event)")
                 switch event {
@@ -91,27 +95,30 @@ class RootNavigationViewModel {
                 case .beginSetUp:
                     print("SETTING VIEW: Setting Up")
                     savedNavigationStack = self!.currentViewModelStack
-                    self!.navigationStackActions.onNext(.push(viewModel: sampleSkinToneViewModel, animated: false))
+                    self!.navigationStackActions.onNext(.push(viewModel: sampleSkinToneViewModel!, animated: false))
                 case .beginPreview:
                     print("SETTING VIEW: Previewing")
-                    self!.navigationStackActions.onNext(.swap(viewModel: sampleSkinToneViewModel, animated: false))
+                    self!.navigationStackActions.onNext(.swap(viewModel: sampleSkinToneViewModel!, animated: false))
                 case .beginFlash:
                     print("SETTING VIEW: Flash")
-                    self!.navigationStackActions.onNext(.set(viewModels: [sampleSkinToneViewModel], animated: false))
+                    self!.navigationStackActions.onNext(.set(viewModels: [sampleSkinToneViewModel!], animated: false))
                 case .beginProcessing:
                     print("SETTING VIEW: Processing")
-                    self!.navigationStackActions.onNext(.set(viewModels: [sampleSkinToneViewModel], animated: false))
+                    self!.navigationStackActions.onNext(.set(viewModels: [sampleSkinToneViewModel!], animated: false))
                 case .beginUpload:
                     print("SETTING VIEW: Upload")
-                    self!.navigationStackActions.onNext(.set(viewModels: [sampleSkinToneViewModel], animated: false))
-                case .resumePreview:
-                    print("SETTING VIEW: Resume Preview")
-                    self!.navigationStackActions.onNext(.set(viewModels: savedNavigationStack, animated: false))
+                    self!.navigationStackActions.onNext(.set(viewModels: [sampleSkinToneViewModel!], animated: false))
+                case .endSample: //Rename...
+                    print("SETTING VIEW: End Sample")
+                    self!.navigationStackActions.onNext(.set(viewModels: savedNavigationStack!, animated: false))
+                    isStillSampleSkinTone = false
+                    sampleSkinToneViewModel = nil
+                    savedNavigationStack = nil
                     //self!.navigationStackActions.onNext(.push(viewModel: sampleSkinToneViewModel, animated: false))
                 }
             }).disposed(by: disposeBag)
         
-        return sampleSkinToneViewModel
+        //return sampleSkinToneViewModel
     }
     
     private func createSettingsViewModel(withUser user: User) -> SettingsViewModel {

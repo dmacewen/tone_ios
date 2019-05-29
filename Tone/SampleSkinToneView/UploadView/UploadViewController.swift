@@ -12,7 +12,7 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-class UploadViewController: ReactiveUIViewController<SampleSkinToneViewModel> {
+class UploadViewController: ReactiveUIViewController {
     //var viewModel: SampleSkinToneViewModel!
     let disposeBag = DisposeBag()
     
