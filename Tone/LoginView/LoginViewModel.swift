@@ -21,31 +21,22 @@ class LoginViewModel {
     let email = Variable<String?>(nil)
     let password = Variable<String?>(nil)
     
+    var disposeBag = DisposeBag()
+    
     func isEmailValid() -> Bool {
-        guard var email = email.value else { return false }
-        //REMOVE! THIS IS JUST FOR TESTING CONVENIENCE
-        if email == "D" {
-            self.email.value = "Doug"
-            email = "Doug"
-        }
-        
-        if email == "H" {
-            self.email.value = "Halyna"
-            email = "Halyna"
-        }
-        
-        if email == "J" {
-            self.email.value = "Jenny"
-            email = "Jenny"
-        }
-        
-        return ["Doug", "Halyna", "Jenny"].contains(email)
-        //return !email.isEmpty && email.contains("@")
+        guard let email = email.value else { return false }
+        return !email.isEmpty && email.contains("@")
     }
     
     func login() {
         print("Trying to log in with email \(email)!")
         guard let validatedEmail = email.value else { return }
-        events.onNext(.loggedIn(user: User(email: validatedEmail)))
+        guard let validatedPassword = password.value else { return }
+        
+        loginUser(email: validatedEmail, password: validatedPassword)
+            .subscribe(onNext: { user in
+                print("Logged in user! \(user)")
+                self.events.onNext(.loggedIn(user: user))
+        }).disposed(by: disposeBag)
     }
 }

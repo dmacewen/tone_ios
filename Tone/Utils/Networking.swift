@@ -1,14 +1,16 @@
 //
-//  ImageDataUpload.swift
+//  networking.swift
 //  Tone
 //
-//  Created by Doug MacEwen on 11/5/18.
-//  Copyright © 2018 Doug MacEwen. All rights reserved.
+//  Created by Doug MacEwen on 7/19/19.
+//  Copyright © 2019 Doug MacEwen. All rights reserved.
 //
 
 import Foundation
 import Alamofire
 import RxSwift
+
+let rootURL = "http://macewen.io/users"
 
 struct UploadStatus {
     let doneUpload: Bool
@@ -20,10 +22,35 @@ struct UploadStatus {
     }
 }
 
+private struct LoginResponse: Codable {
+    let token: Int32
+    let user_id: Int32
+}
+
+func loginUser(email: String, password: String) -> Observable<User> {
+    return Observable.create { observable in
+        let parameters = ["email": email, "password": password]
+        print("Requesting \(parameters)")
+        Alamofire
+            .request(rootURL, method: .post, parameters: parameters, encoding: URLEncoding.default)
+            .validate(statusCode: 200..<300)
+            .responseData { response in
+        
+                if let json = response.result.value {
+                    let decoder = JSONDecoder()
+                    let userData = try! decoder.decode(LoginResponse.self, from: json)
+                    print("USER DATA \(userData)")
+                    observable.onNext(User(email: email, user_id: userData.user_id, token: userData.token))
+                }
+            }
+            return Disposables.create()
+    }
+}
+
 func uploadImageData(imageData: [ImageData], progressBar: BehaviorSubject<Float>, user: User) -> Observable<UploadStatus> {
     
     let userid = user.email
-    let url = "http://macewen.io/users/\(userid)/selfie"
+    let url = rootURL + "/\(userid)/selfie"
     
     let headers: HTTPHeaders = [
         /* "Authorization": "your_access_token",  in case you need authorization header */
@@ -40,7 +67,7 @@ func uploadImageData(imageData: [ImageData], progressBar: BehaviorSubject<Float>
                     let pngDataFace = imageDatum.faceData
                     let pngDataLeftEye = imageDatum.leftEyeData
                     let pngDataRightEye = imageDatum.rightEyeData
-
+                    
                     let imageName = String(index + 1)
                     multipartFormData.append(pngDataFace, withName: imageName, fileName: "\(imageName).png", mimeType: "image/png")
                     multipartFormData.append(pngDataLeftEye, withName: "\(imageName)_leftEye", fileName: "\(imageName)_leftEye.png", mimeType: "image/png")
@@ -50,7 +77,7 @@ func uploadImageData(imageData: [ImageData], progressBar: BehaviorSubject<Float>
                 do {
                     let jsonData = try JSONEncoder().encode(metaData)
                     let jsonString = String(data: jsonData, encoding: .utf8)!
-
+                    
                     //multipartFormData.append(jsonData, withName: "metadata", fileName: "metadata.txt", mimeType: "application/json")
                     multipartFormData.append(jsonString.data(using: String.Encoding.utf8, allowLossyConversion: false)!, withName: "metadata", fileName: "metadata.txt", mimeType: "text/plain")
                 } catch {
@@ -89,12 +116,10 @@ func uploadImageData(imageData: [ImageData], progressBar: BehaviorSubject<Float>
                     print("Error in upload: \(error.localizedDescription)")
                     observable.onError(error)
                 }
-            }
+        }
         )
         
         observable.onNext(UploadStatus.init(false, false))
         return Disposables.create()
     }
 }
-
-
