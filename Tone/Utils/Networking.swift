@@ -27,7 +27,7 @@ private struct LoginResponse: Codable {
     let user_id: Int32
 }
 
-func loginUser(email: String, password: String) -> Observable<User> {
+func loginUser(email: String, password: String) -> Observable<User?> {
     return Observable.create { observable in
         let parameters = ["email": email, "password": password]
         print("Requesting \(parameters)")
@@ -35,13 +35,16 @@ func loginUser(email: String, password: String) -> Observable<User> {
             .request(rootURL, method: .post, parameters: parameters, encoding: URLEncoding.default)
             .validate(statusCode: 200..<300)
             .responseData { response in
-        
+                print("RESPONSE :: \(response)")
                 if let json = response.result.value {
                     let decoder = JSONDecoder()
                     let userData = try! decoder.decode(LoginResponse.self, from: json)
                     print("USER DATA \(userData)")
                     observable.onNext(User(email: email, user_id: userData.user_id, token: userData.token))
+                } else {
+                    observable.onNext(nil)
                 }
+                observable.onCompleted()
             }
             return Disposables.create()
     }

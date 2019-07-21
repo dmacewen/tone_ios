@@ -21,22 +21,15 @@ class LoginViewModel {
     let email = Variable<String?>(nil)
     let password = Variable<String?>(nil)
     
-    var disposeBag = DisposeBag()
-    
-    func isEmailValid() -> Bool {
-        guard let email = email.value else { return false }
-        return !email.isEmpty && email.contains("@")
-    }
-    
-    func login() {
-        print("Trying to log in with email \(email)!")
-        guard let validatedEmail = email.value else { return }
-        guard let validatedPassword = password.value else { return }
+    func login() -> Observable<Bool> {
+        guard let validatedEmail = email.value else { return Observable.just(false) }
+        guard let validatedPassword = password.value else { return Observable.just(false)}
         
-        loginUser(email: validatedEmail, password: validatedPassword)
-            .subscribe(onNext: { user in
-                print("Logged in user! \(user)")
+        return loginUser(email: validatedEmail, password: validatedPassword)
+            .map { loginResponse in
+                guard let user = loginResponse else { return false }
                 self.events.onNext(.loggedIn(user: user))
-        }).disposed(by: disposeBag)
+                return true
+            }
     }
 }

@@ -54,17 +54,16 @@ class LoginViewController: UIViewController {
             .bind(to: viewModel.password)
             .disposed(by: disposeBag)
         
-        let validLogin = loginButton.rx.tap.single(viewModel.isEmailValid)
-        
-        validLogin.subscribe(onNext: { _ in
-                self.emailText.backgroundColor = self.backgroundWhite
-                self.viewModel.login()
-            }).disposed(by: disposeBag)
-        
         loginButton.rx.tap
-            .takeUntil(validLogin)
-            .bind(onNext: {
-                self.emailText.backgroundColor = self.backgroundRed
+            .flatMap { self.viewModel.login() }
+            .subscribe(onNext: { isValid in
+                if isValid {
+                    self.emailText.backgroundColor = self.backgroundWhite
+                    self.passwordText.backgroundColor = self.backgroundWhite
+                } else {
+                    self.emailText.backgroundColor = self.backgroundRed
+                    self.passwordText.backgroundColor = self.backgroundRed
+                }
             }).disposed(by: disposeBag)
     }
 }
