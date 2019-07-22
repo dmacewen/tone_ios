@@ -113,6 +113,47 @@ func updateUserSettings(user_id: Int32, token: Int32, settings: Settings) -> Obs
     }
 }
 
+func updateUserAcknowledgementAgreement(user_id: Int32, token: Int32, didAgree: Bool) -> Observable<Bool> {
+    return Observable.create { observable in
+        /*
+        let url = apiURL.appendingPathComponent(String(user_id))
+        let urlRequest = URLRequest(url: url)
+        let parameters = ["token": token]
+        
+        guard let settingsData = try? JSONEncoder().encode(settings), let settingsString = String(data: settingsData, encoding: .utf8) else {
+            print("Could Not Encode Settings")
+            observable.onNext(false)
+            observable.onCompleted()
+            return Disposables.create()
+        }
+        
+        let settingsParameters = ["settings": settingsString]
+        
+        guard let encodedURL = try? URLEncoding.queryString.encode(urlRequest, with: parameters) else {
+            print("Could not encode URL for Settings")
+            return Disposables.create()
+        }
+        
+        print("Encoded URL :: \(encodedURL.url!.absoluteString)")
+        Alamofire
+            .request(encodedURL.url!, method: .post, parameters: settingsParameters, encoding: URLEncoding.default)
+            .validate(statusCode: 200..<300)
+            .responseString { response in
+                defer { observable.onCompleted() }
+                guard let isSuccessful = response.data else {
+                    print("COULD NOT UPDATE USER SETTINGS")
+                    observable.onNext(false)
+                    return
+                }
+                print("IS SUCCESSFUL ?? \(String(data:isSuccessful, encoding: .utf8)!)")
+                observable.onNext(true)
+        }
+        */
+        observable.onNext(false)
+        return Disposables.create()
+    }
+}
+
 func uploadImageData(imageData: [ImageData], progressBar: BehaviorSubject<Float>, user: User) -> Observable<UploadStatus> {
     
     let userid = user.email

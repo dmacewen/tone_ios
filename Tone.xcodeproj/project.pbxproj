@@ -36,6 +36,8 @@
 		86C0B8BA224BFEBB00B6C33F /* Alamofire.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 86F138DB21877F89004C6092 /* Alamofire.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		86C0B8BB224BFEC200B6C33F /* RxBlocking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 86F138D821877F89004C6092 /* RxBlocking.framework */; };
 		86C0B8BC224BFEC200B6C33F /* RxBlocking.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 86F138D821877F89004C6092 /* RxBlocking.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		86C4C31322E6703E00900B2A /* BetaAgreementViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86C4C31222E6703E00900B2A /* BetaAgreementViewModel.swift */; };
+		86C4C31522E6705300900B2A /* BetaAgreementViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86C4C31422E6705300900B2A /* BetaAgreementViewController.swift */; };
 		86E7FAB32297520200C09AB5 /* Math.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86E7FAB22297520200C09AB5 /* Math.swift */; };
 		86ED6FCA22611D7F00124A1F /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86ED6FC922611D7F00124A1F /* Image.swift */; };
 		86ED6FCC2266DCA200124A1F /* Points.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86ED6FCB2266DCA200124A1F /* Points.swift */; };
@@ -119,6 +121,8 @@
 		86AC453F226E61E400324067 /* UploadViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadViewController.swift; sourceTree = "<group>"; };
 		86AC4541226E698100324067 /* ReactiveUIViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReactiveUIViewController.swift; sourceTree = "<group>"; };
 		86C0B8B5224BFDC500B6C33F /* project.pbxproj */ = {isa = PBXFileReference; lastKnownFileType = text.pbxproject; name = project.pbxproj; path = Tone.xcodeproj/project.pbxproj; sourceTree = "<group>"; };
+		86C4C31222E6703E00900B2A /* BetaAgreementViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BetaAgreementViewModel.swift; sourceTree = "<group>"; };
+		86C4C31422E6705300900B2A /* BetaAgreementViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BetaAgreementViewController.swift; sourceTree = "<group>"; };
 		86D5C7452187898000D5E15E /* RxTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxTest.framework; path = Carthage/Build/iOS/RxTest.framework; sourceTree = "<group>"; };
 		86E7FAB22297520200C09AB5 /* Math.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Math.swift; sourceTree = "<group>"; };
 		86ED6FC922611D7F00124A1F /* Image.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Image.swift; sourceTree = "<group>"; };
@@ -310,6 +314,15 @@
 			path = State;
 			sourceTree = "<group>";
 		};
+		86C4C31122E66FDD00900B2A /* BetaAgreementView */ = {
+			isa = PBXGroup;
+			children = (
+				86C4C31222E6703E00900B2A /* BetaAgreementViewModel.swift */,
+				86C4C31422E6705300900B2A /* BetaAgreementViewController.swift */,
+			);
+			path = BetaAgreementView;
+			sourceTree = "<group>";
+		};
 		86F1389D218768C2004C6092 = {
 			isa = PBXGroup;
 			children = (
@@ -338,6 +351,7 @@
 				86193C9021894274001F5C4E /* HomeView */,
 				8619C7A522684CB2003E4054 /* SettingsView */,
 				86193C8F2189425B001F5C4E /* LoginView */,
+				86C4C31122E66FDD00900B2A /* BetaAgreementView */,
 				86193C8E21894246001F5C4E /* RootNavigation */,
 				86AC4543226F8EB200324067 /* Navigation Utils */,
 				86AC4544226F8EEE00324067 /* Imaging Utils */,
@@ -560,8 +574,10 @@
 				86F1BCAA218D219E00A18457 /* serialMap.swift in Sources */,
 				8651B60E2187D72200FB7A3A /* LoginViewController.swift in Sources */,
 				86ED6FCA22611D7F00124A1F /* Image.swift in Sources */,
+				86C4C31322E6703E00900B2A /* BetaAgreementViewModel.swift in Sources */,
 				86AC4540226E61E400324067 /* UploadViewController.swift in Sources */,
 				8619C7A722684CDB003E4054 /* SettingsViewModel.swift in Sources */,
+				86C4C31522E6705300900B2A /* BetaAgreementViewController.swift in Sources */,
 				864A580C2187C8EB006FFC1D /* Globals.swift in Sources */,
 				86E7FAB32297520200C09AB5 /* Math.swift in Sources */,
 				86131005218B9E0A00BD1305 /* CameraState.swift in Sources */,

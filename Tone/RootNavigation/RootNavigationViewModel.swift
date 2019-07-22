@@ -43,7 +43,8 @@ class RootNavigationViewModel {
             .subscribe(onNext: { [weak self] event in
                 switch event {
                 case .loggedIn(let user):
-                    self?.loadHome(withUser: user)
+                    //self?.loadHome(withUser: user)
+                    self!.navigationStackActions.onNext(.push(viewModel: self!.createBetaAgreementViewModel(withUser: user), animated: false))
                 }
             }).disposed(by: disposeBag)
         
@@ -132,5 +133,23 @@ class RootNavigationViewModel {
             }).disposed(by: disposeBag)
         
         return settingsViewModel
+    }
+    
+    private func createBetaAgreementViewModel(withUser user: User) -> BetaAgreementViewModel {
+        let betaAgreementViewModel = BetaAgreementViewModel(user: user)
+        betaAgreementViewModel.events
+            .subscribe(onNext: { [weak self] event in //Reference createLoginViewModel for how to reference Self
+                switch event {
+                case .agree:
+                    print("Loading Home!")
+                    self!.loadHome(withUser: user)
+                    //q self!.navigationStackActions.onNext(.pop(animated: false))
+                case .disagree:
+                    print("Exiting!")
+                    self!.navigationStackActions.onNext(.pop(animated: false))
+                }
+            }).disposed(by: disposeBag)
+        
+        return betaAgreementViewModel
     }
 }

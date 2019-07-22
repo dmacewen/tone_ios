@@ -34,4 +34,8 @@ class User {
     func updateUserData() -> Observable<Bool> {
         return updateUserSettings(user_id: self.user_id, token: self.token, settings: self.settings)
     }
+    
+    func agreeToAcknowledgement(_ didAgree: Bool) -> Observable<Bool> {
+            return updateUserAcknowledgementAgreement(user_id: self.user_id, token: self.token, didAgree: didAgree)
+    }
 }
