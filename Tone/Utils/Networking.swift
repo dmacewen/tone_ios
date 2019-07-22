@@ -10,7 +10,8 @@ import Foundation
 import Alamofire
 import RxSwift
 
-let rootURL = "http://macewen.io/users"
+let rootURL = URL(string: "http://macewen.io")!
+let apiURL = rootURL.appendingPathComponent("users")
 
 struct UploadStatus {
     let doneUpload: Bool
@@ -32,28 +33,92 @@ func loginUser(email: String, password: String) -> Observable<User?> {
         let parameters = ["email": email, "password": password]
         print("Requesting \(parameters)")
         Alamofire
-            .request(rootURL, method: .post, parameters: parameters, encoding: URLEncoding.default)
+            .request(apiURL, method: .post, parameters: parameters, encoding: URLEncoding.default)
             .validate(statusCode: 200..<300)
             .responseData { response in
-                print("RESPONSE :: \(response)")
-                if let json = response.result.value {
-                    let decoder = JSONDecoder()
-                    let userData = try! decoder.decode(LoginResponse.self, from: json)
-                    print("USER DATA \(userData)")
-                    observable.onNext(User(email: email, user_id: userData.user_id, token: userData.token))
-                } else {
+                defer { observable.onCompleted() }
+                guard let json = response.result.value, let userData = try? JSONDecoder().decode(LoginResponse.self, from: json) else {
+                    print("COULD NOT DECODE USER DATA")
                     observable.onNext(nil)
+                    return
                 }
-                observable.onCompleted()
+                
+                print("USER DATA \(userData)")
+                observable.onNext(User(email: email, user_id: userData.user_id, token: userData.token))
+                
             }
             return Disposables.create()
+    }
+}
+
+func getUserSettings(user_id: Int32, token: Int32) -> Observable<Settings?> {
+    return Observable.create { observable in
+        let url = apiURL.appendingPathComponent(String(user_id))
+        let parameters = ["token": token]
+        print("Requesting \(parameters) at \(url)")
+        Alamofire
+            .request(url, method: .get, parameters: parameters, encoding: URLEncoding.default)
+            .validate(statusCode: 200..<300)
+            .responseData { response in
+                defer { observable.onCompleted() }
+                guard let json = response.result.value, let settings = try? JSONDecoder().decode(Settings.self, from: json) else {
+                    print("COULD NOT DECODE SETTINGS")
+                    observable.onNext(nil)
+                    return
+                }
+                
+                observable.onNext(settings)
+        }
+        
+        return Disposables.create()
+    }
+}
+
+func updateUserSettings(user_id: Int32, token: Int32, settings: Settings) -> Observable<Bool> {
+    return Observable.create { observable in
+        let url = apiURL.appendingPathComponent(String(user_id))
+        let urlRequest = URLRequest(url: url)
+        let parameters = ["token": token]
+        
+        guard let settingsData = try? JSONEncoder().encode(settings), let settingsString = String(data: settingsData, encoding: .utf8) else {
+            print("Could Not Encode Settings")
+            observable.onNext(false)
+            observable.onCompleted()
+            return Disposables.create()
+        }
+        
+        let settingsParameters = ["settings": settingsString]
+        
+        guard let encodedURL = try? URLEncoding.queryString.encode(urlRequest, with: parameters) else {
+            print("Could not encode URL for Settings")
+            return Disposables.create()
+        }
+        
+        print("Encoded URL :: \(encodedURL.url!.absoluteString)")
+        Alamofire
+            .request(encodedURL.url!, method: .post, parameters: settingsParameters, encoding: URLEncoding.default)
+            .validate(statusCode: 200..<300)
+            .responseString { response in
+                defer { observable.onCompleted() }
+                guard let isSuccessful = response.data else {
+                    print("COULD NOT UPDATE USER SETTINGS")
+                    observable.onNext(false)
+                    return
+                }
+                print("IS SUCCESSFUL ?? \(String(data:isSuccessful, encoding: .utf8)!)")
+                observable.onNext(true)
+        }
+ 
+        return Disposables.create()
     }
 }
 
 func uploadImageData(imageData: [ImageData], progressBar: BehaviorSubject<Float>, user: User) -> Observable<UploadStatus> {
     
     let userid = user.email
-    let url = rootURL + "/\(userid)/selfie"
+    //let url = rootURL + "/\(userid)/selfie"
+    var url = apiURL.appendingPathComponent(userid)
+    url.appendPathComponent("selfie")
     
     let headers: HTTPHeaders = [
         /* "Authorization": "your_access_token",  in case you need authorization header */
@@ -126,3 +191,20 @@ func uploadImageData(imageData: [ImageData], progressBar: BehaviorSubject<Float>
         return Disposables.create()
     }
 }
+
+
+/*
+ let jsonTestResponse = """
+ {
+ "showAllLandmarks": true,
+ "showExposureLandmarks": false,
+ "showBrightnessLandmarks": false,
+ "showBalanceLandmarks": false,
+ "showFacingCameraLandmarks": true
+ }
+ """.data(using: .utf8)
+ 
+ 
+ let settings = try! JSONDecoder().decode(Settings.self, from: jsonTestResponse!)
+ observable.onNext(settings)
+ */

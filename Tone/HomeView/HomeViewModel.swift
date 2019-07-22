@@ -19,9 +19,14 @@ class HomeViewModel {
     
     let events = PublishSubject<Event>()
     let user: User
+    let disposeBag = DisposeBag()
     
     init(user: User) {
         self.user = user
+        self.user.fetchUserData() //Display loading screen during this time?
+            .subscribe(onNext: { user in
+                print("Done Fetching User Data :: \(user.settings)")
+            }).disposed(by: disposeBag)
     }
     
     func logout() {

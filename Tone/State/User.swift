@@ -7,17 +7,31 @@
 //
 
 import Foundation
+import RxSwift
 
 class User {
     let email: String
     var settings: Settings
     let user_id: Int32
     let token: Int32
+    let disposeBag = DisposeBag()
     
     init(email: String, user_id: Int32, token: Int32, settings: Settings = Settings()) {
         self.email = email
         self.settings = settings
         self.user_id = user_id
         self.token = token
+    }
+    
+    func fetchUserData() -> Observable<User> {
+        return getUserSettings(user_id: self.user_id, token: self.token)
+            .map { settingsOptional in
+                self.settings = settingsOptional ?? Settings()
+                return self
+            }
+    }
+    
+    func updateUserData() -> Observable<Bool> {
+        return updateUserSettings(user_id: self.user_id, token: self.token, settings: self.settings)
     }
 }
