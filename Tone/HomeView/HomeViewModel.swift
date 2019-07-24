@@ -15,6 +15,7 @@ class HomeViewModel {
         case sampleSkinTone
         case openSample(sample: String)
         case openSettings
+        case openNewCaptureSession
     }
     
     let events = PublishSubject<Event>()
@@ -23,9 +24,19 @@ class HomeViewModel {
     
     init(user: User) {
         self.user = user
+
         self.user.fetchUserData() //Display loading screen during this time?
-            .subscribe(onNext: { user in
-                print("Done Fetching User Data :: \(user.settings)")
+            .do(onNext: { isSuccessful in
+                if !isSuccessful { self.events.onNext(.logOut) }
+            })
+            .filter { $0 }
+            .flatMap { _ in self.user.getAndCheckCaptureSession() }
+            .do(onNext: { isCaptureSessionValid in
+                if !isCaptureSessionValid { self.events.onNext(.openNewCaptureSession) }
+            })
+            .filter { $0 }
+            .subscribe(onNext: { _ in
+                print("Done Fetching User Data :: \(user.settings) | \(user.captureSession)")
             }).disposed(by: disposeBag)
     }
     

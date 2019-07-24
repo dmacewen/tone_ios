@@ -17,7 +17,6 @@ class BetaAgreementViewController: UIViewController {
     @IBOutlet weak var agreeButton: UIButton!
     @IBOutlet weak var disagreeButton: UIButton!
     
-    
     let disposeBag = DisposeBag()
     
     override func viewDidLoad() {

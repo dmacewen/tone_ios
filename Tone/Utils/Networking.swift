@@ -37,15 +37,20 @@ func loginUser(email: String, password: String) -> Observable<User?> {
             .validate(statusCode: 200..<300)
             .responseData { response in
                 defer { observable.onCompleted() }
-                guard let json = response.result.value, let userData = try? JSONDecoder().decode(LoginResponse.self, from: json) else {
-                    print("COULD NOT DECODE USER DATA")
+                switch response.result {
+                case .success:
+                    guard let json = response.result.value, let userData = try? JSONDecoder().decode(LoginResponse.self, from: json) else {
+                        print("COULD NOT DECODE USER DATA")
+                        observable.onNext(nil)
+                        return
+                    }
+    
+                    print("USER DATA \(userData)")
+                    observable.onNext(User(email: email, user_id: userData.user_id, token: userData.token))
+                case .failure(let error):
+                    print("Login Error :: \(error)")
                     observable.onNext(nil)
-                    return
                 }
-                
-                print("USER DATA \(userData)")
-                observable.onNext(User(email: email, user_id: userData.user_id, token: userData.token))
-                
             }
             return Disposables.create()
     }
@@ -61,15 +66,20 @@ func getUserSettings(user_id: Int32, token: Int32) -> Observable<Settings?> {
             .validate(statusCode: 200..<300)
             .responseData { response in
                 defer { observable.onCompleted() }
-                guard let json = response.result.value, let settings = try? JSONDecoder().decode(Settings.self, from: json) else {
-                    print("COULD NOT DECODE SETTINGS")
+                switch response.result {
+                case .success:
+                    guard let json = response.result.value, let settings = try? JSONDecoder().decode(Settings.self, from: json) else {
+                        print("COULD NOT DECODE SETTINGS")
+                        observable.onNext(Settings())
+                        return
+                    }
+                    
+                    observable.onNext(settings)
+                case .failure(let error):
+                    print("Settings Error :: \(error)")
                     observable.onNext(nil)
-                    return
                 }
-                
-                observable.onNext(settings)
         }
-        
         return Disposables.create()
     }
 }
@@ -100,13 +110,18 @@ func updateUserSettings(user_id: Int32, token: Int32, settings: Settings) -> Obs
             .validate(statusCode: 200..<300)
             .responseString { response in
                 defer { observable.onCompleted() }
-                guard let isSuccessful = response.data else {
-                    print("COULD NOT UPDATE USER SETTINGS")
+                switch response.result {
+                case .success:
+                    guard let _ = response.data else {
+                        print("COULD NOT UPDATE USER SETTINGS")
+                        observable.onNext(false)
+                        return
+                    }
+                    observable.onNext(true)
+                case .failure(let error):
+                    print("Updated Settings Error :: \(error)")
                     observable.onNext(false)
-                    return
                 }
-                print("IS SUCCESSFUL ?? \(String(data:isSuccessful, encoding: .utf8)!)")
-                observable.onNext(true)
         }
  
         return Disposables.create()
@@ -135,17 +150,31 @@ func updateUserAcknowledgementAgreement(user_id: Int32, token: Int32, didAgree: 
             .validate(statusCode: 200..<300)
             .responseString { response in
                 defer { observable.onCompleted() }
-                guard let _ = response.data else {
-                    print("AGREEMENT FALSE")
+                switch response.result {
+                case .success:
+                    guard let _ = response.data else {
+                        print("AGREEMENT FALSE")
+                        observable.onNext(false)
+                        return
+                    }
+                    
+                    observable.onNext(true)
+                case .failure(let error):
+                    print("Update User acknowledgement Error :: \(error)")
                     observable.onNext(false)
-                    return
                 }
-                
-                observable.onNext(true)
         }
  
         return Disposables.create()
     }
+}
+
+func getCaptureSession(user_id: Int32, token: Int32) -> Observable<CaptureSession?> {
+    return Observable.just(nil)
+}
+
+func getNewCaptureSession(user_id: Int32, token: Int32, skinColorId: Int32) -> Observable<CaptureSession?> {
+    return Observable.just(nil)
 }
 
 func uploadImageData(imageData: [ImageData], progressBar: BehaviorSubject<Float>, user: User) -> Observable<UploadStatus> {

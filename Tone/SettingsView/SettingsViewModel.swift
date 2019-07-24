@@ -12,6 +12,7 @@ import RxSwift
 class SettingsViewModel {
     enum Event {
         case back
+        case logOut
     }
     
     let events = PublishSubject<Event>()
@@ -30,6 +31,9 @@ class SettingsViewModel {
         user.updateUserData()
             .subscribe(onNext: { isSuccessful in
                 print("Success?? \(isSuccessful)")
+                if !isSuccessful {
+                    self.events.onNext(.logOut)
+                }
             }).disposed(by: disposeBag)
         
     }

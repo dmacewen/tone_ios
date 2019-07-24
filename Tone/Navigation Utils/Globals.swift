@@ -37,6 +37,11 @@ func viewController(forViewModel viewModel: Any) -> UIViewController? {
         viewController?.viewModel = viewModel
         return viewController
         
+    case let viewModel as CaptureSessionViewModel:
+        let viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "captureSessionViewController") as? CaptureSessionViewController
+        viewController?.viewModel = viewModel
+        return viewController
+        
     case let viewModel as SampleSkinToneViewModel:
         let viewController: ReactiveUIViewController?
         print("VIEW MODEL STATE VALUE :: \(try! viewModel.events.value())")

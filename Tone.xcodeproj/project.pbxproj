@@ -16,6 +16,9 @@
 		8619C7A722684CDB003E4054 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8619C7A622684CDB003E4054 /* SettingsViewModel.swift */; };
 		8619C7A922684CEE003E4054 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8619C7A822684CEE003E4054 /* SettingsViewController.swift */; };
 		8619E15B224AC96600A6A438 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8619E15A224AC96600A6A438 /* User.swift */; };
+		861BB28622E7C53600F2508E /* CaptureSessionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 861BB28522E7C53600F2508E /* CaptureSessionViewModel.swift */; };
+		861BB28822E7C54300F2508E /* CaptureSessionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 861BB28722E7C54300F2508E /* CaptureSessionViewController.swift */; };
+		861BB28A22E7C57500F2508E /* CaptureSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 861BB28922E7C57500F2508E /* CaptureSession.swift */; };
 		86213F9B2187F56600A622FB /* KeyboardHeightObservable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86213F9A2187F56600A622FB /* KeyboardHeightObservable.swift */; };
 		864A580C2187C8EB006FFC1D /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 864A580B2187C8EB006FFC1D /* Globals.swift */; };
 		8651B60C2187D6FA00FB7A3A /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8651B60B2187D6FA00FB7A3A /* LoginViewModel.swift */; };
@@ -103,6 +106,9 @@
 		8619C7A622684CDB003E4054 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		8619C7A822684CEE003E4054 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		8619E15A224AC96600A6A438 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		861BB28522E7C53600F2508E /* CaptureSessionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureSessionViewModel.swift; sourceTree = "<group>"; };
+		861BB28722E7C54300F2508E /* CaptureSessionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureSessionViewController.swift; sourceTree = "<group>"; };
+		861BB28922E7C57500F2508E /* CaptureSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureSession.swift; sourceTree = "<group>"; };
 		86213F9A2187F56600A622FB /* KeyboardHeightObservable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardHeightObservable.swift; sourceTree = "<group>"; };
 		864A580B2187C8EB006FFC1D /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
 		8651B60B2187D6FA00FB7A3A /* LoginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
@@ -244,6 +250,15 @@
 			path = SettingsView;
 			sourceTree = "<group>";
 		};
+		861BB28422E7C51300F2508E /* CaptureSessionView */ = {
+			isa = PBXGroup;
+			children = (
+				861BB28522E7C53600F2508E /* CaptureSessionViewModel.swift */,
+				861BB28722E7C54300F2508E /* CaptureSessionViewController.swift */,
+			);
+			path = CaptureSessionView;
+			sourceTree = "<group>";
+		};
 		86AC4527226E60EE00324067 /* SetupView */ = {
 			isa = PBXGroup;
 			children = (
@@ -310,6 +325,7 @@
 			isa = PBXGroup;
 			children = (
 				8619E15A224AC96600A6A438 /* User.swift */,
+				861BB28922E7C57500F2508E /* CaptureSession.swift */,
 			);
 			path = State;
 			sourceTree = "<group>";
@@ -352,6 +368,7 @@
 				8619C7A522684CB2003E4054 /* SettingsView */,
 				86193C8F2189425B001F5C4E /* LoginView */,
 				86C4C31122E66FDD00900B2A /* BetaAgreementView */,
+				861BB28422E7C51300F2508E /* CaptureSessionView */,
 				86193C8E21894246001F5C4E /* RootNavigation */,
 				86AC4543226F8EB200324067 /* Navigation Utils */,
 				86AC4544226F8EEE00324067 /* Imaging Utils */,
@@ -562,6 +579,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				861BB28822E7C54300F2508E /* CaptureSessionViewController.swift in Sources */,
 				86AC4538226E61B600324067 /* FlashViewController.swift in Sources */,
 				8685ADA5219CA7B900B66F90 /* Camera.swift in Sources */,
 				86F9E72B225EA1E200E6E52E /* Metadata.swift in Sources */,
@@ -571,6 +589,7 @@
 				866C405D2190CB69007BABDE /* ImageUtils.swift in Sources */,
 				86193C8B21891B29001F5C4E /* HomeViewModel.swift in Sources */,
 				86AC4542226E698100324067 /* ReactiveUIViewController.swift in Sources */,
+				861BB28622E7C53600F2508E /* CaptureSessionViewModel.swift in Sources */,
 				86F1BCAA218D219E00A18457 /* serialMap.swift in Sources */,
 				8651B60E2187D72200FB7A3A /* LoginViewController.swift in Sources */,
 				86ED6FCA22611D7F00124A1F /* Image.swift in Sources */,
@@ -578,6 +597,7 @@
 				86AC4540226E61E400324067 /* UploadViewController.swift in Sources */,
 				8619C7A722684CDB003E4054 /* SettingsViewModel.swift in Sources */,
 				86C4C31522E6705300900B2A /* BetaAgreementViewController.swift in Sources */,
+				861BB28A22E7C57500F2508E /* CaptureSession.swift in Sources */,
 				864A580C2187C8EB006FFC1D /* Globals.swift in Sources */,
 				86E7FAB32297520200C09AB5 /* Math.swift in Sources */,
 				86131005218B9E0A00BD1305 /* CameraState.swift in Sources */,

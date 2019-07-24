@@ -72,7 +72,9 @@ class RootNavigationViewModel {
                     print("Open Sample :: \(sample)")
                 case .openSettings:
                     self!.navigationStackActions.onNext(.push(viewModel: self!.createSettingsViewModel(withUser: user), animated: false))
-
+                case .openNewCaptureSession:
+                    print("Opening New Capture Session Page!")
+                    self!.navigationStackActions.onNext(.push(viewModel: self!.createCaptureSessionViewModel(withUser: user), animated: false))
                 }
             }).disposed(by: disposeBag)
         
@@ -129,6 +131,8 @@ class RootNavigationViewModel {
                 switch event {
                 case .back:
                     self!.navigationStackActions.onNext(.pop(animated: false))
+                case .logOut:
+                    self!.navigationStackActions.onNext(.set(viewModels: [self!.createLoginViewModel()], animated: false))
                 }
             }).disposed(by: disposeBag)
         
@@ -151,5 +155,23 @@ class RootNavigationViewModel {
             }).disposed(by: disposeBag)
         
         return betaAgreementViewModel
+    }
+    
+    private func createCaptureSessionViewModel(withUser user: User) -> CaptureSessionViewModel {
+        let captureSessionViewModel = CaptureSessionViewModel(user: user)
+        captureSessionViewModel.events
+            .subscribe(onNext: { [weak self] event in //Reference createLoginViewModel for how to reference Self
+                switch event {
+                case .updated:
+                    print("Loading Home!")
+                    self!.loadHome(withUser: user)
+                //q self!.navigationStackActions.onNext(.pop(animated: false))
+                case .cancel:
+                    print("Exiting!")
+                    self!.navigationStackActions.onNext(.pop(animated: false))
+                }
+            }).disposed(by: disposeBag)
+        
+        return captureSessionViewModel
     }
 }
