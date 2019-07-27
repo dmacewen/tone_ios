@@ -52,10 +52,17 @@ class User {
                     }
                     
                     if captureSession.out_of_date {
+                        print("out of date")
+                        return false
+                    }
+                    let maximumSessionLength = TimeInterval.init(exactly: (60 * 60 * 24))!
+                    
+                    if captureSession.now! > (captureSession.start_date + maximumSessionLength) {
+                        print("Session expired")
                         return false
                     }
                     
-                    return false
+                    return true
                     
         }
     }

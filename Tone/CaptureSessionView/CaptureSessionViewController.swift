@@ -17,6 +17,7 @@ class CaptureSessionViewController: UIViewController {
     @IBOutlet weak var updateButton: UIButton!
     @IBOutlet weak var cancelButton: UIButton!
     @IBOutlet weak var skinColorId: UITextField!
+    @IBOutlet weak var backgroundView: UIView!
     
     let disposeBag = DisposeBag()
     
@@ -31,7 +32,7 @@ class CaptureSessionViewController: UIViewController {
             }
             .bind(to: viewModel.skinColorIdOptional)
             .disposed(by: disposeBag)
-        
+                
         updateButton.rx.tap
             .subscribe(onNext: { _ in self.viewModel.updateSkinColorId() })
             .disposed(by: disposeBag)

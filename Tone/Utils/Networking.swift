@@ -170,7 +170,60 @@ func updateUserAcknowledgementAgreement(user_id: Int32, token: Int32, didAgree: 
 }
 
 func getCaptureSession(user_id: Int32, token: Int32) -> Observable<CaptureSession?> {
-    return Observable.just(nil)
+    return Observable.create { observable in
+        var url = apiURL.appendingPathComponent(String(user_id))
+        url.appendPathComponent("session")
+        
+        let urlRequest = URLRequest(url: url)
+        let tokenParameters = ["token": token]
+        
+        guard let encodedURL = try? URLEncoding.queryString.encode(urlRequest, with: tokenParameters) else {
+            print("Could not encode URL for Settings")
+            observable.onNext(nil)
+            observable.onCompleted()
+            return Disposables.create()
+        }
+        
+        print("Getting Capture Session At :: \(encodedURL.url!)")
+        Alamofire
+            .request(encodedURL.url!, method: .get, parameters: [:], encoding: URLEncoding.default)
+            .validate(statusCode: 200..<300)
+            .responseData { response in
+                defer { observable.onCompleted() }
+                print("Response :: \(String(data: response.data!, encoding: .utf8)!)")
+                switch response.result {
+                case .success:
+                    /*
+                    guard let json = response.result.value, let captureSession = try? JSONDecoder().decode(CaptureSession.self, from: json) else {
+                        print("COULD NOT DECODE SETTINGS")
+                        observable.onNext(nil)
+                        return
+                    }
+ */
+                    guard let json = response.result.value else {
+                        print("COULD NOT DECODE JSON Session")
+                        observable.onNext(nil)
+                        return
+                    }
+                    let captureSession: CaptureSession?
+                    do {
+                        captureSession = try JSONDecoder().decode(CaptureSession.self, from: json)
+                    } catch {
+                        print("COULD NOT DECODE Session :: \(error)")
+                        observable.onNext(nil)
+                        return
+                    }
+                    
+                    print("Capture Session :: \(captureSession!)")
+                    observable.onNext(captureSession!)
+                case .failure(let error):
+                    print("Capture Session Error :: \(error)")
+                    observable.onNext(nil)
+                }
+        }
+        
+        return Disposables.create()
+    }
 }
 
 func getNewCaptureSession(user_id: Int32, token: Int32, skinColorId: Int32) -> Observable<CaptureSession?> {
