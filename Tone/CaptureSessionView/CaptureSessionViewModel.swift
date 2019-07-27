@@ -17,11 +17,13 @@ class CaptureSessionViewModel {
     
     let events = PublishSubject<Event>()
     let user: User
+    let isCancelable: Bool
     let skinColorIdOptional = Variable<Int32?>(nil)
     let disposeBag = DisposeBag()
     
-    init(user: User) {
+    init(user: User, isCancelable: Bool = true) {
         self.user = user
+        self.isCancelable = isCancelable
     }
     
     func updateSkinColorId() {

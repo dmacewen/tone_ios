@@ -72,9 +72,9 @@ class RootNavigationViewModel {
                     print("Open Sample :: \(sample)")
                 case .openSettings:
                     self!.navigationStackActions.onNext(.push(viewModel: self!.createSettingsViewModel(withUser: user), animated: false))
-                case .openNewCaptureSession:
+                case .openNewCaptureSession(let isCancelable):
                     print("Opening New Capture Session Page!")
-                    self!.navigationStackActions.onNext(.push(viewModel: self!.createCaptureSessionViewModel(withUser: user), animated: false))
+                    self!.navigationStackActions.onNext(.push(viewModel: self!.createCaptureSessionViewModel(withUser: user, isCancelable: isCancelable), animated: false))
                 }
             }).disposed(by: disposeBag)
         
@@ -157,8 +157,8 @@ class RootNavigationViewModel {
         return betaAgreementViewModel
     }
     
-    private func createCaptureSessionViewModel(withUser user: User) -> CaptureSessionViewModel {
-        let captureSessionViewModel = CaptureSessionViewModel(user: user)
+    private func createCaptureSessionViewModel(withUser user: User, isCancelable: Bool) -> CaptureSessionViewModel {
+        let captureSessionViewModel = CaptureSessionViewModel(user: user, isCancelable: isCancelable)
         captureSessionViewModel.events
             .subscribe(onNext: { [weak self] event in //Reference createLoginViewModel for how to reference Self
                 switch event {

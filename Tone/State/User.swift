@@ -15,7 +15,7 @@ class User {
     let user_id: Int32
     let token: Int32
     var captureSession: CaptureSession?
-    let disposeBag = DisposeBag()
+    //let disposeBag = DisposeBag()
     
     init(email: String, user_id: Int32, token: Int32, settings: Settings = Settings(), captureSession: CaptureSession? = nil) {
         self.email = email
@@ -47,35 +47,30 @@ class User {
     func getAndCheckCaptureSession() -> Observable<Bool> {
             return getCaptureSession(user_id: self.user_id, token: self.token)
                 .map { captureSessionOptional in
+                    self.captureSession = captureSessionOptional
+                    
                     guard let captureSession = captureSessionOptional else {
                         return false
                     }
                     
-                    if captureSession.out_of_date {
-                        print("out of date")
-                        return false
-                    }
-                    let maximumSessionLength = TimeInterval.init(exactly: (60 * 60 * 24))!
-                    
-                    if captureSession.now! > (captureSession.start_date + maximumSessionLength) {
-                        print("Session expired")
-                        return false
-                    }
-                    
-                    return true
+                    return captureSession.isValid()
                     
         }
     }
     
     func updateCaptureSession(_ skinColorId: Int32) -> Observable<Bool> {
+        //print("Updating Capture Session with skin color id :: \(skinColorId)")
         return getNewCaptureSession(user_id: self.user_id, token: self.token, skinColorId: skinColorId)
             .map { captureSessionOptional in
+                self.captureSession = captureSessionOptional
+                
+                //print("New Capture Session :: \(String(describing: self.captureSession))")
+
                 guard let captureSession = captureSessionOptional else {
                     return false
                 }
                 
-                self.captureSession = captureSession
-                return true
+                return captureSession.isValid()
         }
     }
 }

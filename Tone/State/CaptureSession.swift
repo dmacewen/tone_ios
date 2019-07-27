@@ -46,12 +46,28 @@ class CaptureSession: Codable {
         self.now = dateFormatter.date(from: now_date_string)!
     }
     
+    func isValid() -> Bool {
+        if out_of_date {
+            print("Capture Session Out Of Date (Set by server)")
+            return false
+        }
+        
+        let maximumSessionLength = TimeInterval.init(exactly: (60))!// * 60 * 24))! //One day. Interval measured in seconds.
+        
+        if now! > (start_date + maximumSessionLength) {
+            print("Session Expired")
+            return false
+        }
+        
+        return true
+    }
+    
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(self.out_of_date, forKey: .out_of_date)
         try container.encode(self.session_id, forKey: .session_id)
         try container.encode(self.skin_color_id, forKey: .skin_color_id)
         try container.encode(self.start_date, forKey: .start_date)
-        try container.encode(self.now!, forKey: .now)
+        //try container.encode(self.now!, forKey: .now) //I dont think this is necissary. Just needed to check if the session has expired
     }
 }

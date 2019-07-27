@@ -15,7 +15,7 @@ class HomeViewModel {
         case sampleSkinTone
         case openSample(sample: String)
         case openSettings
-        case openNewCaptureSession
+        case openNewCaptureSession(isCancelable: Bool)
     }
     
     let events = PublishSubject<Event>()
@@ -32,7 +32,7 @@ class HomeViewModel {
             .filter { $0 }
             .flatMap { _ in self.user.getAndCheckCaptureSession() }
             .do(onNext: { isCaptureSessionValid in
-                if !isCaptureSessionValid { self.events.onNext(.openNewCaptureSession) }
+                if !isCaptureSessionValid { self.events.onNext(.openNewCaptureSession(isCancelable: false)) }
             })
             .filter { $0 }
             .subscribe(onNext: { _ in

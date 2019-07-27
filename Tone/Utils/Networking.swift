@@ -56,13 +56,30 @@ func loginUser(email: String, password: String) -> Observable<User?> {
     }
 }
 
+private func buildUserURL(_ user_id: Int32, _ token: Int32) -> URL? {
+    let url = apiURL.appendingPathComponent(String(user_id))
+    let urlRequest = URLRequest(url: url)
+    let tokenParameters = ["token": token]
+    
+    guard let encodedURLRequest = try? URLEncoding.queryString.encode(urlRequest, with: tokenParameters) else {
+        print("Could not encode user URL")
+        return nil
+    }
+    
+    return encodedURLRequest.url
+}
+
 func getUserSettings(user_id: Int32, token: Int32) -> Observable<Settings?> {
     return Observable.create { observable in
-        let url = apiURL.appendingPathComponent(String(user_id))
-        let parameters = ["token": token]
-        print("Requesting \(parameters) at \(url)")
+        guard var url = buildUserURL(user_id, token) else {
+            observable.onNext(nil)
+            observable.onCompleted()
+            return Disposables.create()
+        }
+
+        print("Requesting URL \(url.absoluteString)")
         Alamofire
-            .request(url, method: .get, parameters: parameters, encoding: URLEncoding.default)
+            .request(url, method: .get, parameters: [:], encoding: URLEncoding.default)
             .validate(statusCode: 200..<300)
             .responseData { response in
                 defer { observable.onCompleted() }
@@ -86,9 +103,11 @@ func getUserSettings(user_id: Int32, token: Int32) -> Observable<Settings?> {
 
 func updateUserSettings(user_id: Int32, token: Int32, settings: Settings) -> Observable<Bool> {
     return Observable.create { observable in
-        let url = apiURL.appendingPathComponent(String(user_id))
-        let urlRequest = URLRequest(url: url)
-        let parameters = ["token": token]
+        guard var url = buildUserURL(user_id, token) else {
+            observable.onNext(false)
+            observable.onCompleted()
+            return Disposables.create()
+        }
         
         guard let settingsData = try? JSONEncoder().encode(settings), let settingsString = String(data: settingsData, encoding: .utf8) else {
             print("Could Not Encode Settings")
@@ -99,14 +118,8 @@ func updateUserSettings(user_id: Int32, token: Int32, settings: Settings) -> Obs
         
         let settingsParameters = ["settings": settingsString]
         
-        guard let encodedURL = try? URLEncoding.queryString.encode(urlRequest, with: parameters) else {
-            print("Could not encode URL for Settings")
-            return Disposables.create()
-        }
-        
-        print("Encoded URL :: \(encodedURL.url!.absoluteString)")
         Alamofire
-            .request(encodedURL.url!, method: .post, parameters: settingsParameters, encoding: URLEncoding.default)
+            .request(url, method: .post, parameters: settingsParameters, encoding: URLEncoding.default)
             .validate(statusCode: 200..<300)
             .responseString { response in
                 defer { observable.onCompleted() }
@@ -130,23 +143,17 @@ func updateUserSettings(user_id: Int32, token: Int32, settings: Settings) -> Obs
 
 func updateUserAcknowledgementAgreement(user_id: Int32, token: Int32, didAgree: Bool) -> Observable<Bool> {
     return Observable.create { observable in
-        
-        var url = apiURL.appendingPathComponent(String(user_id))
-        url.appendPathComponent("agree")
-        let urlRequest = URLRequest(url: url)
-        let tokenParameters = ["token": token]
-        let agreeParameters = ["agree": didAgree]
-        
-        guard let encodedURL = try? URLEncoding.queryString.encode(urlRequest, with: tokenParameters) else {
-            print("Could not encode URL for Settings")
+        guard var url = buildUserURL(user_id, token) else {
             observable.onNext(false)
             observable.onCompleted()
             return Disposables.create()
         }
         
-        print("Encoded URL :: \(encodedURL.url!.absoluteString)")
+        url.appendPathComponent("agree")
+        let agreeParameters = ["agree": didAgree]
+        
         Alamofire
-            .request(encodedURL.url!, method: .put, parameters: agreeParameters, encoding: URLEncoding.default)
+            .request(url, method: .put, parameters: agreeParameters, encoding: URLEncoding.default)
             .validate(statusCode: 200..<300)
             .responseString { response in
                 defer { observable.onCompleted() }
@@ -171,51 +178,31 @@ func updateUserAcknowledgementAgreement(user_id: Int32, token: Int32, didAgree: 
 
 func getCaptureSession(user_id: Int32, token: Int32) -> Observable<CaptureSession?> {
     return Observable.create { observable in
-        var url = apiURL.appendingPathComponent(String(user_id))
-        url.appendPathComponent("session")
-        
-        let urlRequest = URLRequest(url: url)
-        let tokenParameters = ["token": token]
-        
-        guard let encodedURL = try? URLEncoding.queryString.encode(urlRequest, with: tokenParameters) else {
-            print("Could not encode URL for Settings")
+        guard var url = buildUserURL(user_id, token) else {
             observable.onNext(nil)
             observable.onCompleted()
             return Disposables.create()
         }
         
-        print("Getting Capture Session At :: \(encodedURL.url!)")
+        url.appendPathComponent("session")
+        
+        print("Getting Capture Session At :: \(url.absoluteString)")
         Alamofire
-            .request(encodedURL.url!, method: .get, parameters: [:], encoding: URLEncoding.default)
+            .request(url, method: .get, parameters: [:], encoding: URLEncoding.default)
             .validate(statusCode: 200..<300)
             .responseData { response in
                 defer { observable.onCompleted() }
                 print("Response :: \(String(data: response.data!, encoding: .utf8)!)")
                 switch response.result {
                 case .success:
-                    /*
                     guard let json = response.result.value, let captureSession = try? JSONDecoder().decode(CaptureSession.self, from: json) else {
-                        print("COULD NOT DECODE SETTINGS")
-                        observable.onNext(nil)
-                        return
-                    }
- */
-                    guard let json = response.result.value else {
-                        print("COULD NOT DECODE JSON Session")
-                        observable.onNext(nil)
-                        return
-                    }
-                    let captureSession: CaptureSession?
-                    do {
-                        captureSession = try JSONDecoder().decode(CaptureSession.self, from: json)
-                    } catch {
-                        print("COULD NOT DECODE Session :: \(error)")
+                        print("COULD NOT DECODE CAPTURE SESSION")
                         observable.onNext(nil)
                         return
                     }
                     
-                    print("Capture Session :: \(captureSession!)")
-                    observable.onNext(captureSession!)
+                    print("Capture Session :: \(captureSession)")
+                    observable.onNext(captureSession)
                 case .failure(let error):
                     print("Capture Session Error :: \(error)")
                     observable.onNext(nil)
@@ -227,8 +214,41 @@ func getCaptureSession(user_id: Int32, token: Int32) -> Observable<CaptureSessio
 }
 
 func getNewCaptureSession(user_id: Int32, token: Int32, skinColorId: Int32) -> Observable<CaptureSession?> {
-    return Observable.just(nil)
-}
+    return Observable.create { observable in
+        guard var url = buildUserURL(user_id, token) else {
+            observable.onNext(nil)
+            observable.onCompleted()
+            return Disposables.create()
+        }
+        
+        url.appendPathComponent("session")
+        let captureSessionParameters = ["skin_color_id": skinColorId]
+        
+        print("Getting Capture Session At :: \(url.absoluteString)")
+        Alamofire
+            .request(url, method: .post, parameters: captureSessionParameters, encoding: URLEncoding.default)
+            .validate(statusCode: 200..<300)
+            .responseData { response in
+                defer { observable.onCompleted() }
+                print("Response :: \(String(data: response.data!, encoding: .utf8)!)")
+                switch response.result {
+                case .success:
+                    guard let json = response.result.value, let captureSession = try? JSONDecoder().decode(CaptureSession.self, from: json) else {
+                        print("COULD NOT DECODE CAPTURE SESSION")
+                        observable.onNext(nil)
+                        return
+                    }
+                    
+                    print("Capture Session :: \(captureSession)")
+                    observable.onNext(captureSession)
+                case .failure(let error):
+                    print("Capture Session Error :: \(error)")
+                    observable.onNext(nil)
+                }
+        }
+        
+        return Disposables.create()
+    }}
 
 func uploadImageData(imageData: [ImageData], progressBar: BehaviorSubject<Float>, user: User) -> Observable<UploadStatus> {
     

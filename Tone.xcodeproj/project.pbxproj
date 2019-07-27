@@ -246,6 +246,7 @@
 			isa = PBXGroup;
 			children = (
 				8619C7A622684CDB003E4054 /* SettingsViewModel.swift */,
+				8619C7A822684CEE003E4054 /* SettingsViewController.swift */,
 			);
 			path = SettingsView;
 			sourceTree = "<group>";
@@ -255,7 +256,6 @@
 			children = (
 				861BB28522E7C53600F2508E /* CaptureSessionViewModel.swift */,
 				861BB28722E7C54300F2508E /* CaptureSessionViewController.swift */,
-				8619C7A822684CEE003E4054 /* SettingsViewController.swift */,
 			);
 			path = CaptureSessionView;
 			sourceTree = "<group>";

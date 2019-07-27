@@ -25,6 +25,9 @@ class CaptureSessionViewController: UIViewController {
         super.viewDidLoad()
         title = "CaptureSession"
         
+        //Dont show the cancel button if the user has to update their session...
+        cancelButton.isHidden = !viewModel.isCancelable
+        
         skinColorId.rx.text
             .map { textOptional -> Int32? in
                 guard let text = textOptional else { return nil }
