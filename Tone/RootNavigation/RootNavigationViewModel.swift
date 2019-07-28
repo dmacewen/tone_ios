@@ -10,15 +10,15 @@ import Foundation
 import RxSwift
 
 enum NavigationStackAction {
-    case set(viewModels: [Any], animated: Bool)
-    case push(viewModel: Any, animated: Bool)
+    case set(viewModels: [ViewModel], animated: Bool)
+    case push(viewModel: ViewModel, animated: Bool)
     case pop(animated: Bool)
-    case swap(viewModel: Any, animated: Bool)
+    case swap(viewModel: ViewModel, animated: Bool)
 }
 
 class RootNavigationViewModel {
-    lazy private(set) var navigationStackActions = BehaviorSubject<NavigationStackAction>(value: .set(viewModels: [self.createLoginViewModel()], animated: false))
-    private var currentViewModelStack: [Any] = []
+    lazy private(set) var navigationStackActions = BehaviorSubject<NavigationStackAction>(value: .set(viewModels: [createLoginViewModel()], animated: false))
+    private var currentViewModelStack: [ViewModel] = []
     private let disposeBag = DisposeBag()
     
     init() {
@@ -36,7 +36,7 @@ class RootNavigationViewModel {
             }
         }).disposed(by: disposeBag)
     }
-    
+
     func createLoginViewModel() -> LoginViewModel {
         let loginViewModel = LoginViewModel()
         loginViewModel.events
@@ -53,7 +53,8 @@ class RootNavigationViewModel {
     
     private func loadHome(withUser user: User) {
         print("Launching Tone for user \(user.email)")
-        navigationStackActions.onNext(.set(viewModels: [self.createHomeViewModel(withUser: user)], animated: false))
+        navigationStackActions
+            .onNext(.set(viewModels: [self.createHomeViewModel(withUser: user)], animated: false))
     }
     
     private func createHomeViewModel(withUser user: User) -> HomeViewModel {
@@ -77,7 +78,7 @@ class RootNavigationViewModel {
                     self!.navigationStackActions.onNext(.push(viewModel: self!.createCaptureSessionViewModel(withUser: user, isCancelable: isCancelable), animated: false))
                 }
             }).disposed(by: disposeBag)
-        
+        //homeViewModel.checkConditions()
         return homeViewModel
     }
     
@@ -85,7 +86,7 @@ class RootNavigationViewModel {
         var sampleSkinToneViewModel: SampleSkinToneViewModel? = SampleSkinToneViewModel(user: user)
         
         var isStillSampleSkinTone = true
-        var savedNavigationStack: [Any]? = []
+        var savedNavigationStack: [ViewModel]? = []
         
         sampleSkinToneViewModel!.events
             .takeWhile { _ in isStillSampleSkinTone }

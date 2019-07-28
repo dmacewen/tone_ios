@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		86131005218B9E0A00BD1305 /* CameraState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86131004218B9E0A00BD1305 /* CameraState.swift */; };
+		8616AF4022EE1AAE004F0315 /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8616AF3F22EE1AAE004F0315 /* ViewModel.swift */; };
 		8618710B225ECB0D00F19565 /* FaceCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8618710A225ECB0D00F19565 /* FaceCapture.swift */; };
 		86193C8B21891B29001F5C4E /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C8A21891B29001F5C4E /* HomeViewModel.swift */; };
 		86193C8D21891B36001F5C4E /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C8C21891B36001F5C4E /* HomeViewController.swift */; };
@@ -98,6 +99,7 @@
 
 /* Begin PBXFileReference section */
 		86131004218B9E0A00BD1305 /* CameraState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraState.swift; sourceTree = "<group>"; };
+		8616AF3F22EE1AAE004F0315 /* ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel.swift; sourceTree = "<group>"; };
 		8618710A225ECB0D00F19565 /* FaceCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceCapture.swift; sourceTree = "<group>"; };
 		86193C8A21891B29001F5C4E /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		86193C8C21891B36001F5C4E /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
@@ -305,6 +307,7 @@
 			children = (
 				864A580B2187C8EB006FFC1D /* Globals.swift */,
 				86AC4541226E698100324067 /* ReactiveUIViewController.swift */,
+				8616AF3F22EE1AAE004F0315 /* ViewModel.swift */,
 			);
 			path = "Navigation Utils";
 			sourceTree = "<group>";
@@ -616,6 +619,7 @@
 				8618710B225ECB0D00F19565 /* FaceCapture.swift in Sources */,
 				86AC452F226E616E00324067 /* SetupViewController.swift in Sources */,
 				8619C7A422684682003E4054 /* Settings.swift in Sources */,
+				8616AF4022EE1AAE004F0315 /* ViewModel.swift in Sources */,
 				86AC4534226E61A000324067 /* PreviewViewController.swift in Sources */,
 				8694A0812187BF4300615BE3 /* RootNavigationViewController.swift in Sources */,
 				86F9E729225E9C5C00E6E52E /* CGExtensions.swift in Sources */,

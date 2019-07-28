@@ -11,23 +11,36 @@
 import Foundation
 import RxSwift
 
-class LoginViewModel {
-    enum Event {
+class LoginViewModel: ViewModel {
+   
+    enum LoginEvent {
         case loggedIn(user: User)
     }
     
-    let events = PublishSubject<Event>()
+    let events = PublishSubject<LoginEvent>()
 
     let email = Variable<String?>(nil)
     let password = Variable<String?>(nil)
+    
+    override func afterLoad() {
+        print("After Load Login!")
+    }
     
     func login() -> Observable<Bool> {
         guard let validatedEmail = email.value else { return Observable.just(false) }
         guard let validatedPassword = password.value else { return Observable.just(false)}
         
         return loginUser(email: validatedEmail, password: validatedPassword)
-            .map { loginResponse in
-                guard let user = loginResponse else { return false }
+            .flatMap { userOptional -> Observable<User?> in
+                guard let user = userOptional else { return Observable.just(nil) }
+                return user.fetchUserData()
+            }
+            .flatMap { userOptional -> Observable<User?> in
+                guard let user = userOptional else { return Observable.just(nil) }
+                return user.getCaptureSession()
+            }
+            .map { userOptional in
+                guard let user = userOptional else { return false }
                 self.events.onNext(.loggedIn(user: user))
                 return true
             }

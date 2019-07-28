@@ -9,7 +9,7 @@
 import Foundation
 import RxSwift
 
-class HomeViewModel {
+class HomeViewModel: ViewModel {
     enum Event {
         case logOut
         case sampleSkinTone
@@ -24,7 +24,7 @@ class HomeViewModel {
     
     init(user: User) {
         self.user = user
-
+/*
         self.user.fetchUserData() //Display loading screen during this time?
             .do(onNext: { isSuccessful in
                 if !isSuccessful { self.events.onNext(.logOut) }
@@ -38,6 +38,23 @@ class HomeViewModel {
             .subscribe(onNext: { _ in
                 print("Done Fetching User Data :: \(user.settings) | \(user.captureSession)")
             }).disposed(by: disposeBag)
+ */
+    }
+    /*
+    func checkConditions() {
+        if !self.user.isCaptureSessionValid() {
+            self.events.onNext(.openNewCaptureSession(isCancelable: false))
+        }
+    }
+    */
+    override func afterLoad() {
+        if alreadyLoaded {
+            return
+        }
+        if !self.user.isCaptureSessionValid() {
+            self.events.onNext(.openNewCaptureSession(isCancelable: false))
+        }
+        alreadyLoaded = true
     }
     
     func logout() {

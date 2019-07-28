@@ -28,12 +28,14 @@ class RootNavigationViewController: UINavigationController {
                     print("Setting View Controllers!")
                     DispatchQueue.main.async {
                         self?.setViewControllers(viewControllers, animated: animated)
+                        viewModels.forEach { viewModel in viewModel.afterLoad() }
                     }
                     
                 case .push(let viewModel, let animated):
                     guard let viewController = viewController(forViewModel: viewModel) else { return }
                     DispatchQueue.main.async {
                         self?.pushViewController(viewController, animated: animated)
+                        viewModel.afterLoad()
                     }
                 
                 case .pop(let animated):
@@ -47,6 +49,7 @@ class RootNavigationViewController: UINavigationController {
                     guard let viewController = viewController(forViewModel: viewModel) else { return }
                     DispatchQueue.main.async {
                         self?.viewControllers[self!.viewControllers.count - 1] = viewController
+                        viewModel.afterLoad()
                     }
                 }
             })

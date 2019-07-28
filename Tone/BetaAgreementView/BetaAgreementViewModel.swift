@@ -9,7 +9,7 @@
 import Foundation
 import RxSwift
 
-class BetaAgreementViewModel {
+class BetaAgreementViewModel: ViewModel {
     enum Event {
         case agree
         case disagree
@@ -23,8 +23,13 @@ class BetaAgreementViewModel {
         self.user = user
     }
     
+    override func afterLoad() {
+        print("After Beta Agreement View Model Loads")
+    }
+    
     func agree(_ didAgree: Bool) {
          user.agreeToAcknowledgement(didAgree)
+            .map { $0 != nil }
             .subscribe(onNext: { loginResponse in
                 if loginResponse && didAgree {
                     self.events.onNext(.agree)

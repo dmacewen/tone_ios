@@ -9,7 +9,7 @@
 import Foundation
 import RxSwift
 
-class CaptureSessionViewModel {
+class CaptureSessionViewModel: ViewModel {
     enum Event {
         case updated
         case cancel
@@ -26,6 +26,10 @@ class CaptureSessionViewModel {
         self.isCancelable = isCancelable
     }
     
+    override func afterLoad() {
+        print("After Capture Session View Model Loads")
+    }
+    
     func updateSkinColorId() {
         guard let skinColorId = skinColorIdOptional.value, (skinColorId > 0) && (skinColorId <= 40) else {
             print("Enter a valid skin color!")
@@ -33,6 +37,7 @@ class CaptureSessionViewModel {
         }
         
         user.updateCaptureSession(skinColorId)
+            .map { $0 != nil }
             .subscribe(onNext: { isSuccessful in
                 print("Is Successful?? \(isSuccessful)")
                 if isSuccessful {

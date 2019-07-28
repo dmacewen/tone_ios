@@ -13,7 +13,7 @@ import Alamofire
 import Vision
 import UIKit
 
-class SampleSkinToneViewModel {
+class SampleSkinToneViewModel: ViewModel {
     let screenFlashSettings = [
         FlashSettings(area: 14, areas: 14),
         FlashSettings(area: 13, areas: 14),
@@ -124,6 +124,7 @@ class SampleSkinToneViewModel {
         }).disposed(by: disposeBag)
         
         //Asynchronously load the video stream. Lets the views load first
+        /*
         DispatchQueue.global(qos: .userInitiated).async {
             self.video.realtimeDataStream
                 .subscribe(onNext: { [unowned self] realtimeDataOptional in
@@ -204,6 +205,95 @@ class SampleSkinToneViewModel {
                 }).disposed(by: self.disposeBag)
             self.events.onNext(.beginPreview)
 
+        }
+ */
+    }
+    
+    override func afterLoad() {
+        if alreadyLoaded {
+            return
+        }
+        print("After Sample Skin Tone View Model Loads")
+        DispatchQueue.global(qos: .userInitiated).async {
+            self.video.realtimeDataStream
+                .subscribe(onNext: { [unowned self] realtimeDataOptional in
+                    
+                    guard let realtimeData = realtimeDataOptional else {
+                        self.userFaceState.onNext(.noFaceFound)
+                        self.cameraState.exposurePointStream.onNext(NormalizedImagePoint.init(x: 0.5, y: 0.5))
+                        return
+                    }
+                    
+                    guard let videoLayer = try! self.videoPreviewLayerStream.value() else {
+                        self.userFaceState.onNext(.noFaceFound)
+                        self.cameraState.exposurePointStream.onNext(NormalizedImagePoint.init(x: 0.5, y: 0.5))
+                        return
+                    }
+                    
+                    self.cameraState.exposurePointStream.onNext(realtimeData.exposurePoint.toNormalizedImagePoint(size: realtimeData.size))
+                    
+                    let displayPoints = realtimeData.landmarks.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer) }
+                    //print("Real Time Size :: \(realtimeData.size) | Video Layer Size :: \(self.videoSize)")
+                    if try! self.user.settings.showAllLandmarks.value() { self.drawPointsStream.onNext(displayPoints) }
+                    if try! self.user.settings.showExposureLandmarks.value() { self.drawPointsStream.onNext([realtimeData.exposurePoint.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)]) }
+                    if try! self.user.settings.showBalanceLandmarks.value() { self.drawPointsStream.onNext(realtimeData.balancePoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)}) }
+                    if try! self.user.settings.showBrightnessLandmarks.value() { self.drawPointsStream.onNext(realtimeData.brightnessPoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)}) }
+                    if try! self.user.settings.showFacingCameraLandmarks.value() { self.drawPointsStream.onNext(realtimeData.facingCameraPoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)}) }
+                    
+                    let xImageValues = realtimeData.landmarks.map { $0.point.x }
+                    let yImageValues = realtimeData.landmarks.map { $0.point.y }
+                    
+                    let minImagePoint = ImagePoint.init(x: xImageValues.min()!, y: yImageValues.min()!)
+                    let maxImagePoint = ImagePoint.init(x: xImageValues.max()!, y: yImageValues.max()!)
+                    
+                    let faceSizeState = self.checkFaceSize(min: minImagePoint, max: maxImagePoint, imageSize: realtimeData.size)
+                    if faceSizeState != .ok {
+                        self.userFaceState.onNext(faceSizeState)
+                        return
+                    }
+                    
+                    if realtimeData.isRotated {
+                        self.userFaceState.onNext(.faceRotated)
+                        return
+                    }
+                    
+                    if realtimeData.isNotHorizontallyAligned {
+                        self.userFaceState.onNext(.faceTiltedHorizontally)
+                        return
+                    }
+                    
+                    if realtimeData.isNotVerticallyAligned {
+                        self.userFaceState.onNext(.faceTiltedVertically)
+                        return
+                    }
+                    
+                    
+                    let xDisplayValues = displayPoints.map { $0.point.x }
+                    let yDisplayValues = displayPoints.map { $0.point.y }
+                    
+                    let minDisplayPoint = DisplayPoint.init(x: xDisplayValues.min()!, y: yDisplayValues.min()!)
+                    let maxDisplayPoint = DisplayPoint.init(x: xDisplayValues.max()!, y: yDisplayValues.max()!)
+                    
+                    let faceClipState = self.checkFaceClipped(min: minDisplayPoint, max: maxDisplayPoint)
+                    if faceClipState != .ok {
+                        self.userFaceState.onNext(faceClipState)
+                        return
+                    }
+                    
+                    if realtimeData.isTooBright {
+                        self.userFaceState.onNext(.tooBright)
+                        return
+                    }
+                    
+                    if realtimeData.isLightingUnbalanced {
+                        self.userFaceState.onNext(.faceGradient)
+                        return
+                    }
+                    
+                    self.userFaceState.onNext(.ok)
+                }).disposed(by: self.disposeBag)
+            self.events.onNext(.beginPreview)
+            self.alreadyLoaded = true
         }
     }
     
