@@ -48,13 +48,9 @@ class HomeViewModel: ViewModel {
     }
     */
     override func afterLoad() {
-        if alreadyLoaded {
-            return
-        }
         if !self.user.isCaptureSessionValid() {
             self.events.onNext(.openNewCaptureSession(isCancelable: false))
         }
-        alreadyLoaded = true
     }
     
     func logout() {

@@ -23,5 +23,14 @@ class ViewModel {
     //enum event: Event {}
     //var events: PublishSubject<T>
     var alreadyLoaded = false
+    
+    func afterLoadHelper() {
+        if !alreadyLoaded {
+            self.afterLoad()
+        }
+        
+        alreadyLoaded = true
+    }
+    
     func afterLoad() {}
 }
