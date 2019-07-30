@@ -52,7 +52,7 @@ class CaptureSession: Codable {
             return false
         }
         
-        let maximumSessionLength = TimeInterval.init(exactly: (60))!// * 60 * 24))! //One day. Interval measured in seconds.
+        let maximumSessionLength = TimeInterval.init(exactly: (60 * 60 * 24))! //One day. Interval measured in seconds.
         
         if now! > (start_date + maximumSessionLength) {
             print("Session Expired")

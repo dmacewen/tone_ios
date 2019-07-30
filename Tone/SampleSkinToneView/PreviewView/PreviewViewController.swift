@@ -55,7 +55,6 @@ class PreviewViewController: ReactiveUIViewController {
             })
             .disposed(by: self.disposeBag)
 
-        
         self.viewModel!.userFaceState
             .map { $0 == .ok }
             .bind(to: self.takeSampleButton.rx.isEnabled)

@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		86131005218B9E0A00BD1305 /* CameraState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86131004218B9E0A00BD1305 /* CameraState.swift */; };
 		8616AF4022EE1AAE004F0315 /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8616AF3F22EE1AAE004F0315 /* ViewModel.swift */; };
+		8616AF4222EF6650004F0315 /* DeviceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8616AF4122EF6650004F0315 /* DeviceInfo.swift */; };
 		8618710B225ECB0D00F19565 /* FaceCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8618710A225ECB0D00F19565 /* FaceCapture.swift */; };
 		86193C8B21891B29001F5C4E /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C8A21891B29001F5C4E /* HomeViewModel.swift */; };
 		86193C8D21891B36001F5C4E /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86193C8C21891B36001F5C4E /* HomeViewController.swift */; };
@@ -100,6 +101,7 @@
 /* Begin PBXFileReference section */
 		86131004218B9E0A00BD1305 /* CameraState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraState.swift; sourceTree = "<group>"; };
 		8616AF3F22EE1AAE004F0315 /* ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel.swift; sourceTree = "<group>"; };
+		8616AF4122EF6650004F0315 /* DeviceInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInfo.swift; sourceTree = "<group>"; };
 		8618710A225ECB0D00F19565 /* FaceCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceCapture.swift; sourceTree = "<group>"; };
 		86193C8A21891B29001F5C4E /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		86193C8C21891B36001F5C4E /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
@@ -227,6 +229,7 @@
 				86ED6FCB2266DCA200124A1F /* Points.swift */,
 				8619C7A322684682003E4054 /* Settings.swift */,
 				8669283A22E261F600B9DFE8 /* Networking.swift */,
+				8616AF4122EF6650004F0315 /* DeviceInfo.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -617,6 +620,7 @@
 				8694A07F2187BF1A00615BE3 /* RootNavigationViewModel.swift in Sources */,
 				8619E15B224AC96600A6A438 /* User.swift in Sources */,
 				8618710B225ECB0D00F19565 /* FaceCapture.swift in Sources */,
+				8616AF4222EF6650004F0315 /* DeviceInfo.swift in Sources */,
 				86AC452F226E616E00324067 /* SetupViewController.swift in Sources */,
 				8619C7A422684682003E4054 /* Settings.swift in Sources */,
 				8616AF4022EE1AAE004F0315 /* ViewModel.swift in Sources */,

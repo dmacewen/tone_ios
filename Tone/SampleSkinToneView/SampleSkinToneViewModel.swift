@@ -292,7 +292,8 @@ class SampleSkinToneViewModel: ViewModel {
                 self.uploadProgress.onNext(0.0)
                 print("Uploading Images!")
                 for photo in imageData { photo.setMetadata.prettyPrint() }
-                return uploadImageData(imageData: imageData, progressBar: self.uploadProgress, user: self.user)
+                return self.user.uploadNewCapture(imageData: imageData, progressBar: self.uploadProgress)
+                //return uploadImageData(imageData: imageData, progressBar: self.uploadProgress, user: self.user)
             }
             .subscribe(onNext: { [unowned self] uploadStatus in
                 if uploadStatus.doneUpload && !uploadStatus.responseRecieved {

@@ -81,11 +81,13 @@ class User {
         }
     }
     
-    func getCalibratedSkinColorWithProgressIndicator(imageData: [ImageData]) -> (Observable<Int32?>, BehaviorSubject<Double>) {
+    func uploadNewCapture(imageData: [ImageData], progressBar: BehaviorSubject<Float>) -> Observable<UploadStatus> {
         let publicVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
         let buildVersion = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
         let appVersion = "\(publicVersion!).\(buildVersion!)"
-        print("App Version! :: \(appVersion)")
-        return (Observable.just(nil), BehaviorSubject.init(value: 0.0))
+        let deviceInfo = getDeviceInfo()
+
+        return uploadImageData(user_id: user_id, token: token, session_id: captureSession!.session_id, app_version: appVersion, device_info: deviceInfo, imageData: imageData, progressBar: progressBar)
     }
+    
 }

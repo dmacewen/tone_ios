@@ -248,27 +248,60 @@ func getNewCaptureSession(user_id: Int32, token: Int32, skinColorId: Int32) -> O
         }
         
         return Disposables.create()
-    }}
+    }
+}
 
-func uploadImageData(imageData: [ImageData], progressBar: BehaviorSubject<Float>, user: User) -> Observable<UploadStatus> {
-    
-    let userid = user.email
-    //let url = rootURL + "/\(userid)/selfie"
-    var url = apiURL.appendingPathComponent(userid)
-    url.appendPathComponent("selfie")
-    
-    let headers: HTTPHeaders = [
-        /* "Authorization": "your_access_token",  in case you need authorization header */
-        "Content-type": "multipart/form-data"
-    ]
+func uploadImageData(user_id: Int32, token: Int32, session_id: Int32, app_version: String, device_info: DeviceInfo, imageData: [ImageData], progressBar: BehaviorSubject<Float>) -> Observable<UploadStatus> {
     
     return Observable.create { observable in
+        guard var url = buildUserURL(user_id, token) else {
+            print("Could Not Build URL")
+            observable.onNext(UploadStatus(false, false))
+            observable.onCompleted()
+            return Disposables.create()
+        }
+    
+        url.appendPathComponent("capture")
+        
+        guard let device_info_data = try? JSONEncoder().encode(device_info), let device_info_string = String(data: device_info_data, encoding: .utf8) else {
+            print("Could Not Encode Device Info!")
+            observable.onNext(UploadStatus(false, false))
+            observable.onCompleted()
+            return Disposables.create()
+        }
+        
+        let metaData = imageData.map { $0.setMetadata }
+        
+        guard let metaData_data = try? JSONEncoder().encode(metaData), let metaData_string = String(data: metaData_data, encoding: .utf8) else {
+            print("Could Not Encode Metadata!")
+            observable.onNext(UploadStatus(false, false))
+            observable.onCompleted()
+            return Disposables.create()
+        }
+        
+        let captureParameters = [
+            "session_id": session_id,
+            "app_version": app_version,
+            "device_info": device_info_string,
+            "metadata": metaData_string
+            ] as [String : Any]
+        
+        guard let captureParametersJSON = try? JSONSerialization.data(withJSONObject: captureParameters) else {
+            print("Could Not Encode Parameters!")
+            observable.onNext(UploadStatus(false, false))
+            observable.onCompleted()
+            return Disposables.create()
+        }
+    
+        let headers: HTTPHeaders = [
+            "Content-type": "multipart/form-data"
+        ]
         
         Alamofire.upload(
             multipartFormData: { multipartFormData in
-                let metaData: [SetMetadata] = imageData.map { $0.setMetadata }
+                //Upload parameters as part of file data because I guess multipart forms dont support parameters?
+                multipartFormData.append(captureParametersJSON, withName: "parameters", fileName: "parameters.json", mimeType: "application/json")
                 for (index, imageDatum) in imageData.enumerated() {
-                    //let pngData = imageDatum.image.pngData()
                     let pngDataFace = imageDatum.faceData
                     let pngDataLeftEye = imageDatum.leftEyeData
                     let pngDataRightEye = imageDatum.rightEyeData
@@ -278,19 +311,7 @@ func uploadImageData(imageData: [ImageData], progressBar: BehaviorSubject<Float>
                     multipartFormData.append(pngDataLeftEye, withName: "\(imageName)_leftEye", fileName: "\(imageName)_leftEye.png", mimeType: "image/png")
                     multipartFormData.append(pngDataRightEye, withName: "\(imageName)_rightEye", fileName: "\(imageName)_rightEye.png", mimeType: "image/png")
                 }
-                
-                do {
-                    let jsonData = try JSONEncoder().encode(metaData)
-                    let jsonString = String(data: jsonData, encoding: .utf8)!
-                    
-                    //multipartFormData.append(jsonData, withName: "metadata", fileName: "metadata.txt", mimeType: "application/json")
-                    multipartFormData.append(jsonString.data(using: String.Encoding.utf8, allowLossyConversion: false)!, withName: "metadata", fileName: "metadata.txt", mimeType: "text/plain")
-                } catch {
-                    print(error)
-                    fatalError("Failed To Upload")
-                }
-                
-        },
+            },
             to: url,
             method: .post,
             headers: headers,
@@ -321,27 +342,10 @@ func uploadImageData(imageData: [ImageData], progressBar: BehaviorSubject<Float>
                     print("Error in upload: \(error.localizedDescription)")
                     observable.onError(error)
                 }
-        }
+            }
         )
         
-        observable.onNext(UploadStatus.init(false, false))
+        observable.onNext(UploadStatus(false, false))
         return Disposables.create()
     }
 }
-
-
-/*
- let jsonTestResponse = """
- {
- "showAllLandmarks": true,
- "showExposureLandmarks": false,
- "showBrightnessLandmarks": false,
- "showBalanceLandmarks": false,
- "showFacingCameraLandmarks": true
- }
- """.data(using: .utf8)
- 
- 
- let settings = try! JSONDecoder().decode(Settings.self, from: jsonTestResponse!)
- observable.onNext(settings)
- */
