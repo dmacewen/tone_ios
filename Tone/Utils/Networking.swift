@@ -10,7 +10,7 @@ import Foundation
 import Alamofire
 import RxSwift
 
-let rootURL = URL(string: "http://macewen.io")!
+let rootURL = URL(string: "https://macewen.io")!
 let apiURL = rootURL.appendingPathComponent("users")
 
 struct UploadStatus {
