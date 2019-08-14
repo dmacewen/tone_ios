@@ -17,13 +17,14 @@ class CaptureSessionViewModel: ViewModel {
     
     let events = PublishSubject<Event>()
     let user: User
-    let isCancelable: Bool
+    //let isCancelable: Bool
     let skinColorIdOptional = Variable<Int32?>(nil)
     let disposeBag = DisposeBag()
     
     init(user: User, isCancelable: Bool = true) {
         self.user = user
-        self.isCancelable = isCancelable
+        super.init()
+        super.isCancelable = isCancelable
     }
     
     override func afterLoad() {

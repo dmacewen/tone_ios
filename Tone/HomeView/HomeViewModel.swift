@@ -67,6 +67,11 @@ class HomeViewModel: ViewModel {
         events.onNext(.sampleSkinTone)
     }
     
+    func updateCaptureSession() {
+        print("Opening Update Capture Session")
+        events.onNext(.openNewCaptureSession(isCancelable: true))
+    }
+    
     deinit {
         print("DESTROYING HOME CONTROLLER")
     }

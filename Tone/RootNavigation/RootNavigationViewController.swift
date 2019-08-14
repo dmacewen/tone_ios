@@ -34,6 +34,7 @@ class RootNavigationViewController: UINavigationController {
                 case .push(let viewModel, let animated):
                     guard let viewController = viewController(forViewModel: viewModel) else { return }
                     DispatchQueue.main.async {
+                        self?.interactivePopGestureRecognizer?.isEnabled = viewModel.isCancelable
                         self?.pushViewController(viewController, animated: animated)
                         viewModel.afterLoadHelper()
                     }
