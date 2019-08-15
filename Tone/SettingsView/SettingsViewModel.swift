@@ -34,7 +34,7 @@ class SettingsViewModel: ViewModel {
         events.onNext(.back)
         user.updateUserData()
             .map { $0 != nil }
-            .subscribe(onNext: { isSuccessful in
+            .subscribe(onNext: { [unowned self] isSuccessful in
                 print("Success?? \(isSuccessful)")
                 if !isSuccessful {
                     self.events.onNext(.logOut)

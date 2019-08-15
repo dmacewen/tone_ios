@@ -22,6 +22,7 @@ class Camera: NSObject {
     }
     
     //func capturePhoto(_ flashSettings: FlashSettings) -> PublishSubject<(AVCapturePhoto, FlashSettings)> {
+    /*
     func capturePhoto(_ flashSettings: FlashSettings) -> Observable<(AVCapturePhoto, FlashSettings, NormalizedImagePoint)> {
         return Observable.create { observer in
             print("Beginning to capture photo!")
@@ -62,6 +63,50 @@ class Camera: NSObject {
                 .subscribe(onNext: { observer.onNext($0) }, onError: { observer.onError($0) }, onCompleted: { observer.onCompleted() })
         }
     }
+ */
+    
+    func capturePhoto(_ flashSettings: FlashSettings) -> Observable<(AVCapturePhoto, FlashSettings, NormalizedImagePoint)> {
+       return Observable<FlashSettingsTask>.create { observer in
+            print("Beginning to capture photo!")
+            self.flashSettings = flashSettings
+            
+            let flashTask = FlashSettingsTask(flashSettings: flashSettings)
+            self.cameraState.flashTaskStream.onNext(flashTask)
+            
+            print("Waiting for flash to set")
+            observer.onNext(flashTask)
+            observer.onCompleted()
+            return Disposables.create()
+        }
+            .flatMap { flashTask in flashTask.isDone }
+            .filter { $0 }
+            .flatMap {_ in Observable.combineLatest(self.cameraState.getIsAdjustingExposure(), self.cameraState.getIsAdjustingWB()) { $0 || $1 } }
+            .distinctUntilChanged()
+            .do(onNext: { combined in print("(is Adjusting Ex) and (is Adjusting WB) :: \(combined)") })
+            .filter { !$0 }
+            .take(1)
+            .flatMap { _ in self.cameraState.lockExposureBias() } //Lock exposure bias before for proper metering
+            .flatMap { _ in self.cameraState.lockCameraSettings() }
+            .map { _ in
+                print("Captuing Photo with Flash Settings :: \(flashSettings.area) \(flashSettings.areas)")
+                print("Getting Photo Settings!")
+                let photoSettings = self.cameraState.capturePhotoOutput.preparedPhotoSettingsArray.count >= self.cameraState.photoSettingsIndex
+                    ? self.cameraState.capturePhotoOutput.preparedPhotoSettingsArray[self.cameraState.photoSettingsIndex]
+                    : getPhotoSettings()
+                
+                self.cameraState.photoSettingsIndex += 1
+                print("Capturing!")
+                DispatchQueue.main.async {
+                    print("Called Capture")
+                    self.cameraState.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
+                    print("==> Camera Settings :: \(self.cameraState.captureDevice.iso) | \(self.cameraState.captureDevice.exposureDuration.seconds)")
+                    print("==> Camera Offset and Bias:: \(self.cameraState.captureDevice.exposureTargetOffset) | \(self.cameraState.captureDevice.exposureTargetBias)")
+                    print("Is above threshold :: \(self.cameraState.isExposureOffsetAboveThreshold())")
+                }
+            }
+            .flatMap { _ in self.capture }
+    }
+ 
 }
 
 extension Camera: AVCapturePhotoCaptureDelegate {
@@ -74,7 +119,7 @@ extension Camera: AVCapturePhotoCaptureDelegate {
         guard let flashSetting = self.flashSettings else {
             fatalError("No Flash Setting Found! What flash setting was used?")
         }
-    
+
         capture.onNext((photo, flashSetting, try! cameraState.exposurePointStream.value()))
         capture.onCompleted()
     }

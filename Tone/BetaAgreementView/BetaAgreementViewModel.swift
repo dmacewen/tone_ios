@@ -30,7 +30,7 @@ class BetaAgreementViewModel: ViewModel {
     func agree(_ didAgree: Bool) {
          user.agreeToAcknowledgement(didAgree)
             .map { $0 != nil }
-            .subscribe(onNext: { loginResponse in
+            .subscribe(onNext: { [unowned self] loginResponse in
                 if loginResponse && didAgree {
                     self.events.onNext(.agree)
                 } else {

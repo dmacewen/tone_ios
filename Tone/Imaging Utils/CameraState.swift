@@ -150,7 +150,7 @@ class CameraState {
     func preparePhotoSettings(numPhotos: Int) -> Observable<Bool> {
         print("Preparing PhotoSettings!")
         let photoSettings = (0..<numPhotos).map { _ in getPhotoSettings() }
-        return Observable.create { observer in
+        return Observable.create { [unowned self] observer in
             self.capturePhotoOutput.setPreparedPhotoSettingsArray(photoSettings) {
                 isPrepared, error in
                 guard error == nil else {
@@ -200,11 +200,11 @@ class CameraState {
             .filter { !$0 }
             .take(1)
             .observeOn(MainScheduler.instance)
-            .flatMap { _ in self.lockExposure() }
-            .flatMap { _ in self.lockWhiteBalance() }
+            .flatMap { [unowned self] _ in self.lockExposure() }
+            .flatMap { [unowned self] _ in self.lockWhiteBalance() }
             //.flatMap { _ in self.lockExposureBias() } //moved to capture in camera
             //.flatMap { _ in self.delay() } // test....
-            .do(onNext: { _ in self.areSettingsLocked = true })
+            .do(onNext: { [unowned self] _ in self.areSettingsLocked = true })
             //.do(onNext: { _ in print("OFFSET :: \(self.captureDevice.exposureTargetOffset)") })
             .do(onNext: { _ in print("DONE LOCKING CAMERA SETTINGS") })
     }
@@ -222,7 +222,7 @@ class CameraState {
     }
     
     private func lockExposure() -> Observable<Bool> {
-        return Observable.create { observable in
+        return Observable.create { [unowned self] observable in
             DispatchQueue.main.async {
                 self.captureDevice.exposureMode = AVCaptureDevice.ExposureMode.custom
                 let (targetExposureDuration, targetISO) = self.calculateTargetExposure()
@@ -236,7 +236,7 @@ class CameraState {
     }
     
     func lockExposureBias() -> Observable<Bool> {
-        return Observable.create { observable in
+        return Observable.create { [unowned self] observable in
             DispatchQueue.main.async {
                 self.captureDevice.setExposureTargetBias(-0.5, completionHandler: { time in
                     observable.onNext(true)

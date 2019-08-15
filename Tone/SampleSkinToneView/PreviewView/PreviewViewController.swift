@@ -54,12 +54,12 @@ class PreviewViewController: ReactiveUIViewController {
                     self.userPrompt.text = faceState.prompt.message
             })
             .disposed(by: self.disposeBag)
-
+/*
         self.viewModel!.userFaceState
             .map { $0 == .ok }
             .bind(to: self.takeSampleButton.rx.isEnabled)
             .disposed(by: disposeBag)
-        
+*/
         DispatchQueue.global(qos: .userInteractive).async {
             self.viewModel!.drawPointsStream
                 .subscribe(onNext: { points in

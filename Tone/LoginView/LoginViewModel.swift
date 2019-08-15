@@ -39,7 +39,7 @@ class LoginViewModel: ViewModel {
                 guard let user = userOptional else { return Observable.just(nil) }
                 return user.getCaptureSession()
             }
-            .map { userOptional in
+            .map { [unowned self] userOptional in
                 guard let user = userOptional else { return false }
                 self.events.onNext(.loggedIn(user: user))
                 return true
