@@ -10,6 +10,7 @@
 
 import Foundation
 import RxSwift
+import RxRelay
 
 class LoginViewModel: ViewModel {
    
@@ -19,8 +20,10 @@ class LoginViewModel: ViewModel {
     
     let events = PublishSubject<LoginEvent>()
 
-    let email = Variable<String?>(nil)
-    let password = Variable<String?>(nil)
+    //let email = Variable<String?>(nil)
+    let email = BehaviorRelay<String?>(value: nil)
+    //let password = Variable<String?>(nil)
+    let password = BehaviorRelay<String?>(value: nil)
     
     override func afterLoad() {
         print("After Load Login!")

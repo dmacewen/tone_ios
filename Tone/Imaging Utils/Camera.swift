@@ -21,6 +21,10 @@ class Camera: NSObject {
         self.cameraState = cameraState
     }
     
+    deinit {
+        print("Desroying Camera!")
+    }
+    
     //func capturePhoto(_ flashSettings: FlashSettings) -> PublishSubject<(AVCapturePhoto, FlashSettings)> {
     /*
     func capturePhoto(_ flashSettings: FlashSettings) -> Observable<(AVCapturePhoto, FlashSettings, NormalizedImagePoint)> {

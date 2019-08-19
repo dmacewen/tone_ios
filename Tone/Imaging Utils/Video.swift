@@ -22,10 +22,9 @@ class Video:  NSObject {
         
         self.realtimeDataStream = pixelBufferSubject
             //.flatMap { getFacialLandmarks(cameraState: cameraState, pixelBuffer: $0) }
-            .throttle(RxTimeInterval(0.1), scheduler: MainScheduler.asyncInstance) //No need to calculate the face location 60 times a second...
+            .throttle(RxTimeInterval.milliseconds(100), scheduler: MainScheduler.asyncInstance) //No need to calculate the face location 60 times a second...
             .flatMap { pixelBuffer -> Observable<FaceCapture?> in
-                guard let videoPreviewLayer = try! videoPreviewLayerStream.value() else { return Observable.just(nil) }
-                return FaceCapture.create(pixelBuffer: pixelBuffer, orientation: cameraState.exifOrientationForCurrentDeviceOrientation(), videoPreviewLayer: videoPreviewLayer)
+                return FaceCapture.create(pixelBuffer: pixelBuffer, orientation: cameraState.exifOrientationForCurrentDeviceOrientation())
             }
             .map { faceCaptureOptional -> RealTimeFaceData? in
                 guard let faceCapture = faceCaptureOptional else { return nil }

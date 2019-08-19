@@ -19,11 +19,13 @@ class ImageData {
     let setMetadata: SetMetadata
     
     init(faceData: Data, leftEyeData: Data, rightEyeData: Data, setMetadata: SetMetadata) {
+        print("Creating Image Data!")
         self.faceData = faceData
         self.leftEyeData = leftEyeData
         self.rightEyeData = rightEyeData
         self.setMetadata = setMetadata
     }
+    deinit { print("Destroying Image Data!")}
 }
 
 struct RealTimeFaceData {

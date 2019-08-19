@@ -20,6 +20,9 @@ class Image {
         self.landmarks = landmarks
     }
     
+    deinit {
+        print("DESTORYING IMAGE!")
+    }
     
     static func from(image: Image, crop: CGRect, landmarks: [CGPoint]) -> Image {
         let ciImage = image.image.cropped(to: crop.toInt())

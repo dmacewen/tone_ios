@@ -100,8 +100,8 @@ class CameraState {
         captureSession.commitConfiguration()
         print("Commited Capture Session")
         
-        sampleSettingsClock = Observable.interval(0.1, scheduler: ConcurrentMainScheduler.instance)
-       
+        sampleSettingsClock = Observable.interval(DispatchTimeInterval.milliseconds(100), scheduler: ConcurrentMainScheduler.instance)
+        
         exposurePointStream
             .filter {[unowned self] _ in !self.areSettingsLocked }
             .subscribe(onNext: { [unowned self] exposurePoint in

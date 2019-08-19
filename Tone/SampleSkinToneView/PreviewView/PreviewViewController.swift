@@ -49,7 +49,7 @@ class PreviewViewController: ReactiveUIViewController {
         self.viewModel!.userFaceState
             .asDriver(onErrorJustReturn: .noFaceFound)
             .distinctUntilChanged()
-            .throttle(0.5)
+            .throttle(DispatchTimeInterval.milliseconds(500))
             .drive(onNext:{ faceState in
                     self.userPrompt.text = faceState.prompt.message
             })

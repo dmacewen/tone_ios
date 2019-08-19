@@ -8,6 +8,7 @@
 
 import Foundation
 import RxSwift
+import RxRelay
 
 class CaptureSessionViewModel: ViewModel {
     enum Event {
@@ -18,7 +19,8 @@ class CaptureSessionViewModel: ViewModel {
     let events = PublishSubject<Event>()
     let user: User
     //let isCancelable: Bool
-    let skinColorIdOptional = Variable<Int32?>(nil)
+    //let skinColorIdOptional = Variable<Int32?>(nil)
+    let skinColorIdOptional = BehaviorRelay<Int32?>(value: nil)
     let disposeBag = DisposeBag()
     
     init(user: User, isCancelable: Bool = true) {
