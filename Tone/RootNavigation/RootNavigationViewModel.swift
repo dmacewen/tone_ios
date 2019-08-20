@@ -99,6 +99,7 @@ class RootNavigationViewModel {
                 case .cancel:
                     print("Cancel")
                     self!.navigationStackActions.onNext(.pop(animated: false))
+                    self!.savedNavigationStack = nil
                 case .beginSetUp:
                     print("SETTING VIEW: Setting Up")
                 case .beginPreview:

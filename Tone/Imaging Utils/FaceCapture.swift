@@ -13,7 +13,7 @@ import RxSwift
 import Vision
 
 class FaceCapture {
-    let pixelBuffer: CVPixelBuffer
+    private var pixelBuffer: CVPixelBuffer?
     let orientation: CGImagePropertyOrientation
     let flashSettings: FlashSettings
     let imageSize: ImageSize
@@ -42,7 +42,7 @@ class FaceCapture {
     static func create(pixelBuffer: CVPixelBuffer, orientation: CGImagePropertyOrientation, flashSettings: FlashSettings = FlashSettings(), metadata: [String: Any] = [:], exposurePoint: NormalizedImagePoint? = nil) -> Observable<FaceCapture?> {
         
         return FaceCapture.getFaceLandmarks(pixelBuffer, orientation)
-            .map { faceLandmarks in
+            .map {/* [unowned pixelBuffer] */faceLandmarks in
                 guard let foundFaceLandmarks = faceLandmarks else { return nil }
                 
                 return FaceCapture(pixelBuffer: pixelBuffer, faceLandmarks: foundFaceLandmarks, orientation: orientation, flashSettings: flashSettings, rawMetadata: metadata, exposurePoint: exposurePoint)
@@ -51,7 +51,7 @@ class FaceCapture {
 
     private static func getFaceLandmarks(_ pixelBuffer: CVPixelBuffer, _ orientation: CGImagePropertyOrientation) -> Observable<VNFaceLandmarks2D?> {
         return Observable<VNFaceLandmarks2D?>.create { [unowned pixelBuffer] observable in
-            DispatchQueue.global(qos: .userInitiated).async { [unowned pixelBuffer] in
+            DispatchQueue.global(qos: .userInitiated).async {[unowned pixelBuffer] in
                 var requestHandlerOptions: [VNImageOption: AnyObject] = [:]
                 
                 let cameraIntrinsicData = CMGetAttachment(pixelBuffer, key: kCMSampleBufferAttachmentKey_CameraIntrinsicMatrix, attachmentModeOut: nil)
@@ -59,6 +59,11 @@ class FaceCapture {
                     requestHandlerOptions[VNImageOption.cameraIntrinsics] = cameraIntrinsicData
                 }
                 
+                let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer,
+                                                                orientation: orientation,
+                                                                options: requestHandlerOptions)
+                
+            
                 let faceLandmarksRequest = VNDetectFaceLandmarksRequest(completionHandler: { (request, error) in
                     if error != nil {
                         print("FaceLandmarks error: \(String(describing: error)).")
@@ -83,15 +88,11 @@ class FaceCapture {
                     }
                 })
                 
-                let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer,
-                                                                orientation: orientation,
-                                                                options: requestHandlerOptions)
-                
-                //try! imageRequestHandler.perform([faceLandmarksRequest])
+                //faceLandmarksRequest.revision = VNDetectFaceLandmarksRequestRevision1
+                //faceLandmarksRequest.usesCPUOnly = true
                 
                 do {
                     try imageRequestHandler.perform([faceLandmarksRequest])
-                //} catch let error as NSError {
                 } catch {
                     print("Failed to perform FaceLandmarkRequest: \(error)")
                     fatalError("Error Landmarking")
@@ -104,13 +105,13 @@ class FaceCapture {
     
     func lock() {
         precondition(!isLocked)
-        CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
+        CVPixelBufferLockBaseAddress(pixelBuffer!, CVPixelBufferLockFlags.readOnly)
         self.isLocked = true
     }
     
     func unlock() {
         precondition(isLocked)
-        CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
+        CVPixelBufferUnlockBaseAddress(pixelBuffer!, CVPixelBufferLockFlags.readOnly)
         self.isLocked = false
     }
     
@@ -124,7 +125,7 @@ class FaceCapture {
         if !self.isValidPoint(center) { return nil }
         
         //One more grid/orientation to be aware of...
-        let orientedCenter = CVImageBufferIsFlipped(self.pixelBuffer) ? ImagePoint.init(x: center.x, y: self.imageSize.height - center.y) : center
+        let orientedCenter = CVImageBufferIsFlipped(self.pixelBuffer!) ? ImagePoint.init(x: center.x, y: self.imageSize.height - center.y) : center
         
         //let sideLength = 15
         let halfSideLength = CGFloat(7)
@@ -134,8 +135,8 @@ class FaceCapture {
         
         if !self.isValidPoint(start) || !self.isValidPoint(end) { return nil }
         
-        let bytesPerRow = CVPixelBufferGetBytesPerRow(self.pixelBuffer)
-        guard let baseAddress = CVPixelBufferGetBaseAddress(self.pixelBuffer) else { return nil }
+        let bytesPerRow = CVPixelBufferGetBytesPerRow(self.pixelBuffer!)
+        guard let baseAddress = CVPixelBufferGetBaseAddress(self.pixelBuffer!) else { return nil }
         let byteBuffer = baseAddress.assumingMemoryBound(to: UInt8.self)
 
         var sum = 0
@@ -192,7 +193,7 @@ class FaceCapture {
     }
 
     func getImage() -> Image {
-        let image = CIImage.init(cvImageBuffer: self.pixelBuffer)
+        let image = CIImage.init(cvImageBuffer: self.pixelBuffer!)
         let landmarks = self.getAllImagePoints()!
         return Image(image: image, landmarks: landmarks.map { $0.point })
     }

@@ -39,11 +39,11 @@ class PreviewViewController: ReactiveUIViewController {
         //Provide Access to video preview layer for converting between coordinate systems.... there might be a better way?
         self.cancelButton.rx.tap
             .single()
-            .subscribe(onNext: { _ in self.viewModel!.cancel() })
+            .subscribe(onNext: { [unowned self] _ in self.viewModel!.cancel() })
             .disposed(by: self.disposeBag)
     
         self.takeSampleButton.rx.tap
-            .subscribe(onNext: { _ in self.viewModel!.takeSample() })
+            .subscribe(onNext: { [unowned self] _ in self.viewModel!.takeSample() })
             .disposed(by: self.disposeBag)
         
         self.viewModel!.userFaceState
@@ -62,7 +62,7 @@ class PreviewViewController: ReactiveUIViewController {
 */
         DispatchQueue.global(qos: .userInteractive).async {
             self.viewModel!.drawPointsStream
-                .subscribe(onNext: { points in
+                .subscribe(onNext: { [unowned self] points in
                     let size = 5
                     let halfSize = 2 //floor size/2
                     
@@ -86,6 +86,8 @@ class PreviewViewController: ReactiveUIViewController {
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        self.viewModel!.video.pauseProcessing()
+        if let viewModel = self.viewModel {
+            viewModel.video.pauseProcessing()
+        }
     }
 }
