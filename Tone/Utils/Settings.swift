@@ -20,7 +20,7 @@ class RadioSet {
         
         self.values[id]
             .filter { $0 }
-            .subscribe(onNext: { _ in
+            .subscribe(onNext: { [unowned self] _ in
                 for i in 0..<self.values.count {
                     if i != id {
                         self.values[i].onNext(false)

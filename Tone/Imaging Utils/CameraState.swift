@@ -40,7 +40,7 @@ class CameraState {
     var captureSession: AVCaptureSession
     
     //var flashStream: PublishSubject<FlashSettings>
-    var flashTaskStream: PublishSubject<FlashSettingsTask>
+    weak var flashTaskStream: PublishSubject<FlashSettingsTask>?
     var isAvailable =  BehaviorSubject<Bool>(value: true)
     var photoSettingsIndex = 0
     
@@ -214,7 +214,7 @@ class CameraState {
     }
     
     private func lockWhiteBalance() -> Observable<Bool> {
-        return Observable.create { observable in
+        return Observable.create { [unowned self] observable in
             DispatchQueue.main.async {
                 self.captureDevice.setWhiteBalanceModeLocked(with: AVCaptureDevice.currentWhiteBalanceGains, completionHandler: { time in
                     observable.onNext(true)

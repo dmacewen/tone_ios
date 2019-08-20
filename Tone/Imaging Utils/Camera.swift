@@ -75,7 +75,7 @@ class Camera: NSObject {
             self.flashSettings = flashSettings
             
             let flashTask = FlashSettingsTask(flashSettings: flashSettings)
-            self.cameraState.flashTaskStream.onNext(flashTask)
+            self.cameraState.flashTaskStream!.onNext(flashTask)
             
             print("Waiting for flash to set")
             observer.onNext(flashTask)

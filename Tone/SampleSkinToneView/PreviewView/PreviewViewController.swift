@@ -50,7 +50,7 @@ class PreviewViewController: ReactiveUIViewController {
             .asDriver(onErrorJustReturn: .noFaceFound)
             .distinctUntilChanged()
             .throttle(DispatchTimeInterval.milliseconds(500))
-            .drive(onNext:{ faceState in
+            .drive(onNext:{ [unowned self] faceState in
                     self.userPrompt.text = faceState.prompt.message
             })
             .disposed(by: self.disposeBag)
