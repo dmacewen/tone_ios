@@ -111,6 +111,10 @@ class CameraState {
             }).disposed(by: disposeBag)
     }
     
+    deinit {
+        print("!!! DESTROYING CAMERA STATE")
+    }
+    
     func getIsAdjustingExposure() -> Observable<Bool> {
         return self.sampleSettingsClock.map { [unowned self] _ -> Bool in self.captureDevice.isAdjustingExposure }
     }

@@ -14,7 +14,7 @@ func viewController(forViewModel viewModel: Any) -> UIViewController? {
     switch viewModel {
     case let viewModel as RootNavigationViewModel:
         let viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "rootNavigationViewController") as? RootNavigationViewController
-        viewController?.viewModel = viewModel
+        viewController?.rootViewModel = viewModel
         return viewController
         
     case let viewModel as LoginViewModel:

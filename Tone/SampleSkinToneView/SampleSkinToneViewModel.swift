@@ -114,7 +114,6 @@ class SampleSkinToneViewModel: ViewModel {
         
     //Shared Between Flash and Draw Overlay
     let videoOverlayRenderer = UIGraphicsImageRenderer(size: UIScreen.main.bounds.size)
-    let context = CIContext() //For processing PNGs
     
     init(user: User) {
         self.user = user
@@ -126,23 +125,23 @@ class SampleSkinToneViewModel: ViewModel {
     
     override func afterLoad() {
         print("After Sample Skin Tone View Model Loads")
-        DispatchQueue.global(qos: .userInitiated).async {
-            self.video.realtimeDataStream
-                .subscribe(onNext: { [unowned self] realtimeDataOptional in
+        DispatchQueue.global(qos: .userInitiated).async { [unowned video, unowned cameraState] in
+            video.realtimeDataStream
+                .subscribe(onNext: { [unowned self, unowned cameraState] realtimeDataOptional in
                     
                     guard let realtimeData = realtimeDataOptional else {
                         self.userFaceState.onNext(.noFaceFound)
-                        self.cameraState.exposurePointStream.onNext(NormalizedImagePoint.init(x: 0.5, y: 0.5))
+                        cameraState.exposurePointStream.onNext(NormalizedImagePoint.init(x: 0.5, y: 0.5))
                         return
                     }
                     
                     guard let videoLayer = try! self.videoPreviewLayerStream.value() else {
                         self.userFaceState.onNext(.noFaceFound)
-                        self.cameraState.exposurePointStream.onNext(NormalizedImagePoint.init(x: 0.5, y: 0.5))
+                        cameraState.exposurePointStream.onNext(NormalizedImagePoint.init(x: 0.5, y: 0.5))
                         return
                     }
                     
-                    self.cameraState.exposurePointStream.onNext(realtimeData.exposurePoint.toNormalizedImagePoint(size: realtimeData.size))
+                    cameraState.exposurePointStream.onNext(realtimeData.exposurePoint.toNormalizedImagePoint(size: realtimeData.size))
                     
                     let displayPoints = realtimeData.landmarks.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer) }
                     //print("Real Time Size :: \(realtimeData.size) | Video Layer Size :: \(self.videoSize)")
@@ -208,25 +207,26 @@ class SampleSkinToneViewModel: ViewModel {
         }
     }
     
-    private func processFaceCaptures(_ faceCaptures: [FaceCapture]) -> [ImageData] {
+    private static func processFaceCaptures(_ cameraState: CameraState, _ faceCaptures: [FaceCapture]) -> [ImageData] {
         print("Processing Face Captures")
-        //Find Face Crops and Left, Right Eye Crops
-        //let leftEyeBBs = faceCaptures.map { bufferBoundingBox($0.getLeftEyeImageBB()!, imgSize: $0.imageSize) }
+
         let leftEyeSizes = faceCaptures.map { $0.getLeftEyeImageSize()! }
-        let leftEyeCropSize = self.getEncapsulatingSize(sizes: leftEyeSizes) * 1.5 //Add a buffer of 25%
+        let leftEyeCropSize = SampleSkinToneViewModel.getEncapsulatingSize(sizes: leftEyeSizes) * 1.5 //Add a buffer of 25%
         
         let rightEyeSizes = faceCaptures.map { $0.getRightEyeImageSize()! }
-        let rightEyeCropSize = self.getEncapsulatingSize(sizes: rightEyeSizes) * 1.5 //Add a buffer of 25%
+        let rightEyeCropSize = SampleSkinToneViewModel.getEncapsulatingSize(sizes: rightEyeSizes) * 1.5 //Add a buffer of 25%
         
         //We ultimately want a crop that crops from the right jaw to the left, top of the image to the bottom of the chin (want hair in image)
         let faceSizes = faceCaptures.map { $0.getAllPointsSize()! }
-        let faceCropSize = self.getEncapsulatingSize(sizes: faceSizes) * 1.10
+        let faceCropSize = SampleSkinToneViewModel.getEncapsulatingSize(sizes: faceSizes) * 1.10
         let faceBBs = faceCaptures.map { $0.getAllPointsBB()! }
         let scaledFaceBBs = faceBBs.map { $0.scaleToSize(size: faceCropSize, imgSize: faceCaptures[0].imageSize.size) }
         let encapsulatingMaxX = scaledFaceBBs.map { $0.maxX }.max()!
         let faceCropWidth = encapsulatingMaxX
-        
-        return faceCaptures.map {  [unowned self] faceCapture -> ImageData in
+
+        let context = CIContext() //For processing PNGs
+
+        return faceCaptures.map { faceCapture -> ImageData in
             let leftEyeCrop = faceCapture.getLeftEyeImageBB()!.scaleToSize(size: leftEyeCropSize, imgSize: faceCapture.imageSize.size)
             let rightEyeCrop = faceCapture.getRightEyeImageBB()!.scaleToSize(size: rightEyeCropSize, imgSize: faceCapture.imageSize.size)
             var faceCrop = faceCapture.getAllPointsBB()!.scaleToSize(size: faceCropSize, imgSize: faceCapture.imageSize.size)
@@ -235,8 +235,9 @@ class SampleSkinToneViewModel: ViewModel {
             
             let exposurePoint = faceCapture.exposurePoint!.toImagePoint(size: faceCapture.imageSize)
             let croppedExposurePoint = ImagePoint.init(x: exposurePoint.x - faceCrop.minX, y: exposurePoint.y - faceCrop.minY).toNormalizedImagePoint(size: ImageSize.init(faceCrop.size))
-            
+
             let faceImage = faceCapture.getImage()
+            
             let leftEyeImage = Image.from(image: faceImage, crop: leftEyeCrop, landmarks: Array(faceImage.landmarks[8...15]))
             let rightEyeImage = Image.from(image: faceImage, crop: rightEyeCrop, landmarks: Array(faceImage.landmarks[16...23]))
             faceImage.crop(faceCrop)
@@ -256,14 +257,14 @@ class SampleSkinToneViewModel: ViewModel {
             
             leftEyeImage.updateParentBB(rotate: true)
             rightEyeImage.updateParentBB(rotate: true)
+
+            let pngDataFace = context.pngRepresentation(of: faceImage.image, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])!
             
-            let pngDataFace = self.context.pngRepresentation(of: faceImage.image, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])!
+            let pngDataLeftEye = context.pngRepresentation(of: leftEyeImage.image, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])!
             
-            let pngDataLeftEye = self.context.pngRepresentation(of: leftEyeImage.image, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])!
+            let pngDataRightEye = context.pngRepresentation(of: rightEyeImage.image, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])!
             
-            let pngDataRightEye = self.context.pngRepresentation(of: rightEyeImage.image, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])!
-            
-            let setMetadata = SetMetadata.getFrom(faceImage: faceImage, leftEyeImage: leftEyeImage, rightEyeImage: rightEyeImage, flashSettings: faceCapture.flashSettings, cameraState: self.cameraState, rawMetadata: faceCapture.rawMetadata, exposurePoint: rotatedCroppedExposurePoint)
+            let setMetadata = SetMetadata.getFrom(faceImage: faceImage, leftEyeImage: leftEyeImage, rightEyeImage: rightEyeImage, flashSettings: faceCapture.flashSettings, cameraState: cameraState, rawMetadata: faceCapture.rawMetadata, exposurePoint: rotatedCroppedExposurePoint)
             
             return ImageData(faceData: pngDataFace, leftEyeData: pngDataLeftEye, rightEyeData: pngDataRightEye, setMetadata: setMetadata)
             //DONT FORGET TO TRANSFER EYE WIDTH AS WELL!
@@ -272,25 +273,24 @@ class SampleSkinToneViewModel: ViewModel {
     
     func takeSample() {
         print("TAKING SAMPLE, BEGINNING FLASH!")
+        
         self.didFlashViewLoad
             .observeOn(MainScheduler.instance)
             .filter { $0 }
-            .flatMap { [unowned self] _ in self.cameraState.preparePhotoSettings(numPhotos: 8)}//self.screenFlashSettings.count) }
+            .take(1)
+            .flatMap { [unowned cameraState] _ in cameraState.preparePhotoSettings(numPhotos: 8)}//self.screenFlashSettings.count) }
             .flatMap { [unowned self] _ in Observable.from(self.screenFlashSettings) }
-            .take(8)//self.screenFlashSettings.count) //Need to issue that completed somewhere
-            .map { [unowned self] flashSetting in (Camera(cameraState: self.cameraState), flashSetting) }
+            //.take(8)//self.screenFlashSettings.count) //Need to issue that completed somewhere
+            .map { [unowned cameraState] flashSetting in (Camera(cameraState: cameraState), flashSetting) }
             .concatMap {(camera, flashSetting) in camera.capturePhoto(flashSetting) }
-            .do(onCompleted: { [unowned self] in self.events.onNext(.beginProcessing) })
-            .flatMap { [unowned self] photoData -> Observable<FaceCapture?> in
-                let (capturePhoto, flashSettings, exposurePoint) = photoData
-                return FaceCapture.create(capturePhoto: capturePhoto, orientation: self.cameraState.exifOrientationForCurrentDeviceOrientation(), flashSettings: flashSettings, exposurePoint: exposurePoint)
+            .do(onCompleted: { [unowned events] in events.onNext(.beginProcessing) })
+            .flatMap { [unowned cameraState] capturePhoto, flashSettings, exposurePoint -> Observable<FaceCapture?> in
+                return FaceCapture.create(pixelBuffer: capturePhoto.pixelBuffer!, orientation: cameraState.exifOrientationForCurrentDeviceOrientation(), flashSettings: flashSettings, metadata: capturePhoto.metadata, exposurePoint: exposurePoint)
             }
-            //.compactMap { $0 }
-            .map { $0! } //TODO: Better error handling... All faces must have landmarks
+            .compactMap { $0 }
             .toArray()
-            //.reduce([FaceCapture]) { accumulator, faceCapture -> [FaceCapture] in accumulator.append(faceCapture) }
-            .map { [unowned self] faceCaptures in self.processFaceCaptures(faceCaptures) }
-            .do(onSuccess: { [unowned self] _ in self.events.onNext(.beginUpload) })
+            .map { [unowned cameraState] faceCaptures in SampleSkinToneViewModel.processFaceCaptures(cameraState, faceCaptures) }
+            .do(onSuccess: { [unowned events] _ in events.onNext(.beginUpload) })
             .asObservable()
             .flatMap { [unowned self] (imageData: [ImageData]) -> Observable<UploadStatus> in
                 self.uploadProgress.onNext(0.0)
@@ -299,15 +299,20 @@ class SampleSkinToneViewModel: ViewModel {
                 return self.user.uploadNewCapture(imageData: imageData, progressBar: self.uploadProgress)
                 //return uploadImageData(imageData: imageData, progressBar: self.uploadProgress, user: self.user)
             }
-            .subscribe(onNext: { [unowned self] uploadStatus in
+            .subscribe(onNext: { [unowned events] uploadStatus in
                 if uploadStatus.doneUpload && !uploadStatus.responseRecieved {
-                    self.events.onNext(.beginProcessing)
-                } else if uploadStatus.doneUpload && uploadStatus.responseRecieved {
-                    print("Done Uploading \(self.user.email)")
-                    self.cameraState.resetCameraState()
-                    self.events.onNext(.endSample)
+                    events.onNext(.beginProcessing)
                 }
-            }).disposed(by: self.disposeBag)
+            }, onError: { _ in
+                print("ERROR in taking and processing")
+            }, onCompleted: { [unowned self] in
+                print("++ Completed Capture and Processing!" )
+                //self.cameraState.resetCameraState()
+                self.events.onNext(.endSample)
+            }, onDisposed: {
+                print("Disposing Capture and Processing")
+            })
+            .disposed(by: disposeBag)
         events.onNext(.beginFlash)
     }
     
@@ -351,14 +356,14 @@ class SampleSkinToneViewModel: ViewModel {
         return .ok
     }
     
-    private func getEncapsulatingSize(sizes: [CGSize]) -> CGSize {
+    private static func getEncapsulatingSize(sizes: [CGSize]) -> CGSize {
         let maxWidth = sizes.map { $0.width }.max()!
         let maxHeight = sizes.map { $0.height }.max()!
         return CGSize.init(width: maxWidth, height: maxHeight)
     }
     
     deinit {
-        print("DESTROYING SAMPLE SKIN TONE VIEW MODEL")
+        print("\nDESTROYING SAMPLE SKIN TONE VIEW MODEL\n")
     }
 }
 

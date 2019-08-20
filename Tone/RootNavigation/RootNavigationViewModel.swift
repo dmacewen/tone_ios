@@ -20,9 +20,10 @@ class RootNavigationViewModel {
     lazy private(set) var navigationStackActions = BehaviorSubject<NavigationStackAction>(value: .set(viewModels: [createLoginViewModel()], animated: false))
     private var currentViewModelStack: [ViewModel] = []
     private let disposeBag = DisposeBag()
+    private var user: User? = nil
     
     init() {
-        self.navigationStackActions.subscribe(onNext: { action in
+        self.navigationStackActions.subscribe(onNext: { [unowned self] action in
             switch action {
             case .set(let viewModels, _):
                 self.currentViewModelStack = viewModels
@@ -44,17 +45,18 @@ class RootNavigationViewModel {
                 switch event {
                 case .loggedIn(let user):
                     //self?.loadHome(withUser: user)
-                    self!.navigationStackActions.onNext(.push(viewModel: self!.createBetaAgreementViewModel(withUser: user), animated: false))
+                    self!.user = user
+                    self!.navigationStackActions.onNext(.push(viewModel: self!.createBetaAgreementViewModel(), animated: false))
                 }
             }).disposed(by: disposeBag)
         
         return loginViewModel
     }
     
-    private func loadHome(withUser user: User) {
-        print("Launching Tone for user \(user.email)")
+    private func loadHome() {
+        print("Launching Tone for user \(self.user!.email)")
         navigationStackActions
-            .onNext(.set(viewModels: [self.createHomeViewModel(withUser: user)], animated: false))
+            .onNext(.set(viewModels: [self.createHomeViewModel(withUser: self.user!)], animated: false))
     }
     
     private func createHomeViewModel(withUser user: User) -> HomeViewModel {
@@ -67,12 +69,12 @@ class RootNavigationViewModel {
                     self!.navigationStackActions.onNext(.set(viewModels: [self!.createLoginViewModel()], animated: false))
                 case .sampleSkinTone:
                     print("Sample Skin Tone")
-                    self!.createSampleSkinToneViewModel(withUser: user) //Temporary... Fix! it sets its own controller
+                    self!.createSampleSkinToneViewModel() //Temporary... Fix! it sets its own controller
                     //self!.navigationStackActions.onNext(.push(viewModel: self!.createSampleSkinToneViewModel(withUser: user), animated: false))
                 case .openSample(let sample):
                     print("Open Sample :: \(sample)")
                 case .openSettings:
-                    self!.navigationStackActions.onNext(.push(viewModel: self!.createSettingsViewModel(withUser: user), animated: false))
+                    self!.navigationStackActions.onNext(.push(viewModel: self!.createSettingsViewModel(), animated: false))
                 case .openNewCaptureSession(let isCancelable):
                     print("Opening New Capture Session Page!")
                     self!.navigationStackActions.onNext(.push(viewModel: self!.createCaptureSessionViewModel(withUser: user, isCancelable: isCancelable), animated: false))
@@ -82,8 +84,8 @@ class RootNavigationViewModel {
         return homeViewModel
     }
     
-    private func createSampleSkinToneViewModel(withUser user: User) { //} -> SampleSkinToneViewModel {
-        var sampleSkinToneViewModel: SampleSkinToneViewModel? = SampleSkinToneViewModel(user: user)
+    private func createSampleSkinToneViewModel() { //} -> SampleSkinToneViewModel {
+        var sampleSkinToneViewModel: SampleSkinToneViewModel? = SampleSkinToneViewModel(user: self.user!)
         
         var isStillSampleSkinTone = true
         var savedNavigationStack: [ViewModel]? = []
@@ -125,8 +127,8 @@ class RootNavigationViewModel {
         //return sampleSkinToneViewModel
     }
     
-    private func createSettingsViewModel(withUser user: User) -> SettingsViewModel {
-        let settingsViewModel = SettingsViewModel(user: user)
+    private func createSettingsViewModel() -> SettingsViewModel {
+        let settingsViewModel = SettingsViewModel(user: self.user!)
         settingsViewModel.events
             .subscribe(onNext: { [weak self] event in //Reference createLoginViewModel for how to reference Self
                 switch event {
@@ -140,14 +142,14 @@ class RootNavigationViewModel {
         return settingsViewModel
     }
     
-    private func createBetaAgreementViewModel(withUser user: User) -> BetaAgreementViewModel {
-        let betaAgreementViewModel = BetaAgreementViewModel(user: user)
+    private func createBetaAgreementViewModel() -> BetaAgreementViewModel {
+        let betaAgreementViewModel = BetaAgreementViewModel(user: self.user!)
         betaAgreementViewModel.events
             .subscribe(onNext: { [weak self] event in //Reference createLoginViewModel for how to reference Self
                 switch event {
                 case .agree:
                     print("Loading Home!")
-                    self!.loadHome(withUser: user)
+                    self!.loadHome()
                     //q self!.navigationStackActions.onNext(.pop(animated: false))
                 case .disagree:
                     print("Exiting!")
@@ -159,13 +161,13 @@ class RootNavigationViewModel {
     }
     
     private func createCaptureSessionViewModel(withUser user: User, isCancelable: Bool) -> CaptureSessionViewModel {
-        let captureSessionViewModel = CaptureSessionViewModel(user: user, isCancelable: isCancelable)
+        let captureSessionViewModel = CaptureSessionViewModel(user: self.user!, isCancelable: isCancelable)
         captureSessionViewModel.events
             .subscribe(onNext: { [weak self] event in //Reference createLoginViewModel for how to reference Self
                 switch event {
                 case .updated:
                     print("Loading Home!")
-                    self!.loadHome(withUser: user)
+                    self!.loadHome()
                 //q self!.navigationStackActions.onNext(.pop(animated: false))
                 case .cancel:
                     print("Exiting!")

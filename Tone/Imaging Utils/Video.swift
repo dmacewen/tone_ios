@@ -61,6 +61,10 @@ class Video:  NSObject {
         }
     }
     
+    deinit {
+        print("*** VIDEO DESTROYED")
+    }
+    
     func pauseProcessing() {
         cameraState.captureSession.removeOutput(self.videoDataOutput)
     }

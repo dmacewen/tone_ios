@@ -12,7 +12,7 @@ import RxSwift
 
 class RootNavigationViewController: UINavigationController {
     
-    weak var viewModel: RootNavigationViewModel!
+    var rootViewModel: RootNavigationViewModel!
     
     private let disposeBag = DisposeBag()
     
@@ -20,7 +20,7 @@ class RootNavigationViewController: UINavigationController {
         super.viewDidLoad()
         
         //Observe navigation actions and adjust the nav stack appropriately
-        viewModel.navigationStackActions
+        rootViewModel.navigationStackActions
             .subscribe(onNext: { [weak self] navigationStackAction in
                 switch navigationStackAction {
                 case .set(let viewModels, let animated):
@@ -33,10 +33,10 @@ class RootNavigationViewController: UINavigationController {
                     
                 case .push(let viewModel, let animated):
                     guard let viewController = viewController(forViewModel: viewModel) else { return }
-                    DispatchQueue.main.async {
-                        self?.interactivePopGestureRecognizer?.isEnabled = viewModel.isCancelable
+                    DispatchQueue.main.async { [weak self, weak viewModel] in
+                        self?.interactivePopGestureRecognizer?.isEnabled = viewModel!.isCancelable
                         self?.pushViewController(viewController, animated: animated)
-                        viewModel.afterLoadHelper()
+                        viewModel!.afterLoadHelper()
                     }
                 
                 case .pop(let animated):

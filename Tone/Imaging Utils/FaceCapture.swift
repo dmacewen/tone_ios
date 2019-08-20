@@ -39,34 +39,19 @@ class FaceCapture {
         print("## Destroying Face Capture!")
     }
     
-    static func create(pixelBuffer: CVPixelBuffer, orientation: CGImagePropertyOrientation, flashSettings: FlashSettings = FlashSettings()) -> Observable<FaceCapture?> {
+    static func create(pixelBuffer: CVPixelBuffer, orientation: CGImagePropertyOrientation, flashSettings: FlashSettings = FlashSettings(), metadata: [String: Any] = [:], exposurePoint: NormalizedImagePoint? = nil) -> Observable<FaceCapture?> {
         
         return FaceCapture.getFaceLandmarks(pixelBuffer, orientation)
             .map { faceLandmarks in
                 guard let foundFaceLandmarks = faceLandmarks else { return nil }
                 
-                return FaceCapture(pixelBuffer: pixelBuffer, faceLandmarks: foundFaceLandmarks, orientation: orientation, flashSettings: flashSettings, rawMetadata: [:], exposurePoint: nil)
-            }
-    }
-    
-    static func create(capturePhoto: AVCapturePhoto, orientation: CGImagePropertyOrientation, flashSettings: FlashSettings = FlashSettings(), exposurePoint: NormalizedImagePoint) -> Observable<FaceCapture?> {
-        
-        guard let pixelBuffer = capturePhoto.pixelBuffer else {
-            print("Nil Pixel Buffer!")
-            fatalError()
-        }
-        
-        return FaceCapture.getFaceLandmarks(pixelBuffer, orientation)
-            .map { faceLandmarks in
-                guard let foundFaceLandmarks = faceLandmarks else { return nil }
-                
-                return FaceCapture(pixelBuffer: pixelBuffer, faceLandmarks: foundFaceLandmarks, orientation: orientation, flashSettings: flashSettings, rawMetadata: capturePhoto.metadata, exposurePoint: exposurePoint)
+                return FaceCapture(pixelBuffer: pixelBuffer, faceLandmarks: foundFaceLandmarks, orientation: orientation, flashSettings: flashSettings, rawMetadata: metadata, exposurePoint: exposurePoint)
             }
     }
 
     private static func getFaceLandmarks(_ pixelBuffer: CVPixelBuffer, _ orientation: CGImagePropertyOrientation) -> Observable<VNFaceLandmarks2D?> {
-        return Observable<VNFaceLandmarks2D?>.create { observable in
-            DispatchQueue.global(qos: .userInitiated).async {
+        return Observable<VNFaceLandmarks2D?>.create { [unowned pixelBuffer] observable in
+            DispatchQueue.global(qos: .userInitiated).async { [unowned pixelBuffer] in
                 var requestHandlerOptions: [VNImageOption: AnyObject] = [:]
                 
                 let cameraIntrinsicData = CMGetAttachment(pixelBuffer, key: kCMSampleBufferAttachmentKey_CameraIntrinsicMatrix, attachmentModeOut: nil)
