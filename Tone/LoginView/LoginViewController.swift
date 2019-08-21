@@ -31,7 +31,7 @@ class LoginViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Log In"
-        
+    
         keyboardHeight()
             .subscribe(onNext: { height in
                 self.constraintContentHeight.constant = height * 1.1
@@ -47,10 +47,22 @@ class LoginViewController: UIViewController {
             }).disposed(by: disposeBag)
         
         emailText.rx.text
+            .do(onNext: { _ in
+                if self.emailText.background != self.backgroundWhite {
+                    self.emailText.backgroundColor = self.backgroundWhite
+                    self.passwordText.backgroundColor = self.backgroundWhite
+                }
+            })
             .bind(to: viewModel.email)
             .disposed(by: disposeBag)
  
         passwordText.rx.text
+            .do(onNext: { _ in
+                if self.emailText.background != self.backgroundWhite {
+                    self.emailText.backgroundColor = self.backgroundWhite
+                    self.passwordText.backgroundColor = self.backgroundWhite
+                }
+            })
             .bind(to: viewModel.password)
             .disposed(by: disposeBag)
         

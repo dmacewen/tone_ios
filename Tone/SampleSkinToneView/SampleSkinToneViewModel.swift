@@ -64,7 +64,7 @@ class SampleSkinToneViewModel: ViewModel {
             case .tooDark:
                 return Message(message: "It's A Little Too Dark Here", tip: "Lets try again in a room with a bit more light")
             case .tooBright:
-                return Message(message: "It's Too Bright!", tip: "Try facing away from bright lights or trying again somewhere darker")
+                return Message(message: "Your Face Is Too Bright!", tip: "Try facing away from bright lights or trying again somewhere darker")
             case .faceTooFar:
                 return Message(message: "You're Too Far Away!", tip: "Bring the phone closer to your face!")
             case .faceTooClose:
@@ -164,6 +164,11 @@ class SampleSkinToneViewModel: ViewModel {
                         return
                     }
                     
+                    if realtimeData.isTooBright {
+                        localSelf.userFaceState.onNext(.tooBright)
+                        return
+                    }
+                    
                     if realtimeData.isRotated {
                         localSelf.userFaceState.onNext(.faceRotated)
                         return
@@ -179,7 +184,6 @@ class SampleSkinToneViewModel: ViewModel {
                         return
                     }
                     
-                    
                     let xDisplayValues = displayPoints.map { $0.point.x }
                     let yDisplayValues = displayPoints.map { $0.point.y }
                     
@@ -189,11 +193,6 @@ class SampleSkinToneViewModel: ViewModel {
                     let faceClipState = localSelf.checkFaceClipped(min: minDisplayPoint, max: maxDisplayPoint)
                     if faceClipState != .ok {
                         localSelf.userFaceState.onNext(faceClipState)
-                        return
-                    }
-                    
-                    if realtimeData.isTooBright {
-                        localSelf.userFaceState.onNext(.tooBright)
                         return
                     }
                     
