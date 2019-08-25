@@ -21,6 +21,7 @@ class PreviewViewController: ReactiveUIViewController {
     @IBOutlet weak var OverlayLayer: UIImageView!
     
     @IBOutlet weak var cancelButton: UIButton!
+    @IBOutlet weak var helpButton: UIButton!
     @IBOutlet weak var takeSampleButton: UIButton!
     
     @IBOutlet weak var userPrompt: UITextField!
@@ -40,6 +41,10 @@ class PreviewViewController: ReactiveUIViewController {
         self.cancelButton.rx.tap
             .single()
             .subscribe(onNext: { [unowned self] _ in self.viewModel!.cancel() })
+            .disposed(by: self.disposeBag)
+        
+        self.helpButton.rx.tap
+            .subscribe(onNext: { [unowned self] _ in self.viewModel!.showHelp() })
             .disposed(by: self.disposeBag)
     
         self.takeSampleButton.rx.tap

@@ -9,9 +9,11 @@
 import Foundation
 import UIKit
 import RxSwift
+import RxRelay
 
+//Just extend UINavigationController? or the viewControllers variable
 class RootNavigationViewController: UINavigationController {
-    
+
     var rootViewModel: RootNavigationViewModel!
     
     private let disposeBag = DisposeBag()
@@ -19,9 +21,23 @@ class RootNavigationViewController: UINavigationController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        //Hate this current approach... super fragile
+        self.interactivePopGestureRecognizer!.rx.event
+            .filter { $0.state == UIGestureRecognizer.State.ended }
+            .map { _ in self.viewControllers.last!.title ?? "" }
+            .delay(RxTimeInterval.milliseconds(100), scheduler: MainScheduler.instance)
+            .subscribe(onNext: { possibleNextViewControllerTitle in
+                let currentViewControllerTitle = self.viewControllers.last!.title ?? ""
+                if possibleNextViewControllerTitle == currentViewControllerTitle {
+                    self.rootViewModel.navigationStackActions.onNext(.gesturePop(animated: false))
+                }
+            })
+            .disposed(by: disposeBag)
+
         //Observe navigation actions and adjust the nav stack appropriately
         rootViewModel.navigationStackActions
             .subscribe(onNext: { [weak self] navigationStackAction in
+                
                 switch navigationStackAction {
                 case .set(let viewModels, let animated):
                     let viewControllers = viewModels.compactMap { viewController(forViewModel: $0) }
@@ -48,6 +64,10 @@ class RootNavigationViewController: UINavigationController {
                         _ = self?.popViewController(animated: animated)
                     }
                     
+                case .gesturePop(_):
+                    //NO OP
+                    print("GESTURE POP")
+                    
                 case .swap(let viewModel, _):
                     //Maybe just:
                     //self?.popViewController(animated: animated)
@@ -64,3 +84,4 @@ class RootNavigationViewController: UINavigationController {
     }
     
 }
+

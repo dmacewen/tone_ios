@@ -16,6 +16,7 @@ class CaptureSessionViewController: UIViewController {
     
     @IBOutlet weak var updateButton: UIButton!
     @IBOutlet weak var cancelButton: UIButton!
+    @IBOutlet weak var helpButton: UIButton!
     @IBOutlet weak var skinColorId: UITextField!
     @IBOutlet weak var backgroundView: UIView!
     
@@ -42,6 +43,10 @@ class CaptureSessionViewController: UIViewController {
         
         cancelButton.rx.tap
             .subscribe(onNext: { _ in self.viewModel.cancel() })
+            .disposed(by: disposeBag)
+        
+        helpButton.rx.tap
+            .subscribe(onNext: { _ in self.viewModel.showHelp() })
             .disposed(by: disposeBag)
         
     }

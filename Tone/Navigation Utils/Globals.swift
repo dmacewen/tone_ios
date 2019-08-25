@@ -42,6 +42,11 @@ func viewController(forViewModel viewModel: Any) -> UIViewController? {
         viewController?.viewModel = viewModel
         return viewController
         
+    case let viewModel as CaptureSessionHelpViewModel:
+        let viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "captureSessionHelpViewController") as? CaptureSessionHelpViewController
+        viewController?.viewModel = viewModel
+        return viewController
+        
     case let viewModel as SampleSkinToneViewModel:
         let viewController: ReactiveUIViewController?
         print("VIEW MODEL STATE VALUE :: \(try! viewModel.events.value())")
@@ -59,10 +64,24 @@ func viewController(forViewModel viewModel: Any) -> UIViewController? {
             viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "processViewController") as? ProcessViewController
         case .beginUpload:
             viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "uploadViewController") as? UploadViewController
-        case .endSample:
-            viewController = nil//UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "previewViewController") as? PreviewViewController
+        case .doneSample:
+            print("Should not reach this.")
+            viewController = nil
+        case .showHelp:
+            print("Should not reach this.")
+            viewController = nil
         }
 
+        viewController?.viewModel = viewModel
+        return viewController
+        
+    case let viewModel as SampleSkinToneHelpViewModel:
+        let viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "sampleSkinToneHelpViewController") as? SampleSkinToneHelpViewController
+        viewController?.viewModel = viewModel
+        return viewController
+        
+    case let viewModel as DoneSampleSkinToneViewModel:
+        let viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "doneSampleSkinToneViewController") as? DoneSampleSkinToneViewController
         viewController?.viewModel = viewModel
         return viewController
 

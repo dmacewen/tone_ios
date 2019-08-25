@@ -8,6 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		86131005218B9E0A00BD1305 /* CameraState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86131004218B9E0A00BD1305 /* CameraState.swift */; };
+		8613D442230F84FB0060721E /* CaptureSessionHelpViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8613D441230F84FB0060721E /* CaptureSessionHelpViewModel.swift */; };
+		8613D444230F85150060721E /* CaptureSessionHelpViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8613D443230F85150060721E /* CaptureSessionHelpViewController.swift */; };
+		8613D447230F87A30060721E /* SampleSkinToneHelpViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8613D446230F87A30060721E /* SampleSkinToneHelpViewModel.swift */; };
+		8613D449230F87B80060721E /* SampleSkinToneViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8613D448230F87B80060721E /* SampleSkinToneViewController.swift */; };
+		8613D44C2311A7320060721E /* DoneSampleSkinToneViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8613D44B2311A7320060721E /* DoneSampleSkinToneViewModel.swift */; };
+		8613D44E2311A7460060721E /* DoneSampleSkinToneViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8613D44D2311A7460060721E /* DoneSampleSkinToneViewController.swift */; };
 		8616AF4022EE1AAE004F0315 /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8616AF3F22EE1AAE004F0315 /* ViewModel.swift */; };
 		8616AF4222EF6650004F0315 /* DeviceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8616AF4122EF6650004F0315 /* DeviceInfo.swift */; };
 		8618710B225ECB0D00F19565 /* FaceCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8618710A225ECB0D00F19565 /* FaceCapture.swift */; };
@@ -100,6 +106,12 @@
 
 /* Begin PBXFileReference section */
 		86131004218B9E0A00BD1305 /* CameraState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraState.swift; sourceTree = "<group>"; };
+		8613D441230F84FB0060721E /* CaptureSessionHelpViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureSessionHelpViewModel.swift; sourceTree = "<group>"; };
+		8613D443230F85150060721E /* CaptureSessionHelpViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureSessionHelpViewController.swift; sourceTree = "<group>"; };
+		8613D446230F87A30060721E /* SampleSkinToneHelpViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleSkinToneHelpViewModel.swift; sourceTree = "<group>"; };
+		8613D448230F87B80060721E /* SampleSkinToneViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleSkinToneViewController.swift; sourceTree = "<group>"; };
+		8613D44B2311A7320060721E /* DoneSampleSkinToneViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoneSampleSkinToneViewModel.swift; sourceTree = "<group>"; };
+		8613D44D2311A7460060721E /* DoneSampleSkinToneViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoneSampleSkinToneViewController.swift; sourceTree = "<group>"; };
 		8616AF3F22EE1AAE004F0315 /* ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel.swift; sourceTree = "<group>"; };
 		8616AF4122EF6650004F0315 /* DeviceInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInfo.swift; sourceTree = "<group>"; };
 		8618710A225ECB0D00F19565 /* FaceCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceCapture.swift; sourceTree = "<group>"; };
@@ -192,6 +204,33 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8613D440230F84D60060721E /* CaptureSessionHelpView */ = {
+			isa = PBXGroup;
+			children = (
+				8613D441230F84FB0060721E /* CaptureSessionHelpViewModel.swift */,
+				8613D443230F85150060721E /* CaptureSessionHelpViewController.swift */,
+			);
+			path = CaptureSessionHelpView;
+			sourceTree = "<group>";
+		};
+		8613D445230F87730060721E /* SampleSkinToneHelp */ = {
+			isa = PBXGroup;
+			children = (
+				8613D446230F87A30060721E /* SampleSkinToneHelpViewModel.swift */,
+				8613D448230F87B80060721E /* SampleSkinToneViewController.swift */,
+			);
+			path = SampleSkinToneHelp;
+			sourceTree = "<group>";
+		};
+		8613D44A2311A6F60060721E /* DoneSampleSkinTone */ = {
+			isa = PBXGroup;
+			children = (
+				8613D44B2311A7320060721E /* DoneSampleSkinToneViewModel.swift */,
+				8613D44D2311A7460060721E /* DoneSampleSkinToneViewController.swift */,
+			);
+			path = DoneSampleSkinTone;
+			sourceTree = "<group>";
+		};
 		86193C8E21894246001F5C4E /* RootNavigation */ = {
 			isa = PBXGroup;
 			children = (
@@ -243,6 +282,8 @@
 				86AC4529226E610700324067 /* FlashView */,
 				86AC452A226E610F00324067 /* ProcessView */,
 				86AC452B226E611500324067 /* UploadView */,
+				8613D445230F87730060721E /* SampleSkinToneHelp */,
+				8613D44A2311A6F60060721E /* DoneSampleSkinTone */,
 				86193C93218945B8001F5C4E /* SampleSkinToneViewModel.swift */,
 			);
 			path = SampleSkinToneView;
@@ -260,6 +301,7 @@
 		861BB28422E7C51300F2508E /* CaptureSessionView */ = {
 			isa = PBXGroup;
 			children = (
+				8613D440230F84D60060721E /* CaptureSessionHelpView */,
 				861BB28522E7C53600F2508E /* CaptureSessionViewModel.swift */,
 				861BB28722E7C54300F2508E /* CaptureSessionViewController.swift */,
 			);
@@ -599,20 +641,26 @@
 				8685ADA5219CA7B900B66F90 /* Camera.swift in Sources */,
 				86F9E72B225EA1E200E6E52E /* Metadata.swift in Sources */,
 				86213F9B2187F56600A622FB /* KeyboardHeightObservable.swift in Sources */,
+				8613D44E2311A7460060721E /* DoneSampleSkinToneViewController.swift in Sources */,
 				86AC453C226E61CE00324067 /* ProcessViewController.swift in Sources */,
 				86193C94218945B8001F5C4E /* SampleSkinToneViewModel.swift in Sources */,
+				8613D449230F87B80060721E /* SampleSkinToneViewController.swift in Sources */,
 				866C405D2190CB69007BABDE /* ImageUtils.swift in Sources */,
 				86193C8B21891B29001F5C4E /* HomeViewModel.swift in Sources */,
+				8613D444230F85150060721E /* CaptureSessionHelpViewController.swift in Sources */,
 				86AC4542226E698100324067 /* ReactiveUIViewController.swift in Sources */,
 				861BB28622E7C53600F2508E /* CaptureSessionViewModel.swift in Sources */,
+				8613D44C2311A7320060721E /* DoneSampleSkinToneViewModel.swift in Sources */,
 				86F1BCAA218D219E00A18457 /* serialMap.swift in Sources */,
 				8651B60E2187D72200FB7A3A /* LoginViewController.swift in Sources */,
 				86ED6FCA22611D7F00124A1F /* Image.swift in Sources */,
 				86C4C31322E6703E00900B2A /* BetaAgreementViewModel.swift in Sources */,
 				86AC4540226E61E400324067 /* UploadViewController.swift in Sources */,
 				8619C7A722684CDB003E4054 /* SettingsViewModel.swift in Sources */,
+				8613D447230F87A30060721E /* SampleSkinToneHelpViewModel.swift in Sources */,
 				86C4C31522E6705300900B2A /* BetaAgreementViewController.swift in Sources */,
 				861BB28A22E7C57500F2508E /* CaptureSession.swift in Sources */,
+				8613D442230F84FB0060721E /* CaptureSessionHelpViewModel.swift in Sources */,
 				864A580C2187C8EB006FFC1D /* Globals.swift in Sources */,
 				86E7FAB32297520200C09AB5 /* Math.swift in Sources */,
 				86131005218B9E0A00BD1305 /* CameraState.swift in Sources */,

@@ -26,12 +26,13 @@ class SampleSkinToneViewModel: ViewModel {
     
     enum Event {
         case cancel
+        case showHelp
         case beginSetUp
         case beginPreview
         case beginFlash
         case beginProcessing
         case beginUpload
-        case endSample
+        case doneSample
     }
     
     struct Message {
@@ -308,7 +309,7 @@ class SampleSkinToneViewModel: ViewModel {
             }, onCompleted: { [unowned self] in
                 print("++ Completed Capture and Processing!" )
                 //self.cameraState.resetCameraState()
-                self.events.onNext(.endSample)
+                self.events.onNext(.doneSample)
             }, onDisposed: {
                 print("Disposing Capture and Processing")
             })
@@ -318,6 +319,10 @@ class SampleSkinToneViewModel: ViewModel {
     
     func cancel() {
         events.onNext(.cancel)
+    }
+    
+    func showHelp() {
+        events.onNext(.showHelp)
     }
     
     private func checkFaceSize(min: ImagePoint, max: ImagePoint, imageSize: ImageSize) -> UserFaceStates {

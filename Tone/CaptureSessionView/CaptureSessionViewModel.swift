@@ -14,6 +14,7 @@ class CaptureSessionViewModel: ViewModel {
     enum Event {
         case updated
         case cancel
+        case showHelp
     }
     
     let events = PublishSubject<Event>()
@@ -53,5 +54,9 @@ class CaptureSessionViewModel: ViewModel {
     
     func cancel() {
         self.events.onNext(.cancel)
+    }
+    
+    func showHelp() {
+        self.events.onNext(.showHelp)
     }
 }

@@ -13,11 +13,14 @@ enum NavigationStackAction {
     case set(viewModels: [ViewModel], animated: Bool)
     case push(viewModel: ViewModel, animated: Bool)
     case pop(animated: Bool)
+    case gesturePop(animated: Bool)
+   // case maybePop(animated: Bool)
     case swap(viewModel: ViewModel, animated: Bool)
 }
 
 class RootNavigationViewModel {
     lazy private(set) var navigationStackActions = BehaviorSubject<NavigationStackAction>(value: .set(viewModels: [createLoginViewModel()], animated: false))
+    //var popGestureCompleted = PublishSubject<Bool>()
     private var currentViewModelStack: [ViewModel] = []
     private var savedNavigationStack: [ViewModel]? = nil
     private let disposeBag = DisposeBag()
@@ -25,24 +28,29 @@ class RootNavigationViewModel {
     
     init() {
         self.navigationStackActions.subscribe(onNext: { [unowned self] action in
+            print("Got Navigation Action!")
             switch action {
             case .set(let viewModels, _):
+                print("SET")
                 while self.currentViewModelStack.count > 0 {
                     _ = self.currentViewModelStack.popLast()
                 }
                 viewModels.forEach { viewModel in self.currentViewModelStack.append(viewModel) }
                 //self.currentViewModelStack = viewModels
             case .push(let viewModel, _):
+                print("PUSH")
                 self.currentViewModelStack.append(viewModel)
-            case .pop(_):
+            case .pop(_), .gesturePop(_):
+                print("POP")
                 _ = self.currentViewModelStack.popLast()
             case .swap(let viewModel, _):
+                print("SWAP")
                 _ = self.currentViewModelStack.popLast()
                 self.currentViewModelStack.append(viewModel)
             }
         }).disposed(by: disposeBag)
     }
-
+    
     func createLoginViewModel() -> LoginViewModel {
         let loginViewModel = LoginViewModel()
         loginViewModel.events
@@ -114,11 +122,19 @@ class RootNavigationViewModel {
                 case .beginUpload:
                     print("SETTING VIEW: Upload")
                     self!.navigationStackActions.onNext(.set(viewModels: [self!.currentViewModelStack.last!], animated: false))
+                case .showHelp:
+                    print("SETTING VIEW: Showing Sample Skin tone Help")
+                    self!.navigationStackActions.onNext(.push(viewModel: self!.createSampleSkinToneHelpViewModel(), animated: false))
+                case .doneSample:
+                    print("SETTING VIEW: Done Sample")
+                    self!.navigationStackActions.onNext(.set(viewModels: [self!.createDoneSampleSkinToneViewModel()], animated: false))
+                    /*
                 case .endSample: //Rename...
                     print("SETTING VIEW: End Sample")
                     self!.navigationStackActions.onNext(.set(viewModels: self!.savedNavigationStack!, animated: false))
                     self!.savedNavigationStack = nil
                     //self!.navigationStackActions.onNext(.push(viewModel: sampleSkinToneViewModel, animated: false))
+ */
                 }
             }).disposed(by: disposeBag)
         
@@ -142,6 +158,8 @@ class RootNavigationViewModel {
     
     private func createBetaAgreementViewModel() -> BetaAgreementViewModel {
         let betaAgreementViewModel = BetaAgreementViewModel(user: self.user!)
+        betaAgreementViewModel.isCancelable = false
+        
         betaAgreementViewModel.events
             .subscribe(onNext: { [weak self] event in //Reference createLoginViewModel for how to reference Self
                 switch event {
@@ -167,6 +185,8 @@ class RootNavigationViewModel {
                     print("Loading Home!")
                     self!.loadHome()
                 //q self!.navigationStackActions.onNext(.pop(animated: false))
+                case .showHelp:
+                    self!.navigationStackActions.onNext(.push(viewModel: self!.createCaptureSessionHelpViewModel(), animated: false))
                 case .cancel:
                     print("Exiting!")
                     self!.navigationStackActions.onNext(.pop(animated: false))
@@ -174,5 +194,55 @@ class RootNavigationViewModel {
             }).disposed(by: disposeBag)
         
         return captureSessionViewModel
+    }
+    
+    private func createCaptureSessionHelpViewModel() -> CaptureSessionHelpViewModel {
+        let captureSessionHelpViewModel = CaptureSessionHelpViewModel(user: self.user!)
+        
+        captureSessionHelpViewModel.events
+            .subscribe(onNext: { [weak self] event in
+                switch event {
+                case .cancel:
+                    self!.navigationStackActions.onNext(.pop(animated: false))
+                case .ok:
+                    self!.navigationStackActions.onNext(.pop(animated: false))
+                }
+            }).disposed(by: disposeBag)
+        
+        return captureSessionHelpViewModel
+    }
+    
+    private func createSampleSkinToneHelpViewModel() -> SampleSkinToneHelpViewModel {
+        let sampleSkinToneHelpViewModel = SampleSkinToneHelpViewModel(user: self.user!)
+        
+        sampleSkinToneHelpViewModel.events
+            .subscribe(onNext: { [weak self] event in
+                switch event {
+                case .cancel:
+                    print("Cancel!")
+                    self!.navigationStackActions.onNext(.pop(animated: false))
+                case .ok:
+                    print("OK!")
+                    self!.navigationStackActions.onNext(.pop(animated: false))
+                }
+            }).disposed(by: disposeBag)
+        
+        return sampleSkinToneHelpViewModel
+    }
+    
+    private func createDoneSampleSkinToneViewModel() -> DoneSampleSkinToneViewModel {
+        let doneSampleSkinToneViewModel = DoneSampleSkinToneViewModel()
+        
+        doneSampleSkinToneViewModel.events
+            .subscribe(onNext: { [weak self] event in
+                switch event {
+                case .ok:
+                    print("OK!")
+                    self!.navigationStackActions.onNext(.set(viewModels: self!.savedNavigationStack!, animated: false))
+                    self!.savedNavigationStack = nil
+                }
+            }).disposed(by: disposeBag)
+        
+        return doneSampleSkinToneViewModel
     }
 }

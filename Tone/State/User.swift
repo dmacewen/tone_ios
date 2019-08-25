@@ -15,13 +15,15 @@ class User {
     let user_id: Int32
     let token: Int32
     var captureSession: CaptureSession?
+    /*var acknowledgeUserAgreement: Bool?*/
     //let disposeBag = DisposeBag()
     
-    init(email: String, user_id: Int32, token: Int32, settings: Settings = Settings(), captureSession: CaptureSession? = nil) {
+    init(email: String, user_id: Int32, token: Int32, settings: Settings = Settings(), /*acknowledgeUserAgreement: Bool? = false, */captureSession: CaptureSession? = nil) {
         self.email = email
         self.settings = settings
         self.user_id = user_id
         self.token = token
+        /*self.acknowledgeUserAgreement = acknowledgeUserAgreement*/
         self.captureSession = captureSession
     }
     
@@ -48,11 +50,6 @@ class User {
         return Tone.getCaptureSession(user_id: self.user_id, token: self.token)
             .map { captureSessionOptional in
                 self.captureSession = captureSessionOptional
-                /*
-                guard let captureSession = captureSessionOptional else {
-                    return nil
-                }
-                */
                 return self
         }
     }
