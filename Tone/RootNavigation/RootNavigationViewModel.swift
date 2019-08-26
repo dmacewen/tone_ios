@@ -14,13 +14,11 @@ enum NavigationStackAction {
     case push(viewModel: ViewModel, animated: Bool)
     case pop(animated: Bool)
     case gesturePop(animated: Bool)
-   // case maybePop(animated: Bool)
     case swap(viewModel: ViewModel, animated: Bool)
 }
 
 class RootNavigationViewModel {
     lazy private(set) var navigationStackActions = BehaviorSubject<NavigationStackAction>(value: .set(viewModels: [createLoginViewModel()], animated: false))
-    //var popGestureCompleted = PublishSubject<Bool>()
     private var currentViewModelStack: [ViewModel] = []
     private var savedNavigationStack: [ViewModel]? = nil
     private let disposeBag = DisposeBag()
@@ -93,7 +91,6 @@ class RootNavigationViewModel {
                     self!.navigationStackActions.onNext(.push(viewModel: self!.createCaptureSessionViewModel(isCancelable: isCancelable), animated: false))
                 }
             }).disposed(by: disposeBag)
-        //homeViewModel.checkConditions()
         return homeViewModel
     }
     
@@ -128,13 +125,6 @@ class RootNavigationViewModel {
                 case .doneSample:
                     print("SETTING VIEW: Done Sample")
                     self!.navigationStackActions.onNext(.set(viewModels: [self!.createDoneSampleSkinToneViewModel()], animated: false))
-                    /*
-                case .endSample: //Rename...
-                    print("SETTING VIEW: End Sample")
-                    self!.navigationStackActions.onNext(.set(viewModels: self!.savedNavigationStack!, animated: false))
-                    self!.savedNavigationStack = nil
-                    //self!.navigationStackActions.onNext(.push(viewModel: sampleSkinToneViewModel, animated: false))
- */
                 }
             }).disposed(by: disposeBag)
         

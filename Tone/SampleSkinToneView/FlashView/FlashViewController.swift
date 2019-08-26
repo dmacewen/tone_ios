@@ -16,6 +16,7 @@ class FlashViewController: ReactiveUIViewController {
     let disposeBag = DisposeBag()
 
     @IBOutlet weak var FlashHostLayer: UIView!
+    @IBOutlet weak var FlashProgressIndicator: UITextField!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -86,6 +87,8 @@ class FlashViewController: ReactiveUIViewController {
         let area = flashSetting.area
         let areas = flashSetting.areas
         
+        FlashProgressIndicator.text = "\(15 - area) / 8"
+        
         let checkerSize = 10
         let width = self.FlashHostLayer.bounds.size.width
         let columns = Int((width / CGFloat(checkerSize)))
@@ -131,10 +134,10 @@ class FlashViewController: ReactiveUIViewController {
                 }
             }
             //Draw Focus Point where we want users to look
-            let focusPointY = Int(round(height * 0.2)) - 3
-            let focusPointX = Int(width * 0.5) - 3
-            ctx.cgContext.setFillColor(UIColor.blue.cgColor)
-            ctx.cgContext.fill(CGRect(x: focusPointX, y: focusPointY, width: 7, height: 7))
+            //let focusPointY = Int(round(height * 0.2)) - 3
+            //let focusPointX = Int(width * 0.5) - 3
+            //ctx.cgContext.setFillColor(UIColor.blue.cgColor)
+            //ctx.cgContext.fill(CGRect(x: focusPointX, y: focusPointY, width: 7, height: 7))
             
             ctx.cgContext.setFillColor(UIColor.black.cgColor)
             print("Done Rendering Flash \(flashSetting.area) / \(flashSetting.areas)")
