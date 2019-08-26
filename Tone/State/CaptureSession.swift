@@ -8,6 +8,10 @@
 
 import Foundation
 
+enum CaptureSessionError: Error {
+    case invalid
+}
+
 class CaptureSession: Codable {
     let out_of_date: Bool
     let session_id: Int32

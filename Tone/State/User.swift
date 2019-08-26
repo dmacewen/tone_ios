@@ -27,29 +27,30 @@ class User {
         self.captureSession = captureSession
     }
     
-    func fetchUserData() -> Observable<User?> {
+    func fetchUserData() -> Single<User> {
         return getUserSettings(user_id: self.user_id, token: self.token)
-            .map { settingsOptional in
-                guard let settings = settingsOptional else {
-                    return nil
-                }
+            .map { settings in
                 self.settings = settings
                 return self
             }
     }
     
-    func updateUserData() -> Observable<User?> {
-        return updateUserSettings(user_id: self.user_id, token: self.token, settings: self.settings).map { $0 ? self : nil }
+    func updateUserData() -> Single<User> {
+        return Single.create { single in
+            updateUserSettings(user_id: self.user_id, token: self.token, settings: self.settings).subscribe(onCompleted: { single(.success(self)) }, onError: { error in single(.error(error)) })
+        }
     }
     
-    func agreeToAcknowledgement(_ didAgree: Bool) -> Observable<User?> {
-        return updateUserAcknowledgementAgreement(user_id: self.user_id, token: self.token, didAgree: didAgree).map { $0 ? self : nil }
+    func agreeToAcknowledgement(_ didAgree: Bool) -> Single<User> {
+        return Single.create { single in
+            updateUserAcknowledgementAgreement(user_id: self.user_id, token: self.token, didAgree: didAgree).subscribe(onCompleted: { single(.success(self)) }, onError: { error in single(.error(error)) })
+        }
     }
     
-    func getCaptureSession() -> Observable<User?> {
+    func getCaptureSession() -> Single<User> {
         return Tone.getCaptureSession(user_id: self.user_id, token: self.token)
-            .map { captureSessionOptional in
-                self.captureSession = captureSessionOptional
+            .map { captureSession in
+                self.captureSession = captureSession
                 return self
         }
     }
@@ -62,20 +63,11 @@ class User {
         return captureSession.isValid()
     }
     
-    func updateCaptureSession(_ skinColorId: Int32) -> Observable<User?> {
+    func updateCaptureSession(_ skinColorId: Int32) -> Single<User> {
         //print("Updating Capture Session with skin color id :: \(skinColorId)")
         return getNewCaptureSession(user_id: self.user_id, token: self.token, skinColorId: skinColorId)
-            .map { captureSessionOptional in
-                self.captureSession = captureSessionOptional
-                
-                //print("New Capture Session :: \(String(describing: self.captureSession))")
-
-                guard let captureSession = captureSessionOptional else {
-                    return nil
-                }
-                
-                return captureSession.isValid() ? self : nil
-        }
+            .do(onSuccess: { self.captureSession = $0 })
+            .flatMap { $0.isValid() ? Single.just(self) : Single.error(CaptureSessionError.invalid) }
     }
     
     func uploadNewCapture(imageData: [ImageData], progressBar: BehaviorSubject<Float>) -> Observable<UploadStatus> {

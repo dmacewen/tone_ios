@@ -29,13 +29,14 @@ class BetaAgreementViewModel: ViewModel {
     
     func agree(_ didAgree: Bool) {
          user.agreeToAcknowledgement(didAgree)
-            .map { $0 != nil }
-            .subscribe(onNext: { [unowned self] loginResponse in
-                if loginResponse && didAgree {
+            .subscribe(onSuccess: { _ in
+                if didAgree {
                     self.events.onNext(.agree)
                 } else {
                     self.events.onNext(.disagree)
                 }
-        }).disposed(by: disposeBag)
+            }, onError: { error in
+                self.events.onNext(.disagree)
+            }).disposed(by: disposeBag)
     }
 }

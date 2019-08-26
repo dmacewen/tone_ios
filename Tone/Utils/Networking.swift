@@ -28,52 +28,57 @@ private struct LoginResponse: Codable {
     let user_id: Int32
 }
 
-func loginUser(email: String, password: String) -> Observable<User?> {
-    return Observable.create { observable in
+enum NetworkError: Error {
+    case jsonError
+    case buildUrlError
+    case improperResponse
+}
+
+func loginUser(email: String, password: String) -> Single<User> {
+    return Single.create { single in
         let parameters = ["email": email, "password": password]
         print("Requesting \(parameters)")
         Alamofire
             .request(apiURL, method: .post, parameters: parameters, encoding: URLEncoding.default)
             .validate(statusCode: 200..<300)
             .responseData { response in
-                defer { observable.onCompleted() }
                 switch response.result {
                 case .success:
                     guard let json = response.result.value, let userData = try? JSONDecoder().decode(LoginResponse.self, from: json) else {
                         print("COULD NOT DECODE USER DATA")
-                        observable.onNext(nil)
+                        single(.error(NetworkError.jsonError))
                         return
                     }
     
                     print("USER DATA \(userData)")
-                    observable.onNext(User(email: email, user_id: userData.user_id, token: userData.token))
+                    single(.success(User(email: email, user_id: userData.user_id, token: userData.token)))
                 case .failure(let error):
                     print("Login Error :: \(error)")
-                    observable.onNext(nil)
+                    single(.error(error))
                 }
             }
             return Disposables.create()
     }
 }
 
-private func buildUserURL(_ user_id: Int32, _ token: Int32) -> URL? {
+private func buildUserURL(_ user_id: Int32, _ token: Int32) throws -> URL {
     let url = apiURL.appendingPathComponent(String(user_id))
     let urlRequest = URLRequest(url: url)
     let tokenParameters = ["token": token]
     
-    guard let encodedURLRequest = try? URLEncoding.queryString.encode(urlRequest, with: tokenParameters) else {
+    guard let encodedURLRequest = try? URLEncoding.queryString.encode(urlRequest, with: tokenParameters), let resolvedUrl = encodedURLRequest.url else {
         print("Could not encode user URL")
-        return nil
+        throw NetworkError.buildUrlError
     }
     
-    return encodedURLRequest.url
+    return resolvedUrl
 }
 
-func getUserSettings(user_id: Int32, token: Int32) -> Observable<Settings?> {
-    return Observable.create { observable in
-        guard var url = buildUserURL(user_id, token) else {
-            observable.onNext(nil)
-            observable.onCompleted()
+func getUserSettings(user_id: Int32, token: Int32) -> Single<Settings> {
+    return Single.create { single in
+        
+        guard let url = try? buildUserURL(user_id, token) else {
+            single(.error(NetworkError.buildUrlError))
             return Disposables.create()
         }
 
@@ -82,37 +87,35 @@ func getUserSettings(user_id: Int32, token: Int32) -> Observable<Settings?> {
             .request(url, method: .get, parameters: [:], encoding: URLEncoding.default)
             .validate(statusCode: 200..<300)
             .responseData { response in
-                defer { observable.onCompleted() }
                 switch response.result {
                 case .success:
                     guard let json = response.result.value, let settings = try? JSONDecoder().decode(Settings.self, from: json) else {
                         print("COULD NOT DECODE SETTINGS")
-                        observable.onNext(Settings())
+                        single(.success(Settings()))
                         return
                     }
-                    
-                    observable.onNext(settings)
+                    single(.success(settings))
+
                 case .failure(let error):
                     print("Settings Error :: \(error)")
-                    observable.onNext(nil)
+                    single(.error(error))
                 }
         }
         return Disposables.create()
     }
 }
 
-func updateUserSettings(user_id: Int32, token: Int32, settings: Settings) -> Observable<Bool> {
-    return Observable.create { observable in
-        guard var url = buildUserURL(user_id, token) else {
-            observable.onNext(false)
-            observable.onCompleted()
+func updateUserSettings(user_id: Int32, token: Int32, settings: Settings) -> Completable {
+    return Completable.create { completable in
+        
+        guard let url = try? buildUserURL(user_id, token) else {
+            completable(.error(NetworkError.buildUrlError))
             return Disposables.create()
         }
         
         guard let settingsData = try? JSONEncoder().encode(settings), let settingsString = String(data: settingsData, encoding: .utf8) else {
             print("Could Not Encode Settings")
-            observable.onNext(false)
-            observable.onCompleted()
+            completable(.error(NetworkError.jsonError))
             return Disposables.create()
         }
         
@@ -122,18 +125,17 @@ func updateUserSettings(user_id: Int32, token: Int32, settings: Settings) -> Obs
             .request(url, method: .post, parameters: settingsParameters, encoding: URLEncoding.default)
             .validate(statusCode: 200..<300)
             .responseString { response in
-                defer { observable.onCompleted() }
                 switch response.result {
                 case .success:
                     guard let _ = response.data else {
                         print("COULD NOT UPDATE USER SETTINGS")
-                        observable.onNext(false)
+                        completable(.error(NetworkError.improperResponse))
                         return
                     }
-                    observable.onNext(true)
+                    completable(.completed)
                 case .failure(let error):
                     print("Updated Settings Error :: \(error)")
-                    observable.onNext(false)
+                    completable(.error(error))
                 }
         }
  
@@ -141,11 +143,11 @@ func updateUserSettings(user_id: Int32, token: Int32, settings: Settings) -> Obs
     }
 }
 
-func updateUserAcknowledgementAgreement(user_id: Int32, token: Int32, didAgree: Bool) -> Observable<Bool> {
-    return Observable.create { observable in
-        guard var url = buildUserURL(user_id, token) else {
-            observable.onNext(false)
-            observable.onCompleted()
+func updateUserAcknowledgementAgreement(user_id: Int32, token: Int32, didAgree: Bool) -> Completable {
+    return Completable.create { completable in
+        
+        guard var url = try? buildUserURL(user_id, token) else {
+            completable(.error(NetworkError.buildUrlError))
             return Disposables.create()
         }
         
@@ -156,19 +158,18 @@ func updateUserAcknowledgementAgreement(user_id: Int32, token: Int32, didAgree: 
             .request(url, method: .put, parameters: agreeParameters, encoding: URLEncoding.default)
             .validate(statusCode: 200..<300)
             .responseString { response in
-                defer { observable.onCompleted() }
                 switch response.result {
                 case .success:
                     guard let _ = response.data else {
                         print("AGREEMENT FALSE")
-                        observable.onNext(false)
+                        completable(.error(NetworkError.improperResponse))
                         return
                     }
                     
-                    observable.onNext(true)
+                    completable(.completed)
                 case .failure(let error):
                     print("Update User acknowledgement Error :: \(error)")
-                    observable.onNext(false)
+                    completable(.error(error))
                 }
         }
  
@@ -176,11 +177,11 @@ func updateUserAcknowledgementAgreement(user_id: Int32, token: Int32, didAgree: 
     }
 }
 
-func getCaptureSession(user_id: Int32, token: Int32) -> Observable<CaptureSession?> {
-    return Observable.create { observable in
-        guard var url = buildUserURL(user_id, token) else {
-            observable.onNext(nil)
-            observable.onCompleted()
+func getCaptureSession(user_id: Int32, token: Int32) -> Single<CaptureSession> {
+    return Single.create { single in
+        
+        guard var url = try? buildUserURL(user_id, token) else {
+            single(.error(NetworkError.buildUrlError))
             return Disposables.create()
         }
         
@@ -191,21 +192,20 @@ func getCaptureSession(user_id: Int32, token: Int32) -> Observable<CaptureSessio
             .request(url, method: .get, parameters: [:], encoding: URLEncoding.default)
             .validate(statusCode: 200..<300)
             .responseData { response in
-                defer { observable.onCompleted() }
                 print("Response :: \(String(data: response.data!, encoding: .utf8)!)")
                 switch response.result {
                 case .success:
                     guard let json = response.result.value, let captureSession = try? JSONDecoder().decode(CaptureSession.self, from: json) else {
                         print("COULD NOT DECODE CAPTURE SESSION")
-                        observable.onNext(nil)
+                        single(.error(NetworkError.jsonError))
                         return
                     }
                     
                     print("Capture Session :: \(captureSession)")
-                    observable.onNext(captureSession)
+                    single(.success(captureSession))
                 case .failure(let error):
                     print("Capture Session Error :: \(error)")
-                    observable.onNext(nil)
+                    single(.error(error))
                 }
         }
         
@@ -213,11 +213,11 @@ func getCaptureSession(user_id: Int32, token: Int32) -> Observable<CaptureSessio
     }
 }
 
-func getNewCaptureSession(user_id: Int32, token: Int32, skinColorId: Int32) -> Observable<CaptureSession?> {
-    return Observable.create { observable in
-        guard var url = buildUserURL(user_id, token) else {
-            observable.onNext(nil)
-            observable.onCompleted()
+func getNewCaptureSession(user_id: Int32, token: Int32, skinColorId: Int32) -> Single<CaptureSession> {
+    return Single.create { single in
+        
+        guard var url = try? buildUserURL(user_id, token) else {
+            single(.error(NetworkError.buildUrlError))
             return Disposables.create()
         }
         
@@ -229,21 +229,20 @@ func getNewCaptureSession(user_id: Int32, token: Int32, skinColorId: Int32) -> O
             .request(url, method: .post, parameters: captureSessionParameters, encoding: URLEncoding.default)
             .validate(statusCode: 200..<300)
             .responseData { response in
-                defer { observable.onCompleted() }
                 print("Response :: \(String(data: response.data!, encoding: .utf8)!)")
                 switch response.result {
                 case .success:
                     guard let json = response.result.value, let captureSession = try? JSONDecoder().decode(CaptureSession.self, from: json) else {
                         print("COULD NOT DECODE CAPTURE SESSION")
-                        observable.onNext(nil)
+                        single(.error(NetworkError.jsonError))
                         return
                     }
                     
                     print("Capture Session :: \(captureSession)")
-                    observable.onNext(captureSession)
+                    single(.success(captureSession))
                 case .failure(let error):
                     print("Capture Session Error :: \(error)")
-                    observable.onNext(nil)
+                    single(.error(error))
                 }
         }
         
@@ -254,7 +253,7 @@ func getNewCaptureSession(user_id: Int32, token: Int32, skinColorId: Int32) -> O
 func uploadImageData(user_id: Int32, token: Int32, session_id: Int32, app_version: String, device_info: DeviceInfo, imageData: [ImageData], progressBar: BehaviorSubject<Float>) -> Observable<UploadStatus> {
     
     return Observable.create { observable in
-        guard var url = buildUserURL(user_id, token) else {
+        guard var url = try? buildUserURL(user_id, token) else {
             print("Could Not Build URL")
             observable.onNext(UploadStatus(false, false))
             observable.onCompleted()

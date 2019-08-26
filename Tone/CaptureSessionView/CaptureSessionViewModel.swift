@@ -41,13 +41,10 @@ class CaptureSessionViewModel: ViewModel {
         }
         
         user.updateCaptureSession(skinColorId)
-            .map { $0 != nil }
-            .subscribe(onNext: { [unowned self] isSuccessful in
-                print("Is Successful?? \(isSuccessful)")
-                if isSuccessful {
-                    self.events.onNext(.updated)
-                    return
-                }
+            .subscribe(onSuccess: { [unowned self] _ in
+                self.events.onNext(.updated)
+            }, onError: { error in
+                print("Error updating capture session :: \(error)")
             }).disposed(by: disposeBag)
         
     }

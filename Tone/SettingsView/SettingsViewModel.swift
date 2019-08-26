@@ -33,12 +33,11 @@ class SettingsViewModel: ViewModel {
         print("Going Back")
         events.onNext(.back)
         user.updateUserData()
-            .map { $0 != nil }
-            .subscribe(onNext: { [unowned self] isSuccessful in
-                print("Success?? \(isSuccessful)")
-                if !isSuccessful {
-                    self.events.onNext(.logOut)
-                }
+            .subscribe(onSuccess: { _ in
+                print("Successfully updated user data")
+            }, onError: { [unowned self] error in
+                print("Update User Data Not Successful. Logging Out!")
+                self.events.onNext(.logOut)
             }).disposed(by: disposeBag)
     }
 }

@@ -29,23 +29,22 @@ class LoginViewModel: ViewModel {
         print("After Load Login!")
     }
     
-    func login() -> Observable<Bool> {
-        guard let validatedEmail = email.value else { return Observable.just(false) }
-        guard let validatedPassword = password.value else { return Observable.just(false)}
+    func login() -> Single<Bool> {
+        guard let validatedEmail = email.value else { return Single.just(false) }
+        guard let validatedPassword = password.value else { return Single.just(false)}
         
         return loginUser(email: validatedEmail, password: validatedPassword)
-            .flatMap { userOptional -> Observable<User?> in
-                guard let user = userOptional else { return Observable.just(nil) }
+            .flatMap { user -> Single<User> in
                 return user.fetchUserData()
             }
-            .flatMap { userOptional -> Observable<User?> in
-                guard let user = userOptional else { return Observable.just(nil) }
+            .flatMap { user -> Single<User> in
                 return user.getCaptureSession()
             }
-            .map { [unowned self] userOptional in
-                guard let user = userOptional else { return false }
+            .map { [unowned self] user in
                 self.events.onNext(.loggedIn(user: user))
                 return true
             }
+            .catchError { _ in Single.just(false) }
+
     }
 }

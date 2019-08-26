@@ -24,29 +24,8 @@ class HomeViewModel: ViewModel {
     
     init(user: User) {
         self.user = user
-/*
-        self.user.fetchUserData() //Display loading screen during this time?
-            .do(onNext: { isSuccessful in
-                if !isSuccessful { self.events.onNext(.logOut) }
-            })
-            .filter { $0 }
-            .flatMap { _ in self.user.getAndCheckCaptureSession() }
-            .do(onNext: { isCaptureSessionValid in
-                if !isCaptureSessionValid { self.events.onNext(.openNewCaptureSession(isCancelable: false)) }
-            })
-            .filter { $0 }
-            .subscribe(onNext: { _ in
-                print("Done Fetching User Data :: \(user.settings) | \(user.captureSession)")
-            }).disposed(by: disposeBag)
- */
     }
-    /*
-    func checkConditions() {
-        if !self.user.isCaptureSessionValid() {
-            self.events.onNext(.openNewCaptureSession(isCancelable: false))
-        }
-    }
-    */
+
     override func afterLoad() {
         if !self.user.isCaptureSessionValid() {
             self.events.onNext(.openNewCaptureSession(isCancelable: false))

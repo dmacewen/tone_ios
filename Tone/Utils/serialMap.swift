@@ -12,6 +12,7 @@ import RxSwift
 import RxRelay
 import RxAtomic
 import RxBlocking
+
 struct Task<E, R> {
     let task: E
     let callback = PublishSubject<R>()
