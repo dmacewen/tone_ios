@@ -33,48 +33,48 @@ class LoginViewController: UIViewController {
         title = "Log In"
     
         keyboardHeight()
-            .subscribe(onNext: { height in
-                self.constraintContentHeight.constant = height * 1.1
+            .subscribe(onNext: { [weak self] height in
+                self!.constraintContentHeight.constant = height * 1.1
             }).disposed(by: disposeBag)
         
         let tapGesture = UITapGestureRecognizer()
         contentView.addGestureRecognizer(tapGesture)
         
         tapGesture.rx.event
-            .bind(onNext: { recognizer in
-                self.emailText.resignFirstResponder()
-                self.passwordText.resignFirstResponder()
+            .bind(onNext: { [weak self] recognizer in
+                self!.emailText.resignFirstResponder()
+                self!.passwordText.resignFirstResponder()
             }).disposed(by: disposeBag)
         
         emailText.rx.text
-            .do(onNext: { _ in
-                if self.emailText.background != self.backgroundWhite {
-                    self.emailText.backgroundColor = self.backgroundWhite
-                    self.passwordText.backgroundColor = self.backgroundWhite
+            .do(onNext: {[weak self] _ in
+                if self!.emailText.background != self!.backgroundWhite {
+                    self!.emailText.backgroundColor = self!.backgroundWhite
+                    self!.passwordText.backgroundColor = self!.backgroundWhite
                 }
             })
             .bind(to: viewModel.email)
             .disposed(by: disposeBag)
  
         passwordText.rx.text
-            .do(onNext: { _ in
-                if self.emailText.background != self.backgroundWhite {
-                    self.emailText.backgroundColor = self.backgroundWhite
-                    self.passwordText.backgroundColor = self.backgroundWhite
+            .do(onNext: {[weak self] _ in
+                if self!.emailText.background != self!.backgroundWhite {
+                    self!.emailText.backgroundColor = self!.backgroundWhite
+                    self!.passwordText.backgroundColor = self!.backgroundWhite
                 }
             })
             .bind(to: viewModel.password)
             .disposed(by: disposeBag)
         
         loginButton.rx.tap
-            .flatMap { self.viewModel.login() }
-            .subscribe(onNext: { isValid in
+            .flatMap { [weak self] _ in self!.viewModel.login() }
+            .subscribe(onNext: { [weak self] isValid in
                 if isValid {
-                    self.emailText.backgroundColor = self.backgroundWhite
-                    self.passwordText.backgroundColor = self.backgroundWhite
+                    self!.emailText.backgroundColor = self!.backgroundWhite
+                    self!.passwordText.backgroundColor = self!.backgroundWhite
                 } else {
-                    self.emailText.backgroundColor = self.backgroundRed
-                    self.passwordText.backgroundColor = self.backgroundRed
+                    self!.emailText.backgroundColor = self!.backgroundRed
+                    self!.passwordText.backgroundColor = self!.backgroundRed
                 }
             }).disposed(by: disposeBag)
     }

@@ -70,7 +70,7 @@ class SettingsViewController: UIViewController {
             .disposed(by: disposeBag)
         
         backButton.rx.tap
-            .subscribe(onNext: { _ in self.viewModel.back() })
+            .subscribe(onNext: { [weak self] _ in self!.viewModel.back() })
             .disposed(by: disposeBag)
  
     }

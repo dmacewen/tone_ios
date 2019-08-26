@@ -67,18 +67,20 @@ class PreviewViewController: ReactiveUIViewController {
 
         DispatchQueue.global(qos: .userInteractive).async {
             self.viewModel!.drawPointsStream
-                .subscribe(onNext: { [unowned self] points in
+                .subscribe(onNext: { [weak self] points in
                     let size = 5
                     let halfSize = 2 //floor size/2
                     
-                    let img = self.viewModel!.videoOverlayRenderer.image { ctx in
+                    let img = self?.viewModel!.videoOverlayRenderer.image { ctx in
                         for point in points {
                             ctx.cgContext.setFillColor(point.color)
                             ctx.cgContext.fill(CGRect(x: Int(point.x) - halfSize, y: Int(point.y) - halfSize, width: size, height: size))
                         }
                     }
                     DispatchQueue.main.async {
-                        self.OverlayLayer.image = img
+                        if let localSelf = self {
+                            localSelf.OverlayLayer.image = img
+                        }
                     }
                 }).disposed(by: self.disposeBag)
         }

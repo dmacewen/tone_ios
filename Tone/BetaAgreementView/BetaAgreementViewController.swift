@@ -24,11 +24,11 @@ class BetaAgreementViewController: UIViewController {
         title = "BetaAgreement"
         
         agreeButton.rx.tap
-            .subscribe(onNext: { _ in self.viewModel.agree(true) })
+            .subscribe(onNext: { [weak self] _ in self!.viewModel.agree(true) })
             .disposed(by: disposeBag)
         
         disagreeButton.rx.tap
-            .subscribe(onNext: { _ in self.viewModel.agree(false) })
+            .subscribe(onNext: { [weak self] _ in self!.viewModel.agree(false) })
             .disposed(by: disposeBag)
         
     }

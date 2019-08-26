@@ -59,7 +59,7 @@ class SampleSkinToneViewModel: ViewModel {
         var prompt: Message {
             switch self {
             case .ok:
-                return Message(message: "Looking Good!", tip: "Hit the button to capture your skin tone")
+                return Message(message: "Looking Good - Click Sample!", tip: "Hit the button to capture your skin tone")
             case .noFaceFound:
                 return Message(message: "Looking For You...", tip: "Is the camera pointed towards you?")
             case .tooDark:
@@ -118,6 +118,8 @@ class SampleSkinToneViewModel: ViewModel {
     
     init(user: User) {
         self.user = user
+        super.init()
+        self.isCancelable = true
         
         flashSettingsTaskStream.subscribe(onNext: { _ in
             print("IN MODEL: Recieved a flash task!")

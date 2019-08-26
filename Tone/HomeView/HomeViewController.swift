@@ -33,22 +33,22 @@ class HomeViewController: UIViewController {
         
         sampleSkinToneButton.rx.tap
             //.single()
-            .subscribe(onNext: { _ in self.viewModel.sampleSkinTone() })
+            .subscribe(onNext: { [weak self] _ in self!.viewModel.sampleSkinTone() })
             .disposed(by: disposeBag)
         
         logoutButton.rx.tap
             .single()
-            .subscribe(onNext: { _ in self.viewModel.logout() })
+            .subscribe(onNext: { [weak self] _ in self!.viewModel.logout() })
             .disposed(by: disposeBag)
         
         settingsButton.rx.tap
             //.single()
-            .subscribe(onNext: { _ in self.viewModel.openSettings() })
+            .subscribe(onNext: { [weak self] _ in self!.viewModel.openSettings() })
             .disposed(by: disposeBag)
         
         updateCaptureSession.rx.tap
             //.single()
-            .subscribe(onNext: { _ in self.viewModel.updateCaptureSession() })
+            .subscribe(onNext: { [weak self] _ in self!.viewModel.updateCaptureSession() })
             .disposed(by: disposeBag)
     }
 }

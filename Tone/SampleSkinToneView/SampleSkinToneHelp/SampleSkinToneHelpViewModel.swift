@@ -20,9 +20,10 @@ class SampleSkinToneHelpViewModel: ViewModel {
     let user: User
     let skinColorIdOptional = BehaviorRelay<Int32?>(value: nil)
     
-    init(user: User) {
+    init(user: User, isCancelable: Bool) {
         self.user = user
         super.init()
+        self.isCancelable = isCancelable
     }
     
     override func afterLoad() {

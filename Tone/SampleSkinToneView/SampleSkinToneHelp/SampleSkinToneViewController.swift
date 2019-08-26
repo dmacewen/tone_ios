@@ -24,12 +24,15 @@ class SampleSkinToneHelpViewController: UIViewController {
         title = "SampleSkinToneHelp"
         
         okButton.rx.tap
-            .subscribe(onNext: { _ in self.viewModel.ok() })
+            .subscribe(onNext: { [unowned self] _ in self.viewModel.ok() })
             .disposed(by: disposeBag)
         
-        cancelButton.rx.tap
-            .subscribe(onNext: { _ in self.viewModel.cancel() })
-            .disposed(by: disposeBag)
-        
+        cancelButton.isHidden = !viewModel.isCancelable
+
+        if viewModel.isCancelable {
+            cancelButton.rx.tap
+                .subscribe(onNext: { [unowned self] _ in self.viewModel.cancel() })
+                .disposed(by: disposeBag)
+        }
     }
 }

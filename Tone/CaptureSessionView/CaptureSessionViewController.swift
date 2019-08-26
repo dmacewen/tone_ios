@@ -38,15 +38,15 @@ class CaptureSessionViewController: UIViewController {
             .disposed(by: disposeBag)
                 
         updateButton.rx.tap
-            .subscribe(onNext: { _ in self.viewModel.updateSkinColorId() })
+            .subscribe(onNext: {[unowned self] _ in self.viewModel.updateSkinColorId() })
             .disposed(by: disposeBag)
         
         cancelButton.rx.tap
-            .subscribe(onNext: { _ in self.viewModel.cancel() })
+            .subscribe(onNext: {[unowned self] _ in self.viewModel.cancel() })
             .disposed(by: disposeBag)
         
         helpButton.rx.tap
-            .subscribe(onNext: { _ in self.viewModel.showHelp() })
+            .subscribe(onNext: {[unowned self] _ in self.viewModel.showHelp() })
             .disposed(by: disposeBag)
         
     }

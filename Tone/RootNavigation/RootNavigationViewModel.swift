@@ -80,8 +80,10 @@ class RootNavigationViewModel {
                     self!.navigationStackActions.onNext(.set(viewModels: [self!.createLoginViewModel()], animated: false))
                 case .sampleSkinTone:
                     print("Sample Skin Tone")
-                    self!.savedNavigationStack = self!.currentViewModelStack
-                    self!.navigationStackActions.onNext(.push(viewModel: self!.createSampleSkinToneViewModel(), animated: false))                    
+                    self!.navigationStackActions.onNext(.push(viewModel: self!.createSampleSkinToneHelpViewModel(isCancelable: false, isBeforeSampleSkinTone: true), animated: false))
+                    //self!.savedNavigationStack = self!.currentViewModelStack
+                    //self!.navigationStackActions.onNext(.push(viewModel: self!.createSampleSkinToneViewModel(), animated: false))
+                    //self!.navigationStackActions.onNext(.push(viewModel: self!.createSampleSkinToneHelpViewModel(isCancelable: false), animated: false))
                 case .openSample(let sample):
                     print("Open Sample :: \(sample)")
                 case .openSettings:
@@ -121,7 +123,7 @@ class RootNavigationViewModel {
                     self!.navigationStackActions.onNext(.set(viewModels: [self!.currentViewModelStack.last!], animated: false))
                 case .showHelp:
                     print("SETTING VIEW: Showing Sample Skin tone Help")
-                    self!.navigationStackActions.onNext(.push(viewModel: self!.createSampleSkinToneHelpViewModel(), animated: false))
+                    self!.navigationStackActions.onNext(.push(viewModel: self!.createSampleSkinToneHelpViewModel(isCancelable: true), animated: false))
                 case .doneSample:
                     print("SETTING VIEW: Done Sample")
                     self!.navigationStackActions.onNext(.set(viewModels: [self!.createDoneSampleSkinToneViewModel()], animated: false))
@@ -202,20 +204,34 @@ class RootNavigationViewModel {
         return captureSessionHelpViewModel
     }
     
-    private func createSampleSkinToneHelpViewModel() -> SampleSkinToneHelpViewModel {
-        let sampleSkinToneHelpViewModel = SampleSkinToneHelpViewModel(user: self.user!)
+    private func createSampleSkinToneHelpViewModel(isCancelable: Bool, isBeforeSampleSkinTone: Bool = false) -> SampleSkinToneHelpViewModel {
+        let sampleSkinToneHelpViewModel = SampleSkinToneHelpViewModel(user: self.user!, isCancelable: isCancelable)
         
-        sampleSkinToneHelpViewModel.events
-            .subscribe(onNext: { [weak self] event in
-                switch event {
-                case .cancel:
-                    print("Cancel!")
-                    self!.navigationStackActions.onNext(.pop(animated: false))
-                case .ok:
-                    print("OK!")
-                    self!.navigationStackActions.onNext(.pop(animated: false))
-                }
-            }).disposed(by: disposeBag)
+        if isBeforeSampleSkinTone {
+            sampleSkinToneHelpViewModel.events
+                .subscribe(onNext: { [weak self] event in
+                    switch event {
+                    default:
+                        print("Cancel or OK")
+                        print("Sample Skin Tone")
+                        self!.savedNavigationStack = self!.currentViewModelStack
+                        _ = self!.savedNavigationStack?.popLast()
+                        self!.navigationStackActions.onNext(.swap(viewModel: self!.createSampleSkinToneViewModel(), animated: false))
+                    }
+                }).disposed(by: disposeBag)
+        } else {
+            sampleSkinToneHelpViewModel.events
+                .subscribe(onNext: { [weak self] event in
+                    switch event {
+                    case .cancel:
+                        print("Cancel!")
+                        self!.navigationStackActions.onNext(.pop(animated: false))
+                    case .ok:
+                        print("OK!")
+                        self!.navigationStackActions.onNext(.pop(animated: false))
+                    }
+                }).disposed(by: disposeBag)
+        }
         
         return sampleSkinToneHelpViewModel
     }

@@ -24,11 +24,11 @@ class CaptureSessionHelpViewController: UIViewController {
         title = "CaptureSessionHelp"
         
         okButton.rx.tap
-            .subscribe(onNext: { _ in self.viewModel.ok() })
+            .subscribe(onNext: { [unowned self] _ in self.viewModel.ok() })
             .disposed(by: disposeBag)
         
         cancelButton.rx.tap
-            .subscribe(onNext: { _ in self.viewModel.cancel() })
+            .subscribe(onNext: { [unowned self] _ in self.viewModel.cancel() })
             .disposed(by: disposeBag)
         
     }

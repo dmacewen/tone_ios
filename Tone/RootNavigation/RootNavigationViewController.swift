@@ -43,6 +43,7 @@ class RootNavigationViewController: UINavigationController {
                     let viewControllers = viewModels.compactMap { viewController(forViewModel: $0) }
                     print("Setting View Controllers!")
                     DispatchQueue.main.async {
+                        self?.interactivePopGestureRecognizer?.isEnabled = viewModels.last!.isCancelable
                         self?.setViewControllers(viewControllers, animated: animated)
                         DispatchQueue.main.async {
                             viewModels.forEach { viewModel in viewModel.afterLoadHelper() }
@@ -73,6 +74,7 @@ class RootNavigationViewController: UINavigationController {
                     //self?.popViewController(animated: animated)
                     guard let viewController = viewController(forViewModel: viewModel) else { return }
                     DispatchQueue.main.async {
+                        self?.interactivePopGestureRecognizer?.isEnabled = viewModel.isCancelable
                         self?.viewControllers[self!.viewControllers.count - 1] = viewController
                         DispatchQueue.main.async {
                             viewModel.afterLoadHelper()

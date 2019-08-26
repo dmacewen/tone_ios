@@ -29,14 +29,14 @@ class BetaAgreementViewModel: ViewModel {
     
     func agree(_ didAgree: Bool) {
          user.agreeToAcknowledgement(didAgree)
-            .subscribe(onSuccess: { _ in
+            .subscribe(onSuccess: {[weak self] _ in
                 if didAgree {
-                    self.events.onNext(.agree)
+                    self!.events.onNext(.agree)
                 } else {
-                    self.events.onNext(.disagree)
+                    self!.events.onNext(.disagree)
                 }
-            }, onError: { error in
-                self.events.onNext(.disagree)
+            }, onError: { [weak self] error in
+                self!.events.onNext(.disagree)
             }).disposed(by: disposeBag)
     }
 }
