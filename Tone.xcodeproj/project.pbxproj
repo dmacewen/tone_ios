@@ -14,6 +14,8 @@
 		8613D449230F87B80060721E /* SampleSkinToneViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8613D448230F87B80060721E /* SampleSkinToneViewController.swift */; };
 		8613D44C2311A7320060721E /* DoneSampleSkinToneViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8613D44B2311A7320060721E /* DoneSampleSkinToneViewModel.swift */; };
 		8613D44E2311A7460060721E /* DoneSampleSkinToneViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8613D44D2311A7460060721E /* DoneSampleSkinToneViewController.swift */; };
+		8613D4512314A0340060721E /* CaptureSessionMirrorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8613D4502314A0340060721E /* CaptureSessionMirrorViewModel.swift */; };
+		8613D4532314A04D0060721E /* CaptureSessionMirrorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8613D4522314A04D0060721E /* CaptureSessionMirrorViewController.swift */; };
 		8616AF4022EE1AAE004F0315 /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8616AF3F22EE1AAE004F0315 /* ViewModel.swift */; };
 		8616AF4222EF6650004F0315 /* DeviceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8616AF4122EF6650004F0315 /* DeviceInfo.swift */; };
 		8618710B225ECB0D00F19565 /* FaceCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8618710A225ECB0D00F19565 /* FaceCapture.swift */; };
@@ -112,6 +114,8 @@
 		8613D448230F87B80060721E /* SampleSkinToneViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleSkinToneViewController.swift; sourceTree = "<group>"; };
 		8613D44B2311A7320060721E /* DoneSampleSkinToneViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoneSampleSkinToneViewModel.swift; sourceTree = "<group>"; };
 		8613D44D2311A7460060721E /* DoneSampleSkinToneViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoneSampleSkinToneViewController.swift; sourceTree = "<group>"; };
+		8613D4502314A0340060721E /* CaptureSessionMirrorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureSessionMirrorViewModel.swift; sourceTree = "<group>"; };
+		8613D4522314A04D0060721E /* CaptureSessionMirrorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureSessionMirrorViewController.swift; sourceTree = "<group>"; };
 		8616AF3F22EE1AAE004F0315 /* ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel.swift; sourceTree = "<group>"; };
 		8616AF4122EF6650004F0315 /* DeviceInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInfo.swift; sourceTree = "<group>"; };
 		8618710A225ECB0D00F19565 /* FaceCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceCapture.swift; sourceTree = "<group>"; };
@@ -231,6 +235,15 @@
 			path = DoneSampleSkinTone;
 			sourceTree = "<group>";
 		};
+		8613D44F2314A0090060721E /* CaptureSessionMirrorView */ = {
+			isa = PBXGroup;
+			children = (
+				8613D4502314A0340060721E /* CaptureSessionMirrorViewModel.swift */,
+				8613D4522314A04D0060721E /* CaptureSessionMirrorViewController.swift */,
+			);
+			path = CaptureSessionMirrorView;
+			sourceTree = "<group>";
+		};
 		86193C8E21894246001F5C4E /* RootNavigation */ = {
 			isa = PBXGroup;
 			children = (
@@ -301,6 +314,7 @@
 		861BB28422E7C51300F2508E /* CaptureSessionView */ = {
 			isa = PBXGroup;
 			children = (
+				8613D44F2314A0090060721E /* CaptureSessionMirrorView */,
 				8613D440230F84D60060721E /* CaptureSessionHelpView */,
 				861BB28522E7C53600F2508E /* CaptureSessionViewModel.swift */,
 				861BB28722E7C54300F2508E /* CaptureSessionViewController.swift */,
@@ -676,7 +690,9 @@
 				8616AF4022EE1AAE004F0315 /* ViewModel.swift in Sources */,
 				86AC4534226E61A000324067 /* PreviewViewController.swift in Sources */,
 				8694A0812187BF4300615BE3 /* RootNavigationViewController.swift in Sources */,
+				8613D4532314A04D0060721E /* CaptureSessionMirrorViewController.swift in Sources */,
 				86F9E729225E9C5C00E6E52E /* CGExtensions.swift in Sources */,
+				8613D4512314A0340060721E /* CaptureSessionMirrorViewModel.swift in Sources */,
 				8669283B22E261F600B9DFE8 /* Networking.swift in Sources */,
 				8619C7A922684CEE003E4054 /* SettingsViewController.swift in Sources */,
 				86F138AA218768C2004C6092 /* AppDelegate.swift in Sources */,

@@ -182,6 +182,8 @@ class RootNavigationViewModel {
                 case .cancel:
                     print("Exiting!")
                     self!.navigationStackActions.onNext(.pop(animated: false))
+                case .mirror:
+                    self!.navigationStackActions.onNext(.push(viewModel: self!.createCaptureSessionMirrorViewModel(), animated: false))
                 }
             }).disposed(by: disposeBag)
         
@@ -202,6 +204,24 @@ class RootNavigationViewModel {
             }).disposed(by: disposeBag)
         
         return captureSessionHelpViewModel
+    }
+    
+    private func createCaptureSessionMirrorViewModel() -> CaptureSessionMirrorViewModel {
+        let captureSessionMirrorViewModel = CaptureSessionMirrorViewModel()
+        
+        captureSessionMirrorViewModel.events
+            .subscribe(onNext: { [weak self] event in
+                switch event {
+                case .cancel:
+                    self!.navigationStackActions.onNext(.pop(animated: false))
+                case .done:
+                    self!.navigationStackActions.onNext(.pop(animated: false))
+                case .showHelp:
+                    self!.navigationStackActions.onNext(.push(viewModel: self!.createCaptureSessionHelpViewModel(), animated: false))
+                }
+            }).disposed(by: disposeBag)
+        
+        return captureSessionMirrorViewModel
     }
     
     private func createSampleSkinToneHelpViewModel(isCancelable: Bool, isBeforeSampleSkinTone: Bool = false) -> SampleSkinToneHelpViewModel {

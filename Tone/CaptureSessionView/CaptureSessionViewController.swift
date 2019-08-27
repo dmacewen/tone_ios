@@ -16,6 +16,7 @@ class CaptureSessionViewController: UIViewController {
     
     @IBOutlet weak var updateButton: UIButton!
     @IBOutlet weak var cancelButton: UIButton!
+    @IBOutlet weak var mirrorButton: UIButton!
     @IBOutlet weak var helpButton: UIButton!
     @IBOutlet weak var skinColorId: UITextField!
     @IBOutlet weak var backgroundView: UIView!
@@ -43,6 +44,10 @@ class CaptureSessionViewController: UIViewController {
         
         cancelButton.rx.tap
             .subscribe(onNext: {[unowned self] _ in self.viewModel.cancel() })
+            .disposed(by: disposeBag)
+        
+        mirrorButton.rx.tap
+            .subscribe(onNext: {[unowned self] _ in self.viewModel.mirror() })
             .disposed(by: disposeBag)
         
         helpButton.rx.tap

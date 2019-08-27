@@ -15,6 +15,7 @@ class CaptureSessionViewModel: ViewModel {
         case updated
         case cancel
         case showHelp
+        case mirror
     }
     
     let events = PublishSubject<Event>()
@@ -51,6 +52,10 @@ class CaptureSessionViewModel: ViewModel {
     
     func cancel() {
         self.events.onNext(.cancel)
+    }
+    
+    func mirror() {
+        self.events.onNext(.mirror)
     }
     
     func showHelp() {

@@ -58,7 +58,7 @@ class CameraState {
     
     let exposurePointStream = BehaviorSubject<NormalizedImagePoint>(value: NormalizedImagePoint.init(x: 0.5, y: 0.5))
     
-    init(flashTaskStream: PublishSubject<FlashSettingsTask>) {
+    init(flashTaskStream: PublishSubject<FlashSettingsTask>?) {
         print("Setting up camera...")
         self.flashTaskStream = flashTaskStream
 

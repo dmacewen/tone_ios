@@ -17,25 +17,29 @@ class Video:  NSObject {
     private let pixelBufferSubject = PublishSubject<CVPixelBuffer>()
     private let videoDataOutput: AVCaptureVideoDataOutput
     
-    init(cameraState: CameraState, videoPreviewLayerStream:  BehaviorSubject<AVCaptureVideoPreviewLayer?>) {
+    init(cameraState: CameraState, videoPreviewLayerStream:  BehaviorSubject<AVCaptureVideoPreviewLayer?>, landmarkFace: Bool = true) {
         self.cameraState = cameraState
         
-        self.realtimeDataStream = pixelBufferSubject
-            //.flatMap { getFacialLandmarks(cameraState: cameraState, pixelBuffer: $0) }
-            .throttle(RxTimeInterval.milliseconds(100), scheduler: MainScheduler.asyncInstance) //No need to calculate the face location 60 times a second...
-            .flatMap { pixelBuffer -> Observable<FaceCapture?> in
-                return FaceCapture.create(pixelBuffer: pixelBuffer, orientation: cameraState.exifOrientationForCurrentDeviceOrientation())
-            }
-            .map { faceCaptureOptional -> RealTimeFaceData? in
-                guard let faceCapture = faceCaptureOptional else { return nil }
-                guard let allImagePoints = faceCapture.getAllImagePoints() else { return nil }
-                guard let (isTooBright, brightnessPoints) = isTooBright(faceCapture: faceCapture, cameraState: cameraState) else { return nil }
-                guard let (isLightingUnbalanced, balancePoints) = isLightingUnbalanced(faceCapture: faceCapture, cameraState: cameraState) else { return nil }
-                guard let (isNotHorizontallyAligned, isNotVerticallyAligned, isRotated, facingCameraPoints) = isFaceNotParallelToCamera(faceCapture: faceCapture, cameraState: cameraState) else { return nil }
-                
-                return RealTimeFaceData(landmarks: allImagePoints, isLightingUnbalanced: isLightingUnbalanced, balancePoints: balancePoints, isTooBright: isTooBright, brightnessPoints: brightnessPoints, isNotHorizontallyAligned: isNotHorizontallyAligned, isNotVerticallyAligned: isNotVerticallyAligned, isRotated: isRotated, facingCameraPoints: facingCameraPoints, exposurePoint: brightnessPoints.first!, size: faceCapture.imageSize)
-            }
-            .asObservable()
+        if landmarkFace {
+            self.realtimeDataStream = pixelBufferSubject
+                //.flatMap { getFacialLandmarks(cameraState: cameraState, pixelBuffer: $0) }
+                .throttle(RxTimeInterval.milliseconds(100), scheduler: MainScheduler.asyncInstance) //No need to calculate the face location 60 times a second...
+                .flatMap { pixelBuffer -> Observable<FaceCapture?> in
+                    return FaceCapture.create(pixelBuffer: pixelBuffer, orientation: cameraState.exifOrientationForCurrentDeviceOrientation())
+                }
+                .map { faceCaptureOptional -> RealTimeFaceData? in
+                    guard let faceCapture = faceCaptureOptional else { return nil }
+                    guard let allImagePoints = faceCapture.getAllImagePoints() else { return nil }
+                    guard let (isTooBright, brightnessPoints) = isTooBright(faceCapture: faceCapture, cameraState: cameraState) else { return nil }
+                    guard let (isLightingUnbalanced, balancePoints) = isLightingUnbalanced(faceCapture: faceCapture, cameraState: cameraState) else { return nil }
+                    guard let (isNotHorizontallyAligned, isNotVerticallyAligned, isRotated, facingCameraPoints) = isFaceNotParallelToCamera(faceCapture: faceCapture, cameraState: cameraState) else { return nil }
+                    
+                    return RealTimeFaceData(landmarks: allImagePoints, isLightingUnbalanced: isLightingUnbalanced, balancePoints: balancePoints, isTooBright: isTooBright, brightnessPoints: brightnessPoints, isNotHorizontallyAligned: isNotHorizontallyAligned, isNotVerticallyAligned: isNotVerticallyAligned, isRotated: isRotated, facingCameraPoints: facingCameraPoints, exposurePoint: brightnessPoints.first!, size: faceCapture.imageSize)
+                }
+                .asObservable()
+        } else {
+            self.realtimeDataStream = Observable.just(nil)
+        }
 
         self.videoDataOutput = AVCaptureVideoDataOutput()
         super.init()
