@@ -69,6 +69,22 @@ func getRightEyePoint(landmarks: [ImagePoint]) -> ImagePoint {
     return landmarks[18]
 }
 
+func getRightEyePupilPoint(landmarks: [ImagePoint]) -> ImagePoint {
+    return landmarks[64]
+}
+
+func getRightEyeLeftSclera(landmarks: [ImagePoint]) -> ImagePoint {
+    let x = /*(landmarks[16].x + landmarks[17].x + landmarks[23].x) / 3*/ landmarks[64].x
+    let y = (landmarks[16].y + landmarks[17].y + landmarks[23].y) / 3
+    return ImagePoint.init(x: x, y: y)
+}
+
+func getRightEyeRightSclera(landmarks: [ImagePoint]) -> ImagePoint {
+    let x = /*(landmarks[19].x + landmarks[20].x + landmarks[21].x) / 3*/ landmarks[64].x
+    let y = (landmarks[19].y + landmarks[20].y + landmarks[21].y) / 3
+    return ImagePoint.init(x: x, y: y)
+}
+
 func getLeftCheekPoint(landmarks: [ImagePoint]) -> ImagePoint {
     let middleLeftEye = landmarks[63]
     let middleNose = landmarks[52]
@@ -77,6 +93,22 @@ func getLeftCheekPoint(landmarks: [ImagePoint]) -> ImagePoint {
 
 func getLeftEyePoint(landmarks: [ImagePoint]) -> ImagePoint {
     return landmarks[10]
+}
+
+func getLeftEyePupilPoint(landmarks: [ImagePoint]) -> ImagePoint {
+    return landmarks[63]
+}
+
+func getLeftEyeLeftSclera(landmarks: [ImagePoint]) -> ImagePoint {
+    let x = /*(landmarks[8].x + landmarks[9].x + landmarks[15].x) / 3*/ landmarks[63].x
+    let y = (landmarks[8].y + landmarks[9].y + landmarks[15].y) / 3
+    return ImagePoint.init(x: x, y: y)
+}
+
+func getLeftEyeRightSclera(landmarks: [ImagePoint]) -> ImagePoint {
+    let x = /*(landmarks[11].x + landmarks[12].x + landmarks[13].x) / 3*/ landmarks[63].x
+    let y = (landmarks[11].y + landmarks[12].y + landmarks[13].y) / 3
+    return ImagePoint.init(x: x, y: y)
 }
 
 func getChinPoint(landmarks: [ImagePoint]) -> ImagePoint {
@@ -114,6 +146,18 @@ func getLowerCheekPair(landmarks: [ImagePoint]) -> (ImagePoint, ImagePoint) {
     let leftLowerCheek = ImagePoint.init(x: landmarks[33].x, y: landmarks[33].y + offset)
     let rightLowerCheek = ImagePoint.init(x: landmarks[29].x , y: landmarks[29].y - offset)
     return (leftLowerCheek, rightLowerCheek)
+}
+
+func getInnerEyeScleraPair(landmarks: [ImagePoint]) -> (ImagePoint, ImagePoint) {
+    let leftEyeRightSclera = getLeftEyeRightSclera(landmarks: landmarks)
+    let rightEyeLeftSclera = getRightEyeLeftSclera(landmarks: landmarks)
+    return (leftEyeRightSclera, rightEyeLeftSclera)
+}
+
+func getOuterEyeScleraPair(landmarks: [ImagePoint]) -> (ImagePoint, ImagePoint) {
+    let leftEyeLeftSclera = getLeftEyeLeftSclera(landmarks: landmarks)
+    let rightEyeRightSclera = getRightEyeRightSclera(landmarks: landmarks)
+    return (leftEyeLeftSclera, rightEyeRightSclera)
 }
 
 func getFirstRow(landmarks: [ImagePoint]) -> CGFloat {
@@ -188,6 +232,8 @@ func isLightingUnbalanced(faceCapture: FaceCapture, cameraState: CameraState) ->
     let eyePair = getEyePair(landmarks: facePoints)
     let upperCheekPair = getUpperCheekPair(landmarks: facePoints)
     let lowerCheekPair = getLowerCheekPair(landmarks: facePoints)
+    let innerEyeScleraPair = getInnerEyeScleraPair(landmarks: facePoints)
+    let outerEyeScleraPair = getOuterEyeScleraPair(landmarks: facePoints)
 
     guard let foreheadBalance = isLightingUnequal(points: foreheadPair, faceCapture: faceCapture, exposureRatios: exposureRatios) else {
         print("Cant check FOREHEAD balance")
@@ -209,7 +255,17 @@ func isLightingUnbalanced(faceCapture: FaceCapture, cameraState: CameraState) ->
         return nil
     }
     
-    let sets = [(foreheadBalance, foreheadPair), (eyeBalance, eyePair), (upperCheekBalance, upperCheekPair), (lowerCheekBalance, lowerCheekPair)]
+    guard let innerEyeScleraBalance = isLightingUnequal(points: innerEyeScleraPair, faceCapture: faceCapture, exposureRatios: exposureRatios) else {
+        print("Cant check INNER EYE SCLERA balance")
+        return nil
+    }
+    
+    guard let outerEyeScleraBalance = isLightingUnequal(points: outerEyeScleraPair, faceCapture: faceCapture, exposureRatios: exposureRatios) else {
+        print("Cant check INNER EYE SCLERA balance")
+        return nil
+    }
+    
+    let sets = [(foreheadBalance, foreheadPair), (eyeBalance, eyePair), (upperCheekBalance, upperCheekPair), (lowerCheekBalance, lowerCheekPair), (innerEyeScleraBalance, innerEyeScleraPair), (outerEyeScleraBalance, outerEyeScleraPair)]
     
     let balancePoints = sets.flatMap { set -> [ImagePoint] in
         let (balance, pair) = set
@@ -225,7 +281,7 @@ func isLightingUnbalanced(faceCapture: FaceCapture, cameraState: CameraState) ->
         return [left, right]
     }
     
-    let isBrightnessUnbalanced = !foreheadBalance.ok || !eyeBalance.ok || !upperCheekBalance.ok || !lowerCheekBalance.ok
+    let isBrightnessUnbalanced = !foreheadBalance.ok || !eyeBalance.ok || !upperCheekBalance.ok || !lowerCheekBalance.ok || !innerEyeScleraBalance.ok || !outerEyeScleraBalance.ok
 
     return (isBrightnessUnbalanced, balancePoints)
 }
@@ -243,13 +299,40 @@ func isTooBright(faceCapture: FaceCapture, cameraState: CameraState) -> (Bool, [
     let rightCheekPoint = getRightCheekPoint(landmarks: facePoints)
     let chinPoint = getChinPoint(landmarks: facePoints)
     let foreheadPoint = getForeheadPoint(landmarks: facePoints)
+    let leftEyePupilPoint = getLeftEyePupilPoint(landmarks: facePoints)
+    let rightEyePupilPoint = getRightEyePupilPoint(landmarks: facePoints)
+    
+    //let leftEyeLeftScleraPoint = getLeftEyeLeftSclera(landmarks: facePoints)
+    let leftEyeRightScleraPoint = getLeftEyeRightSclera(landmarks: facePoints)
+    let rightEyeLeftScleraPoint = getRightEyeLeftSclera(landmarks: facePoints)
+    //let rightEyeRightScleraPoint = getRightEyeRightSclera(landmarks: facePoints)
+
     
     guard let leftCheekSample = faceCapture.sampleRegionIntensity(center: leftCheekPoint) else { return nil }
     guard let rightCheekSample = faceCapture.sampleRegionIntensity(center: rightCheekPoint) else { return nil }
     guard let chinSample = faceCapture.sampleRegionIntensity(center: chinPoint) else { return nil }
     guard let foreheadSample = faceCapture.sampleRegionIntensity(center: foreheadPoint) else { return nil }
     
-    let sortedSamples = [(leftCheekSample, leftCheekPoint), (rightCheekSample, rightCheekPoint), (chinSample, chinPoint), (foreheadSample, foreheadPoint)].sorted { A, B in
+    guard let leftPupilSample = faceCapture.sampleRegionIntensity(center: leftEyePupilPoint) else { return nil }
+    guard let rightPupilSample = faceCapture.sampleRegionIntensity(center: rightEyePupilPoint) else { return nil }
+    
+    //guard let leftEyeLeftScleraSample = faceCapture.sampleRegionIntensity(center: leftEyeLeftScleraPoint) else { return nil }
+    guard let leftEyeRightScleraSample = faceCapture.sampleRegionIntensity(center: leftEyeRightScleraPoint) else { return nil }
+    guard let rightEyeLeftScleraSample = faceCapture.sampleRegionIntensity(center: rightEyeLeftScleraPoint) else { return nil }
+    //guard let rightEyeRightScleraSample = faceCapture.sampleRegionIntensity(center: rightEyeRightScleraPoint) else { return nil }
+    
+    let sortedSamples = [
+        (leftCheekSample, leftCheekPoint),
+        (rightCheekSample, rightCheekPoint),
+        (chinSample, chinPoint),
+        (foreheadSample, foreheadPoint),
+        (leftPupilSample, leftEyePupilPoint),
+        (rightPupilSample, rightEyePupilPoint),
+        //(leftEyeLeftScleraSample, leftEyeLeftScleraPoint),
+        (leftEyeRightScleraSample, leftEyeRightScleraPoint),
+        (rightEyeLeftScleraSample, rightEyeLeftScleraPoint)
+        //(rightEyeRightScleraSample, rightEyeRightScleraPoint)
+        ].sorted { A, B in
         return A.0 > B.0
     }
         

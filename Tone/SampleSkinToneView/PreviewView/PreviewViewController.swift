@@ -25,10 +25,15 @@ class PreviewViewController: ReactiveUIViewController {
     @IBOutlet weak var takeSampleButton: UIButton!
     
     @IBOutlet weak var userPrompt: UITextField!
+    
+    var originalScreenBrightness = CGFloat(1.0)
 
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Preview Sample Skin Tone"
+        
+        self.viewModel!.originalScreenBrightness = UIScreen.main.brightness
+        self.originalScreenBrightness = self.viewModel!.originalScreenBrightness
         
         let videoPreviewLayer = AVCaptureVideoPreviewLayer(session: self.viewModel!.cameraState.captureSession)
         videoPreviewLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
@@ -66,6 +71,8 @@ class PreviewViewController: ReactiveUIViewController {
             .disposed(by: disposeBag)
 
         DispatchQueue.global(qos: .userInteractive).async {
+ 
+            
             self.viewModel!.drawPointsStream
                 .subscribe(onNext: { [weak self] points in
                     let size = 5
@@ -89,9 +96,17 @@ class PreviewViewController: ReactiveUIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.viewModel!.video.resumeProcessing()
+        print("Maxing Screen Brightness!")
+        UIScreen.main.brightness = CGFloat(1.0)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        print("VIEW WILL DISSAPEAR")
+        UIScreen.main.brightness = self.originalScreenBrightness
     }
     
     override func viewDidDisappear(_ animated: Bool) {
+        print("VIEW DID DISAPEAR")
         super.viewDidDisappear(animated)
         if let viewModel = self.viewModel {
             viewModel.video.pauseProcessing()

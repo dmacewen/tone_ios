@@ -75,9 +75,11 @@ class SampleSkinToneViewModel: ViewModel {
             case .faceTooFarUp:
                 return Message(message: "Your head is cropped!", tip: "Try moving the phone up")
             case .faceTooFarLeft:
-                return Message(message: "Your left cheek is cropped!", tip: "Try moving the phone to your left")
+                //return Message(message: "Your left cheek is cropped!", tip: "Try moving the phone to your left")
+                return Message(message: "Center your face in the screen", tip: "Try moving the phone to your left")
             case .faceTooFarRight:
-                return Message(message: "Your right cheek is cropped!", tip: "Try moving the phone to your right")
+                //return Message(message: "Your right cheek is cropped!", tip: "Try moving the phone to your right")
+                return Message(message: "Center your face in the screen", tip: "Try moving the phone to your left")
             case .faceTiltedVertically:
                 return Message(message: "You're taking the photo at an angle!", tip: "Try adjusting your head up or down")
             case .faceTiltedHorizontally:
@@ -219,13 +221,15 @@ class SampleSkinToneViewModel: ViewModel {
         let rightEyeSizes = faceCaptures.map { $0.getRightEyeImageSize()! }
         let rightEyeCropSize = SampleSkinToneViewModel.getEncapsulatingSize(sizes: rightEyeSizes) * 1.5 //Add a buffer of 25%
         
-        //We ultimately want a crop that crops from the right jaw to the left, top of the image to the bottom of the chin (want hair in image)
+        //We ultimately want a crop that crops from the right jaw to the left, top of the image to the bottom of the Image ~~chin~~ (want hair in image)
         let faceSizes = faceCaptures.map { $0.getAllPointsSize()! }
         let faceCropSize = SampleSkinToneViewModel.getEncapsulatingSize(sizes: faceSizes) * 1.10
-        let faceBBs = faceCaptures.map { $0.getAllPointsBB()! }
-        let scaledFaceBBs = faceBBs.map { $0.scaleToSize(size: faceCropSize, imgSize: faceCaptures[0].imageSize.size) }
-        let encapsulatingMaxX = scaledFaceBBs.map { $0.maxX }.max()!
-        let faceCropWidth = encapsulatingMaxX
+        //let faceBBs = faceCaptures.map { $0.getAllPointsBB()! }
+        //let scaledFaceBBs = faceBBs.map { $0.scaleToSize(size: faceCropSize, imgSize: faceCaptures[0].imageSize.size) }
+        //let encapsulatingMaxX = scaledFaceBBs.map { $0.maxX }.max()!
+        //let faceCropWidth = encapsulatingMaxX
+        
+        let fullFaceWidth = faceCaptures[0].imageSize.size.width
 
         let context = CIContext() //For processing PNGs
 
@@ -234,7 +238,7 @@ class SampleSkinToneViewModel: ViewModel {
             let rightEyeCrop = faceCapture.getRightEyeImageBB()!.scaleToSize(size: rightEyeCropSize, imgSize: faceCapture.imageSize.size)
             var faceCrop = faceCapture.getAllPointsBB()!.scaleToSize(size: faceCropSize, imgSize: faceCapture.imageSize.size)
             //faceCrop = CGRect.init(x: faceCrop.minX, y: 0, width: faceCrop.width, height: faceCropHeight)
-            faceCrop = CGRect.init(x: 0, y: faceCrop.minY, width: faceCropWidth, height: faceCrop.height)
+            faceCrop = CGRect.init(x: 0, y: faceCrop.minY, width: fullFaceWidth, height: faceCrop.height)
             
             let exposurePoint = faceCapture.exposurePoint!.toImagePoint(size: faceCapture.imageSize)
             let croppedExposurePoint = ImagePoint.init(x: exposurePoint.x - faceCrop.minX, y: exposurePoint.y - faceCrop.minY).toNormalizedImagePoint(size: ImageSize.init(faceCrop.size))

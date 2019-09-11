@@ -23,15 +23,12 @@ class FlashViewController: ReactiveUIViewController {
         title = "Flash Sample Skin Tone"
         
         let flashRenderer = UIGraphicsImageRenderer(size: FlashHostLayer.bounds.size)
-      
-        self.viewModel!.originalScreenBrightness = UIScreen.main.brightness
-        print("Maxing Screen Brightness!")
-        UIScreen.main.brightness = CGFloat(1.0)
-        
+
         self.viewModel!.flashSettingsTaskStream
             //.observeOn(MainScheduler.instance)
             .observeOn(MainScheduler.asyncInstance)
             .do(onNext: { _ in print("Recieved Flash Setting Task in Flash Controller!")})
+            .do(onNext: { _ in UIScreen.main.brightness = CGFloat(1.0) })
             .flatMap { [unowned self] flashSettingTask in self.getUILayer(for: flashSettingTask, renderer: flashRenderer) }
             .flatMap { [unowned self] (flashSettingTask, currentFlashLayer) in self.addToParent(flashSettingTask, currentFlashLayer) }
             .do(onNext: { _ in print("After adding to parent... maybe its the single thats mesing things up")})

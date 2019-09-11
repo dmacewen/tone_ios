@@ -832,7 +832,7 @@
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
                             <textField opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" text="1 / 8" borderStyle="line" textAlignment="center" adjustsFontSizeToFit="NO" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="FPI-XH-2az">
-                                <rect key="frame" x="166" y="189" width="43" height="28"/>
+                                <rect key="frame" x="166" y="191.66666666666666" width="43" height="28"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="textColor" red="0.29333442100000001" green="0.74110265980000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                 <fontDescription key="fontDescription" type="system" weight="ultraLight" pointSize="20"/>
@@ -841,12 +841,12 @@
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="JVR-NZ-Lpg" firstAttribute="top" secondItem="BEL-XI-IzM" secondAttribute="top" id="ZoB-aw-zF7"/>
-                            <constraint firstItem="FPI-XH-2az" firstAttribute="centerY" secondItem="u1n-Zw-gvF" secondAttribute="centerY" multiplier="0.5" id="eEJ-Ki-kWb"/>
+                            <constraint firstItem="JVR-NZ-Lpg" firstAttribute="leading" secondItem="BEL-XI-IzM" secondAttribute="leading" id="8Zu-gE-Xzd"/>
+                            <constraint firstItem="JVR-NZ-Lpg" firstAttribute="height" secondItem="BEL-XI-IzM" secondAttribute="height" id="Qbz-iS-ccf"/>
+                            <constraint firstItem="JVR-NZ-Lpg" firstAttribute="top" secondItem="BEL-XI-IzM" secondAttribute="top" id="aMg-73-zpi"/>
+                            <constraint firstItem="FPI-XH-2az" firstAttribute="centerY" secondItem="BEL-XI-IzM" secondAttribute="centerY" multiplier="0.5" id="eEJ-Ki-kWb"/>
                             <constraint firstItem="FPI-XH-2az" firstAttribute="centerX" secondItem="u1n-Zw-gvF" secondAttribute="centerX" id="khk-dJ-EpK"/>
-                            <constraint firstItem="JVR-NZ-Lpg" firstAttribute="leading" secondItem="BEL-XI-IzM" secondAttribute="leading" id="o5N-kQ-sHw"/>
-                            <constraint firstItem="JVR-NZ-Lpg" firstAttribute="trailing" secondItem="BEL-XI-IzM" secondAttribute="trailing" id="ouZ-qY-hsE"/>
-                            <constraint firstItem="JVR-NZ-Lpg" firstAttribute="bottom" secondItem="BEL-XI-IzM" secondAttribute="bottom" id="u1n-j9-zNf"/>
+                            <constraint firstItem="JVR-NZ-Lpg" firstAttribute="width" secondItem="BEL-XI-IzM" secondAttribute="width" id="zBu-j0-xBp"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="BEL-XI-IzM"/>
                     </view>
