@@ -284,7 +284,9 @@ func getEyeExposurePoints(faceCapture: FaceCapture) -> (Int, [ImagePoint])? {
     let RR_sclera = getRightEyeRightScleraBB(landmarks: facePoints)//.toCornerPoints().map { ImagePoint($0) }
     let RR_res = sampleRect(faceCapture: faceCapture, rect: RR_sclera).sorted { $0.0 > $1.0 }.first!
     
-    return (0, [LL_res.1, LR_res.1, RL_res.1, RR_res.1])
+    let resultPoints = [LL_res, LR_res, RL_res, RR_res].sorted { $0.0 > $1.0 }
+    
+    return (0, resultPoints.map { $0.1 })
 }
 
 func getExposureScore(intensity: CGFloat, exposureRatios: ExposureRatios) -> CGFloat {
