@@ -39,6 +39,7 @@ struct RealTimeFaceData {
     var isRotated: Bool
     var facingCameraPoints: [ImagePoint]
     var exposurePoint: ImagePoint
+    var eyeExposurePoints: [ImagePoint]
     var size: ImageSize
 }
 
@@ -79,10 +80,28 @@ func getRightEyeLeftSclera(landmarks: [ImagePoint]) -> ImagePoint {
     return ImagePoint.init(x: x, y: y)
 }
 
+func getRightEyeLeftScleraBB(landmarks: [ImagePoint]) -> CGRect {
+    let x = landmarks[18].x
+    let y = (landmarks[17].y + landmarks[18].y + landmarks[22].y + landmarks[23].y) / 4
+    let width = landmarks[22].x - x
+    let height = landmarks[16].y - y
+    return CGRect.init(x: x, y: y, width: width, height: height)
+}
+
+
 func getRightEyeRightSclera(landmarks: [ImagePoint]) -> ImagePoint {
     let x = /*(landmarks[19].x + landmarks[20].x + landmarks[21].x) / 3*/ landmarks[64].x
     let y = (landmarks[19].y + landmarks[20].y + landmarks[21].y) / 3
     return ImagePoint.init(x: x, y: y)
+}
+
+func getRightEyeRightScleraBB(landmarks: [ImagePoint]) -> CGRect {
+    let x = landmarks[18].x
+    let y = landmarks[20].y
+    let width = landmarks[22].x - x
+    let bottom_y = (landmarks[18].y + landmarks[19].y + landmarks[21].y + landmarks[22].y) / 4
+    let height = bottom_y - y
+    return CGRect.init(x: x, y: y, width: width, height: height)
 }
 
 func getLeftCheekPoint(landmarks: [ImagePoint]) -> ImagePoint {
@@ -105,10 +124,27 @@ func getLeftEyeLeftSclera(landmarks: [ImagePoint]) -> ImagePoint {
     return ImagePoint.init(x: x, y: y)
 }
 
+func getLeftEyeLeftScleraBB(landmarks: [ImagePoint]) -> CGRect {
+    let x = landmarks[10].x
+    let y = (landmarks[9].y + landmarks[10].y + landmarks[14].y + landmarks[15].y) / 4
+    let width = landmarks[14].x - x
+    let height = landmarks[8].y - y
+    return CGRect.init(x: x, y: y, width: width, height: height)
+}
+
 func getLeftEyeRightSclera(landmarks: [ImagePoint]) -> ImagePoint {
     let x = /*(landmarks[11].x + landmarks[12].x + landmarks[13].x) / 3*/ landmarks[63].x
     let y = (landmarks[11].y + landmarks[12].y + landmarks[13].y) / 3
     return ImagePoint.init(x: x, y: y)
+}
+
+func getLeftEyeRightScleraBB(landmarks: [ImagePoint]) -> CGRect {
+    let x = landmarks[10].x
+    let y = landmarks[12].y
+    let width = landmarks[14].x - x
+    let bottom_y = (landmarks[10].y + landmarks[11].y + landmarks[13].y + landmarks[14].y) / 4
+    let height = bottom_y - y
+    return CGRect.init(x: x, y: y, width: width, height: height)
 }
 
 func getChinPoint(landmarks: [ImagePoint]) -> ImagePoint {
@@ -208,6 +244,47 @@ func isLightingUnequal(points: (ImagePoint, ImagePoint), faceCapture: FaceCaptur
     }
     
     return .right
+}
+
+func sampleRect(faceCapture: FaceCapture, rect: CGRect) -> [(CGFloat, ImagePoint)] {
+    //let sampleRatios: [CGFloat] = [0.3, 0.5, 0.7]
+    let sampleRatios: [CGFloat] = [0.3, 0.4, 0.5, 0.6, 0.7]
+
+    var results: [(CGFloat, ImagePoint)] = []
+    
+    for yRatio in sampleRatios {
+        for xRatio in sampleRatios {
+            let samplePoint = ImagePoint(x: Int(rect.minX + (xRatio * rect.height)), y: Int(rect.minY + (yRatio * rect.height)))
+            let sampleIntensity = faceCapture.sampleRegionIntensitySmall(center: samplePoint) ?? 0.0
+            results.append((sampleIntensity, samplePoint))
+        }
+    }
+    
+    return results
+}
+
+func getEyeExposurePoints(faceCapture: FaceCapture) -> (Int, [ImagePoint])? {
+    faceCapture.lock()
+    defer { faceCapture.unlock() }
+    
+    guard let facePoints = faceCapture.getAllImagePoints() else {
+        print("No All Image Points in Get Eye Exposure Points")
+        return nil
+    }
+
+    let LL_sclera = getLeftEyeLeftScleraBB(landmarks: facePoints)//.toCornerPoints().map { ImagePoint($0) }
+    let LL_res = sampleRect(faceCapture: faceCapture, rect: LL_sclera).sorted { $0.0 > $1.0 }.first!
+
+    let LR_sclera = getLeftEyeRightScleraBB(landmarks: facePoints)//.toCornerPoints().map { ImagePoint($0) }
+    let LR_res = sampleRect(faceCapture: faceCapture, rect: LR_sclera).sorted { $0.0 > $1.0 }.first!
+
+    let RL_sclera = getRightEyeLeftScleraBB(landmarks: facePoints)//.toCornerPoints().map { ImagePoint($0) }
+    let RL_res = sampleRect(faceCapture: faceCapture, rect: RL_sclera).sorted { $0.0 > $1.0 }.first!
+
+    let RR_sclera = getRightEyeRightScleraBB(landmarks: facePoints)//.toCornerPoints().map { ImagePoint($0) }
+    let RR_res = sampleRect(faceCapture: faceCapture, rect: RR_sclera).sorted { $0.0 > $1.0 }.first!
+    
+    return (0, [LL_res.1, LR_res.1, RL_res.1, RR_res.1])
 }
 
 func getExposureScore(intensity: CGFloat, exposureRatios: ExposureRatios) -> CGFloat {

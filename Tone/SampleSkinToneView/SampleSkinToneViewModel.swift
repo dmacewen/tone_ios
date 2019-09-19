@@ -156,6 +156,11 @@ class SampleSkinToneViewModel: ViewModel {
                     if try! localSelf.user.settings.showBalanceLandmarks.value() { localSelf.drawPointsStream.onNext(realtimeData.balancePoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)}) }
                     if try! localSelf.user.settings.showBrightnessLandmarks.value() { localSelf.drawPointsStream.onNext(realtimeData.brightnessPoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)}) }
                     if try! localSelf.user.settings.showFacingCameraLandmarks.value() { localSelf.drawPointsStream.onNext(realtimeData.facingCameraPoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)}) }
+                    if try! localSelf.user.settings.showEyeExposureLandmarks.value() {
+                        //localSelf.drawRectsStream.onNext(realtimeData.eyeExposure.rects.map { $0.toDisplayRect(size: realtimeData.size, videoLayer: videoLayer)})
+                        localSelf.drawPointsStream.onNext(realtimeData.eyeExposurePoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)})
+                    }
+
                     
                     let xImageValues = realtimeData.landmarks.map { $0.point.x }
                     let yImageValues = realtimeData.landmarks.map { $0.point.y }

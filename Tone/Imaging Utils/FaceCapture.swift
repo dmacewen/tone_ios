@@ -155,6 +155,37 @@ class FaceCapture {
         return CGFloat(sum) / CGFloat(counter)
     }
     
+    func sampleRegionIntensitySmall(center: ImagePoint) -> CGFloat? {
+        precondition(isLocked)
+        if !self.isValidPoint(center) { return nil }
+        if !self.isValidPoint(ImagePoint.init(x: center.x - 1, y: center.y - 1)) { return nil }
+        if !self.isValidPoint(ImagePoint.init(x: center.x + 1, y: center.y + 1)) { return nil }
+        //One more grid/orientation to be aware of...
+        let orientedCenter = CVImageBufferIsFlipped(self.pixelBuffer!) ? ImagePoint.init(x: center.x, y: self.imageSize.height - center.y) : center
+        
+        let bytesPerRow = CVPixelBufferGetBytesPerRow(self.pixelBuffer!)
+        guard let baseAddress = CVPixelBufferGetBaseAddress(self.pixelBuffer!) else { return nil }
+        let byteBuffer = baseAddress.assumingMemoryBound(to: UInt8.self)
+        
+        let offsets = [-1, 0, 1]
+        var sum: UInt = 0
+        
+        let xStart = (Int(orientedCenter.x) - 1) * 4
+        let xEnd = (Int(orientedCenter.x) + 1) * 4
+        
+        for yOffset in offsets {
+            let y = (Int(orientedCenter.y) + yOffset) * bytesPerRow
+            let start = y + xStart
+            let end = y + xEnd
+            
+            for subpixelIndex in start...end {
+                sum += UInt(byteBuffer[subpixelIndex])
+            }
+        }
+        
+        return CGFloat(sum) / CGFloat(36)
+    }
+    
     func getAllImagePoints() -> [ImagePoint]? {
         guard let allPoints = self.faceLandmarks.allPoints else { return nil }
         return allPoints.pointsInImage(imageSize: self.imageSize.toLandmarkSize().size).map { LandmarkPoint($0).toImagePoint(size: self.imageSize) }

@@ -43,6 +43,7 @@ class Settings: Codable {
     let showBalanceLandmarks: BehaviorSubject<Bool>
     let showBrightnessLandmarks: BehaviorSubject<Bool>
     let showFacingCameraLandmarks: BehaviorSubject<Bool>
+    let showEyeExposureLandmarks: BehaviorSubject<Bool>
     
     enum CodingKeys: String, CodingKey {
         case showAllLandmarks
@@ -50,6 +51,7 @@ class Settings: Codable {
         case showBalanceLandmarks
         case showBrightnessLandmarks
         case showFacingCameraLandmarks
+        case showEyeExposureLandmarks
     }
     
     init() {
@@ -58,6 +60,7 @@ class Settings: Codable {
         showBalanceLandmarks = self.landmarkDisplayRadio.newField()
         showBrightnessLandmarks = self.landmarkDisplayRadio.newField()
         showFacingCameraLandmarks = self.landmarkDisplayRadio.newField()
+        showEyeExposureLandmarks = self.landmarkDisplayRadio.newField()
     }
     
     //Decode all settings values. If a value is missing, default to false
@@ -92,6 +95,12 @@ class Settings: Codable {
             showFacingCameraLandmarks = self.landmarkDisplayRadio.newField(showFacingCameraLandmarksBool)
         } else {
             showFacingCameraLandmarks = self.landmarkDisplayRadio.newField(false)
+        }
+        
+        if let showEyeExposureLandmarksBool = try? container.decode(Bool.self, forKey: .showEyeExposureLandmarks) {
+            showEyeExposureLandmarks = self.landmarkDisplayRadio.newField(showEyeExposureLandmarksBool)
+        } else {
+            showEyeExposureLandmarks = self.landmarkDisplayRadio.newField(false)
         }
     }
     

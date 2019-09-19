@@ -134,6 +134,18 @@ extension CGRect {
     func toInt() -> CGRect {
         return CGRect(x: Int(ceil(self.minX)), y: Int(ceil(self.minY)), width: Int(floor(self.width)), height: Int(floor(self.height)))
     }
+    
+    func toCornerPoints() -> [CGPoint] {
+        let a = self.origin
+        let b = CGPoint(x: self.maxX, y: self.maxY)
+        let c = CGPoint(x: self.minX, y: self.maxY)
+        let d = CGPoint(x: self.maxX, y: self.minY)
+        return [a, b, c, d]
+    }
+    
+    func printSize() {
+        print("Size :: \(self.size)")
+    }
 }
 
 extension CGSize {

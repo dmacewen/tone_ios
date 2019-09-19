@@ -560,7 +560,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="7Da-gD-VMC" userLabel="Settings Container">
-                                <rect key="frame" x="16" y="105" width="343" height="250"/>
+                                <rect key="frame" x="16" y="105" width="343" height="300"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Vrw-TJ-Sqw" userLabel="All Landmarks">
                                         <rect key="frame" x="0.0" y="0.0" width="343" height="50"/>
@@ -677,6 +677,29 @@
                                             <constraint firstItem="bWs-Nb-tzG" firstAttribute="centerY" secondItem="dLz-eL-C3g" secondAttribute="centerY" id="sg8-pn-c9i"/>
                                         </constraints>
                                     </view>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="exn-lt-Biq" userLabel="Eye Exposure Landmarks">
+                                        <rect key="frame" x="0.0" y="250" width="343" height="50"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Eye Exposure Landmarks" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ICC-8c-azW" userLabel="Eye Exposure Landmarks">
+                                                <rect key="frame" x="0.0" y="14.999999999999998" width="189.66666666666666" height="20.333333333333329"/>
+                                                <fontDescription key="fontDescription" type="system" weight="thin" pointSize="17"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="A5e-be-7yi">
+                                                <rect key="frame" x="294" y="9.6666666666666856" width="51" height="31"/>
+                                            </switch>
+                                        </subviews>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstItem="A5e-be-7yi" firstAttribute="centerY" secondItem="exn-lt-Biq" secondAttribute="centerY" id="Q4Y-xr-CC4"/>
+                                            <constraint firstAttribute="height" constant="50" id="ZOm-ao-hdO"/>
+                                            <constraint firstAttribute="trailing" secondItem="A5e-be-7yi" secondAttribute="trailing" id="f7Z-0T-6bX"/>
+                                            <constraint firstItem="ICC-8c-azW" firstAttribute="centerY" secondItem="exn-lt-Biq" secondAttribute="centerY" id="fKH-7a-Wp9"/>
+                                            <constraint firstItem="ICC-8c-azW" firstAttribute="leading" secondItem="exn-lt-Biq" secondAttribute="leading" id="kpU-SO-tte"/>
+                                            <constraint firstItem="A5e-be-7yi" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="ICC-8c-azW" secondAttribute="trailing" constant="8" symbolic="YES" id="vJz-qh-KSU"/>
+                                        </constraints>
+                                    </view>
                                 </subviews>
                                 <constraints>
                                     <constraint firstItem="Vrw-TJ-Sqw" firstAttribute="top" secondItem="7Da-gD-VMC" secondAttribute="top" id="pVy-rx-Cfe"/>
@@ -703,6 +726,7 @@
                         <outlet property="balanceLandmarks" destination="tb4-K0-U4x" id="144-q9-sAI"/>
                         <outlet property="brightnessLandmarks" destination="NRf-wG-Is1" id="cK0-xf-z0V"/>
                         <outlet property="exposureLandmarks" destination="NkN-iI-IcX" id="CC2-jt-asr"/>
+                        <outlet property="eyeExposureLandmarks" destination="A5e-be-7yi" id="Utp-tf-uys"/>
                         <outlet property="facingCameraLandmarks" destination="bWs-Nb-tzG" id="Ou9-Wv-SLj"/>
                     </connections>
                 </viewController>

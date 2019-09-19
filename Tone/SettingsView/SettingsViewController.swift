@@ -21,6 +21,7 @@ class SettingsViewController: UIViewController {
     @IBOutlet weak var balanceLandmarks: UISwitch!
     @IBOutlet weak var brightnessLandmarks: UISwitch!
     @IBOutlet weak var facingCameraLandmarks: UISwitch!
+    @IBOutlet weak var eyeExposureLandmarks: UISwitch!
 
     
     let disposeBag = DisposeBag()
@@ -49,6 +50,10 @@ class SettingsViewController: UIViewController {
             .bind(to: self.facingCameraLandmarks.rx.isOn)
             .disposed(by: disposeBag)
         
+        self.viewModel.settings.showEyeExposureLandmarks
+            .bind(to: self.eyeExposureLandmarks.rx.isOn)
+            .disposed(by: disposeBag)
+        
         self.allLandmarks.rx.isOn
             .bind(to: self.viewModel.settings.showAllLandmarks)
             .disposed(by: disposeBag)
@@ -67,6 +72,10 @@ class SettingsViewController: UIViewController {
         
         self.facingCameraLandmarks.rx.isOn
             .bind(to: self.viewModel.settings.showFacingCameraLandmarks)
+            .disposed(by: disposeBag)
+        
+        self.eyeExposureLandmarks.rx.isOn
+            .bind(to: self.viewModel.settings.showEyeExposureLandmarks)
             .disposed(by: disposeBag)
         
         backButton.rx.tap
