@@ -23,6 +23,22 @@ class SampleSkinToneViewModel: ViewModel {
         FlashSettings(area: 9, areas: 14),
         FlashSettings(area: 8, areas: 14),
         FlashSettings(area: 7, areas: 14),]
+    /*
+    let screenFlashSettings = [
+        FlashSettings(area: 28, areas: 28),
+        FlashSettings(area: 27, areas: 28),
+        FlashSettings(area: 26, areas: 28),
+        FlashSettings(area: 25, areas: 28),
+        FlashSettings(area: 24, areas: 28),
+        FlashSettings(area: 23, areas: 28),
+        FlashSettings(area: 22, areas: 28),
+        FlashSettings(area: 21, areas: 28),
+        FlashSettings(area: 20, areas: 28),
+        FlashSettings(area: 19, areas: 28),
+        FlashSettings(area: 18, areas: 28),
+        FlashSettings(area: 17, areas: 28),
+        FlashSettings(area: 16, areas: 28),
+        FlashSettings(area: 15, areas: 28),]*/
     
     enum Event {
         case cancel
@@ -291,6 +307,7 @@ class SampleSkinToneViewModel: ViewModel {
             .filter { $0 }
             .take(1)
             .flatMap { [unowned cameraState] _ in cameraState.preparePhotoSettings(numPhotos: 8)}//self.screenFlashSettings.count) }
+            //.flatMap { [unowned cameraState] _ in cameraState.preparePhotoSettings(numPhotos: 14)}//self.screenFlashSettings.count) }
             .flatMap { [unowned self] _ in Observable.from(self.screenFlashSettings) }
             //.take(8)//self.screenFlashSettings.count) //Need to issue that completed somewhere
             .map { [unowned cameraState] flashSetting in (Camera(cameraState: cameraState), flashSetting) }
@@ -301,6 +318,7 @@ class SampleSkinToneViewModel: ViewModel {
             }
             .compactMap { $0 }
             .toArray()
+            //.do(onSuccess: { [unowned self] _ in self.cameraState.resetCameraState() })
             .map { [unowned cameraState] faceCaptures in SampleSkinToneViewModel.processFaceCaptures(cameraState, faceCaptures) }
             .do(onSuccess: { [unowned events] _ in events.onNext(.beginUpload) })
             .asObservable()

@@ -213,10 +213,25 @@ class CameraState {
             .do(onNext: { _ in print("DONE LOCKING CAMERA SETTINGS") })
     }
     
+    func setWhiteBalanceToD65() -> Observable<Bool> {
+        return Observable.create { [unowned self] observable in
+            DispatchQueue.main.async {
+                self.captureDevice.setWhiteBalanceModeLocked(with: self.captureDevice.deviceWhiteBalanceGains(for: AVCaptureDevice.WhiteBalanceChromaticityValues.init(x: 0.31271, y: 0.32902)), completionHandler: { time in
+                    observable.onNext(true)
+                    observable.onCompleted()
+                })
+            }
+            return Disposables.create()
+        }
+    }
+    
     private func lockWhiteBalance() -> Observable<Bool> {
         return Observable.create { [unowned self] observable in
             DispatchQueue.main.async {
                 self.captureDevice.setWhiteBalanceModeLocked(with: AVCaptureDevice.currentWhiteBalanceGains, completionHandler: { time in
+                //self.captureDevice.setWhiteBalanceModeLocked(with: self.captureDevice.grayWorldDeviceWhiteBalanceGains, completionHandler: { time in
+                //Just using d65
+                //self.captureDevice.setWhiteBalanceModeLocked(with: self.captureDevice.deviceWhiteBalanceGains(for: AVCaptureDevice.WhiteBalanceChromaticityValues.init(x: 0.31271, y: 0.32902)), completionHandler: { time in
                     observable.onNext(true)
                     observable.onCompleted()
                 })

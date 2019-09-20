@@ -111,5 +111,6 @@ class Settings: Codable {
         try container.encode(self.showBalanceLandmarks.value(), forKey: .showBalanceLandmarks)
         try container.encode(self.showBrightnessLandmarks.value(), forKey: .showBrightnessLandmarks)
         try container.encode(self.showFacingCameraLandmarks.value(), forKey: .showFacingCameraLandmarks)
+        try container.encode(self.showEyeExposureLandmarks.value(), forKey: .showEyeExposureLandmarks)
     }
 }

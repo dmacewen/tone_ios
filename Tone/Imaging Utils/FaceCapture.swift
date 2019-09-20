@@ -88,14 +88,14 @@ class FaceCapture {
                     }
                 })
                 
-                //faceLandmarksRequest.revision = VNDetectFaceLandmarksRequestRevision1
+                faceLandmarksRequest.revision = VNDetectFaceLandmarksRequestRevision2 //3 is better but will need to rework things for the new landmarks. Also, New 76 point contellation could be nice in the future too
                 //faceLandmarksRequest.usesCPUOnly = true
                 
                 do {
                     try imageRequestHandler.perform([faceLandmarksRequest])
                 } catch {
                     print("Failed to perform FaceLandmarkRequest: \(error)")
-                    fatalError("Error Landmarking")
+                    //fatalError("Error Landmarking")
                 }
             }
             
@@ -167,7 +167,7 @@ class FaceCapture {
         guard let baseAddress = CVPixelBufferGetBaseAddress(self.pixelBuffer!) else { return nil }
         let byteBuffer = baseAddress.assumingMemoryBound(to: UInt8.self)
         
-        let offsets = [-1, 0, 1]
+        let offsets = [-3, 0, 3]
         var sum: UInt = 0
         
         let xStart = (Int(orientedCenter.x) - 1) * 4
