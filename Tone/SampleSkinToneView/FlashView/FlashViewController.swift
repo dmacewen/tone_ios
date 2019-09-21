@@ -48,6 +48,9 @@ class FlashViewController: ReactiveUIViewController {
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         UIScreen.main.brightness = self.viewModel!.originalScreenBrightness
+        /*if let viewModel = self.viewModel {
+            viewModel.video.pauseProcessing()
+        }*/
     }
     
     private func getUILayer(for flashSettingTask: FlashSettingsTask, renderer: UIGraphicsImageRenderer) -> Observable<(FlashSettingsTask, UIImageView)> {

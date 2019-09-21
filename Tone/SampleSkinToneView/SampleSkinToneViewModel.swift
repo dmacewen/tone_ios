@@ -251,6 +251,7 @@ class SampleSkinToneViewModel: ViewModel {
         //let faceCropWidth = encapsulatingMaxX
         
         let fullFaceWidth = faceCaptures[0].imageSize.size.width
+        //let fullFaceHeight = faceCaptures[0].imageSize.size.height
 
         let context = CIContext() //For processing PNGs
 
@@ -260,7 +261,8 @@ class SampleSkinToneViewModel: ViewModel {
             var faceCrop = faceCapture.getAllPointsBB()!.scaleToSize(size: faceCropSize, imgSize: faceCapture.imageSize.size)
             //faceCrop = CGRect.init(x: faceCrop.minX, y: 0, width: faceCrop.width, height: faceCropHeight)
             faceCrop = CGRect.init(x: 0, y: faceCrop.minY, width: fullFaceWidth, height: faceCrop.height)
-            
+            //faceCrop = CGRect.init(x: 0, y: 0, width: fullFaceWidth, height: fullFaceHeight)
+
             let exposurePoint = faceCapture.exposurePoint!.toImagePoint(size: faceCapture.imageSize)
             let croppedExposurePoint = ImagePoint.init(x: exposurePoint.x - faceCrop.minX, y: exposurePoint.y - faceCrop.minY).toNormalizedImagePoint(size: ImageSize.init(faceCrop.size))
 
@@ -281,7 +283,7 @@ class SampleSkinToneViewModel: ViewModel {
             faceImage.rotate()
             leftEyeImage.rotate()
             rightEyeImage.rotate()
-            let rotatedCroppedExposurePoint = NormalizedImagePoint.init(x: 1 - croppedExposurePoint.y, y: croppedExposurePoint.x)
+            let rotatedCroppedExposurePoint = NormalizedImagePoint.init(x: croppedExposurePoint.y, y: croppedExposurePoint.x)
             
             leftEyeImage.updateParentBB(rotate: true)
             rightEyeImage.updateParentBB(rotate: true)
@@ -312,7 +314,10 @@ class SampleSkinToneViewModel: ViewModel {
             //.take(8)//self.screenFlashSettings.count) //Need to issue that completed somewhere
             .map { [unowned cameraState] flashSetting in (Camera(cameraState: cameraState), flashSetting) }
             .concatMap {(camera, flashSetting) in camera.capturePhoto(flashSetting) }
-            .do(onCompleted: { [unowned events] in events.onNext(.beginProcessing) })
+            .do(onCompleted: { [unowned events, unowned self] in
+                self.video.pauseProcessing() //Only really need this for the first capture
+                events.onNext(.beginProcessing)
+            })
             .flatMap { [unowned cameraState] capturePhoto, flashSettings, exposurePoint -> Observable<FaceCapture?> in
                 return FaceCapture.create(pixelBuffer: capturePhoto.pixelBuffer!, orientation: cameraState.exifOrientationForCurrentDeviceOrientation(), flashSettings: flashSettings, metadata: capturePhoto.metadata, exposurePoint: exposurePoint)
             }

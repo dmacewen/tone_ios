@@ -108,8 +108,10 @@ class PreviewViewController: ReactiveUIViewController {
     override func viewDidDisappear(_ animated: Bool) {
         print("VIEW DID DISAPEAR")
         super.viewDidDisappear(animated)
+        /*
         if let viewModel = self.viewModel {
             viewModel.video.pauseProcessing()
         }
+ */
     }
 }

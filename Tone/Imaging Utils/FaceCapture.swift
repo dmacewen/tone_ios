@@ -167,7 +167,8 @@ class FaceCapture {
         guard let baseAddress = CVPixelBufferGetBaseAddress(self.pixelBuffer!) else { return nil }
         let byteBuffer = baseAddress.assumingMemoryBound(to: UInt8.self)
         
-        let offsets = [-3, 0, 3]
+        //let offsets = [-3, 0, 3]
+        let offsets = [-1, 0, 1]
         var sum: UInt = 0
         
         let xStart = (Int(orientedCenter.x) - 1) * 4
