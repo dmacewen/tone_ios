@@ -106,6 +106,7 @@ class CameraState {
             .filter {[unowned self] _ in !self.areSettingsLocked }
             .subscribe(onNext: { [unowned self] exposurePoint in
             //NEEDS TO BE LOCKED FOR CONFIG
+                print("EXPOSING!")
                 self.captureDevice.exposurePointOfInterest = exposurePoint.point
                 self.captureDevice.exposureMode = AVCaptureDevice.ExposureMode.autoExpose
             }).disposed(by: disposeBag)

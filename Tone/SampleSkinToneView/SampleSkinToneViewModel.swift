@@ -153,7 +153,8 @@ class SampleSkinToneViewModel: ViewModel {
                 .filter { $0 }
                 .take(1)
                 .subscribe(onNext: { [unowned self] _ in
-                    self.shouldProcessRealtime.onNext(.once)
+                    print("SHOULD PROCESS REALTIME ONCE")
+                    //self.shouldProcessRealtime.onNext(.once)
                     self.video.pauseProcessing()
                 }).disposed(by: self.disposeBag)
 
@@ -173,7 +174,7 @@ class SampleSkinToneViewModel: ViewModel {
                         cameraState.exposurePointStream.onNext(NormalizedImagePoint.init(x: 0.5, y: 0.5))
                         return
                     }
-                    
+                    print("SETTING EXPOSURE POINT")
                     cameraState.exposurePointStream.onNext(realtimeData.exposurePoint.toNormalizedImagePoint(size: realtimeData.size))
                     
                     let displayPoints = realtimeData.landmarks.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer) }

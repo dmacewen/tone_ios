@@ -43,19 +43,27 @@ class Camera: NSObject {
             //Find Exposure Point
             //End Video
             //.flatMap { _ in self.cameraState.setWhiteBalanceToD65() }
+        /*
             .flatMap { passthrough in
                 if flashSettings.area == flashSettings.areas {
                     triggerExposure.onNext(true) //Does this trigger two exposures? One in SampleSkintoneViewModel and one here?
-                    return realtimeDataStream
+                    return realtimeDataStream //TODO: Define realtime data stream...
                         .take(1)
                         .map { realtimeData in
                             cameraState.exposurePointStream.onNext(realtimeData.exposurePoint)
                             return passthrough
                         }
-                } else {
-                    return Observable.just(passthrough)
                 }
+                return Observable.just(passthrough)
             }
+ */
+        
+            .do(onNext: { _ in
+                if flashSettings.area == flashSettings.areas {
+                    print("Triggering Exposure!")
+                    triggerExposure.onNext(true) //Does this trigger two exposures? One in SampleSkintoneViewModel and one here?
+                }
+            })
             .flatMap { _ in Observable.combineLatest(self.cameraState.getIsAdjustingExposure(), self.cameraState.getIsAdjustingWB()) { $0 || $1 } }
             .distinctUntilChanged()
             .do(onNext: { combined in print("(is Adjusting Ex) and (is Adjusting WB) :: \(combined)") })

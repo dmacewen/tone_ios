@@ -44,6 +44,7 @@ class Video:  NSObject {
                 return FaceCapture.create(pixelBuffer: pixelBuffer, orientation: cameraState.exifOrientationForCurrentDeviceOrientation())
             }
             .map { faceCaptureOptional -> RealTimeFaceData? in
+                print("Processing Realtime")
                 guard let faceCapture = faceCaptureOptional else { return nil }
                 guard let allImagePoints = faceCapture.getAllImagePoints() else { return nil }
                 
