@@ -126,8 +126,11 @@ class SampleSkinToneViewModel: ViewModel {
     var originalScreenBrightness: CGFloat = 0.0
     var videoSize = CGSize.init(width: 0, height: 0)
 
+    let shouldProcessRealtime = BehaviorSubject<ProcessRealtime>(value: .yes)
+    let exposeAndEndVideoOneShot = BehaviorSubject<Bool>(value: false)
+
     lazy var cameraState: CameraState = CameraState(flashTaskStream: self.flashSettingsTaskStream)
-    lazy var video: Video = Video(cameraState: self.cameraState, videoPreviewLayerStream: self.videoPreviewLayerStream)
+    lazy var video: Video = Video(cameraState: self.cameraState, videoPreviewLayerStream: self.videoPreviewLayerStream, shouldProcessRealtime: self.shouldProcessRealtime)
     
     var disposeBag = DisposeBag()
         
@@ -143,11 +146,19 @@ class SampleSkinToneViewModel: ViewModel {
             print("IN MODEL: Recieved a flash task!")
         }).disposed(by: disposeBag)
     }
-    
     override func afterLoad() {
         print("After Sample Skin Tone View Model Loads")
-        DispatchQueue.global(qos: .userInitiated).async { [unowned video, unowned cameraState] in
+        DispatchQueue.global(qos: .userInitiated).async { [unowned video, unowned cameraState, unowned self] in
+            self.exposeAndEndVideoOneShot
+                .filter { $0 }
+                .take(1)
+                .subscribe(onNext: { [unowned self] _ in
+                    self.shouldProcessRealtime.onNext(.once)
+                    self.video.pauseProcessing()
+                }).disposed(by: self.disposeBag)
+
             video.realtimeDataStream
+                //.filter { [unowned self] _ in shouldProcessRealtime }
                 .subscribe(onNext: { [weak self, unowned cameraState] realtimeDataOptional in
                     guard let localSelf = self else { return }
                     
@@ -313,7 +324,7 @@ class SampleSkinToneViewModel: ViewModel {
             .flatMap { [unowned self] _ in Observable.from(self.screenFlashSettings) }
             //.take(8)//self.screenFlashSettings.count) //Need to issue that completed somewhere
             .map { [unowned cameraState] flashSetting in (Camera(cameraState: cameraState), flashSetting) }
-            .concatMap {(camera, flashSetting) in camera.capturePhoto(flashSetting) }
+            .concatMap {[unowned self] (camera, flashSetting) in camera.capturePhoto(flashSetting, self.exposeAndEndVideoOneShot) }
             .do(onCompleted: { [unowned events, unowned self] in
                 self.video.pauseProcessing() //Only really need this for the first capture
                 events.onNext(.beginProcessing)

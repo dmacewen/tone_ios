@@ -11,38 +11,51 @@ import AVFoundation
 import RxSwift
 import AVKit
 
+enum ProcessRealtime {
+    case no
+    case once
+    case yes
+}
+
 class Video:  NSObject {
     private var cameraState: CameraState
     let realtimeDataStream: Observable<RealTimeFaceData?>
     private let pixelBufferSubject = PublishSubject<CVPixelBuffer>()
     private let videoDataOutput: AVCaptureVideoDataOutput
     
-    init(cameraState: CameraState, videoPreviewLayerStream:  BehaviorSubject<AVCaptureVideoPreviewLayer?>, landmarkFace: Bool = true) {
+    init(cameraState: CameraState, videoPreviewLayerStream:  BehaviorSubject<AVCaptureVideoPreviewLayer?>, shouldProcessRealtime: BehaviorSubject<ProcessRealtime>) {
         self.cameraState = cameraState
         
-        if landmarkFace {
-            self.realtimeDataStream = pixelBufferSubject
-                //.flatMap { getFacialLandmarks(cameraState: cameraState, pixelBuffer: $0) }
-                .throttle(RxTimeInterval.milliseconds(100), scheduler: MainScheduler.asyncInstance) //No need to calculate the face location 60 times a second...
-                .flatMap { pixelBuffer -> Observable<FaceCapture?> in
-                    return FaceCapture.create(pixelBuffer: pixelBuffer, orientation: cameraState.exifOrientationForCurrentDeviceOrientation())
+        self.realtimeDataStream = pixelBufferSubject
+            .filter { _ in
+                switch try! shouldProcessRealtime.value() {
+                case .no:
+                    return false
+                case .once:
+                    shouldProcessRealtime.onNext(.no)
+                    return true
+                case .yes:
+                    return true
                 }
-                .map { faceCaptureOptional -> RealTimeFaceData? in
-                    guard let faceCapture = faceCaptureOptional else { return nil }
-                    guard let allImagePoints = faceCapture.getAllImagePoints() else { return nil }
-                    
-                    guard let (exposurePointIndex, eyeExposurePoints) = getEyeExposurePoints(faceCapture: faceCapture) else { return nil }
-                    
-                    guard let (isTooBright, brightnessPoints) = isTooBright(faceCapture: faceCapture, cameraState: cameraState) else { return nil }
-                    guard let (isLightingUnbalanced, balancePoints) = isLightingUnbalanced(faceCapture: faceCapture, cameraState: cameraState) else { return nil }
-                    guard let (isNotHorizontallyAligned, isNotVerticallyAligned, isRotated, facingCameraPoints) = isFaceNotParallelToCamera(faceCapture: faceCapture, cameraState: cameraState) else { return nil }
-                    
-                    return RealTimeFaceData(landmarks: allImagePoints, isLightingUnbalanced: isLightingUnbalanced, balancePoints: balancePoints, isTooBright: isTooBright, brightnessPoints: brightnessPoints, isNotHorizontallyAligned: isNotHorizontallyAligned, isNotVerticallyAligned: isNotVerticallyAligned, isRotated: isRotated, facingCameraPoints: facingCameraPoints, exposurePoint: /*brightnessPoints.first!*/ eyeExposurePoints[exposurePointIndex], eyeExposurePoints: eyeExposurePoints, size: faceCapture.imageSize)
-                }
-                .asObservable()
-        } else {
-            self.realtimeDataStream = Observable.just(nil)
-        }
+            }
+            //.flatMap { getFacialLandmarks(cameraState: cameraState, pixelBuffer: $0) }
+            .throttle(RxTimeInterval.milliseconds(100), scheduler: MainScheduler.asyncInstance) //No need to calculate the face location 60 times a second...
+            .flatMap { pixelBuffer -> Observable<FaceCapture?> in
+                return FaceCapture.create(pixelBuffer: pixelBuffer, orientation: cameraState.exifOrientationForCurrentDeviceOrientation())
+            }
+            .map { faceCaptureOptional -> RealTimeFaceData? in
+                guard let faceCapture = faceCaptureOptional else { return nil }
+                guard let allImagePoints = faceCapture.getAllImagePoints() else { return nil }
+                
+                guard let (exposurePointIndex, eyeExposurePoints) = getEyeExposurePoints(faceCapture: faceCapture) else { return nil }
+                
+                guard let (isTooBright, brightnessPoints) = isTooBright(faceCapture: faceCapture, cameraState: cameraState) else { return nil }
+                guard let (isLightingUnbalanced, balancePoints) = isLightingUnbalanced(faceCapture: faceCapture, cameraState: cameraState) else { return nil }
+                guard let (isNotHorizontallyAligned, isNotVerticallyAligned, isRotated, facingCameraPoints) = isFaceNotParallelToCamera(faceCapture: faceCapture, cameraState: cameraState) else { return nil }
+                
+                return RealTimeFaceData(landmarks: allImagePoints, isLightingUnbalanced: isLightingUnbalanced, balancePoints: balancePoints, isTooBright: isTooBright, brightnessPoints: brightnessPoints, isNotHorizontallyAligned: isNotHorizontallyAligned, isNotVerticallyAligned: isNotVerticallyAligned, isRotated: isRotated, facingCameraPoints: facingCameraPoints, exposurePoint: /*brightnessPoints.first!*/ eyeExposurePoints[exposurePointIndex], eyeExposurePoints: eyeExposurePoints, size: faceCapture.imageSize)
+            }
+            .asObservable()
 
         self.videoDataOutput = AVCaptureVideoDataOutput()
         super.init()
