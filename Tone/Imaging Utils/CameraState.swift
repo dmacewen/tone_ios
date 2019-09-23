@@ -107,7 +107,11 @@ class CameraState {
             .subscribe(onNext: { [unowned self] exposurePoint in
             //NEEDS TO BE LOCKED FOR CONFIG
                 print("EXPOSING!")
-                self.captureDevice.exposurePointOfInterest = exposurePoint.point
+                
+                ///TESTING
+                var testExposurePoint = exposurePoint.point
+                testExposurePoint.y = 1 - testExposurePoint.y
+                self.captureDevice.exposurePointOfInterest = testExposurePoint//exposurePoint.point
                 self.captureDevice.exposureMode = AVCaptureDevice.ExposureMode.autoExpose
             }).disposed(by: disposeBag)
     }
@@ -258,7 +262,8 @@ class CameraState {
     func lockExposureBias() -> Observable<Bool> {
         return Observable.create { [unowned self] observable in
             DispatchQueue.main.async {
-                self.captureDevice.setExposureTargetBias(-0.5, completionHandler: { time in
+                //self.captureDevice.setExposureTargetBias(-0.5, completionHandler: { time in
+                self.captureDevice.setExposureTargetBias(-1.0, completionHandler: { time in
                     observable.onNext(true)
                     observable.onCompleted()
                 })
@@ -278,9 +283,9 @@ class CameraState {
         }
     }
     
-    private func delay() -> Observable<Bool> {
+    func delay(_ duration: Double = 1.0) -> Observable<Bool> {
         return Observable.create { observer in
-            DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 1.0) {
+            DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + duration) {
                 observer.onNext(true)
                 observer.onCompleted()
             }

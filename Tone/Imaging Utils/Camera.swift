@@ -57,7 +57,8 @@ class Camera: NSObject {
                 return Observable.just(passthrough)
             }
  */
-        
+            .map { _ in flashSettings.area == flashSettings.areas ? 1.0 : 0.0 }
+            .flatMap { [unowned self] duration in self.cameraState.delay(duration) }
             .do(onNext: { _ in
                 if flashSettings.area == flashSettings.areas {
                     print("Triggering Exposure!")

@@ -175,6 +175,7 @@ class SampleSkinToneViewModel: ViewModel {
                         return
                     }
                     print("SETTING EXPOSURE POINT")
+                    print("Realtime Data Size :: \(realtimeData.size)")
                     cameraState.exposurePointStream.onNext(realtimeData.exposurePoint.toNormalizedImagePoint(size: realtimeData.size))
                     
                     let displayPoints = realtimeData.landmarks.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer) }
