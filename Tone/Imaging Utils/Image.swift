@@ -2,7 +2,7 @@
 //  Image.swift
 //  Tone
 //
-//  Wraps around CIImage and facial landmarks. Any image manipulation will be reflected in the landmarks and metadata
+//  Wraps around CIImage and facial landmarks and exposes a set of simple image manipulations. Any image manipulation will be reflected in the landmarks and metadata
 //  Optionally initialize from a parent image by creating with a crop 
 //
 //  Created by Doug MacEwen on 4/12/19.
@@ -90,6 +90,7 @@ class Image {
         self.imageMetadata.bbInParent = CGRect.init(x: newX, y: newY, width: newWidth, height: newHeight)
     }
     
+    //Updates Metadata field bbInParent with rotation information
     func updateParentBB(rotate: Bool) {
         if !rotate {
             return
@@ -107,6 +108,7 @@ class Image {
         self.imageMetadata.bbInParent = CGRect.init(x: newX, y: newY, width: newWidth, height: newHeight)
     }
     
+    //Updates Metadata field bbInParent with crop information
     func updateParentBB(parentCrop crop: CGRect) {
         guard let bbInParent = self.imageMetadata.bbInParent else {
             return
@@ -117,7 +119,8 @@ class Image {
         self.imageMetadata.bbInParent = CGRect.init(x: newX, y: newY, width: bbInParent.width, height: bbInParent.height)
     }
     
-    func updateParentBB(parenScale scale: CGFloat) {
+    //Updates Metadata field bbInParent with scale information
+    func updateParentBB(parentScale scale: CGFloat) {
         guard let bbInParent = imageMetadata.bbInParent else {
             return
         }

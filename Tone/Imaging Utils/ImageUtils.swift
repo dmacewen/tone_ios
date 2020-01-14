@@ -262,9 +262,7 @@ func isLightingUnequal(points: (ImagePoint, ImagePoint), faceCapture: FaceCaptur
 }
 
 func sampleRect(faceCapture: FaceCapture, rect: CGRect) -> [(CGFloat, ImagePoint)] {
-    //let sampleRatios: [CGFloat] = [0.3, 0.5, 0.7]
     let sampleRatios: [CGFloat] = [0.3, 0.4, 0.5, 0.6, 0.7]
-    //let sampleRatios: [CGFloat] = [0.1, 0.3, 0.5, 0.7, 0.9]
 
 
     var results: [(CGFloat, ImagePoint)] = []
@@ -407,11 +405,8 @@ func isTooBright(_ faceCapture: FaceCapture, _ cameraState: CameraState) -> (Boo
     let leftEyePupilPoint = getLeftEyePupilPoint(landmarks: facePoints)
     let rightEyePupilPoint = getRightEyePupilPoint(landmarks: facePoints)
     
-    //let leftEyeLeftScleraPoint = getLeftEyeLeftSclera(landmarks: facePoints)
     let leftEyeRightScleraPoint = getLeftEyeRightSclera(landmarks: facePoints)
     let rightEyeLeftScleraPoint = getRightEyeLeftSclera(landmarks: facePoints)
-    //let rightEyeRightScleraPoint = getRightEyeRightSclera(landmarks: facePoints)
-
     
     guard let leftCheekSample = faceCapture.sampleRegionIntensity(center: leftCheekPoint) else { return nil }
     guard let rightCheekSample = faceCapture.sampleRegionIntensity(center: rightCheekPoint) else { return nil }
@@ -421,10 +416,8 @@ func isTooBright(_ faceCapture: FaceCapture, _ cameraState: CameraState) -> (Boo
     guard let leftPupilSample = faceCapture.sampleRegionIntensity(center: leftEyePupilPoint) else { return nil }
     guard let rightPupilSample = faceCapture.sampleRegionIntensity(center: rightEyePupilPoint) else { return nil }
     
-    //guard let leftEyeLeftScleraSample = faceCapture.sampleRegionIntensity(center: leftEyeLeftScleraPoint) else { return nil }
     guard let leftEyeRightScleraSample = faceCapture.sampleRegionIntensity(center: leftEyeRightScleraPoint) else { return nil }
     guard let rightEyeLeftScleraSample = faceCapture.sampleRegionIntensity(center: rightEyeLeftScleraPoint) else { return nil }
-    //guard let rightEyeRightScleraSample = faceCapture.sampleRegionIntensity(center: rightEyeRightScleraPoint) else { return nil }
     
     let sortedSamples = [
         (leftCheekSample, leftCheekPoint),
@@ -433,10 +426,8 @@ func isTooBright(_ faceCapture: FaceCapture, _ cameraState: CameraState) -> (Boo
         (foreheadSample, foreheadPoint),
         (leftPupilSample, leftEyePupilPoint),
         (rightPupilSample, rightEyePupilPoint),
-        //(leftEyeLeftScleraSample, leftEyeLeftScleraPoint),
         (leftEyeRightScleraSample, leftEyeRightScleraPoint),
         (rightEyeLeftScleraSample, rightEyeLeftScleraPoint)
-        //(rightEyeRightScleraSample, rightEyeRightScleraPoint)
         ].sorted { A, B in
         return A.0 > B.0
     }
@@ -491,11 +482,7 @@ func isFaceNotParallelToCamera(_ faceCapture: FaceCapture, _ cameraState: Camera
     if (firstSectionWidthRatio > 0.4) && (firstSectionWidthRatio < 0.6) {
         isNotHorizontallyAligned = false
     }
-    /*
-    print("---")
-    print("Height :: \(isNotVerticallyAligned) | Width :: \(isNotHorizontallyAligned) | Rotated :: \(isRotated)")
-    print("Height Ratio :: \(firstSectionHeightRatio) | Width Ratio :: \(firstSectionWidthRatio) | Rotated Ratio :: \(rotatedRatio)")
-    */
+
     let A = ImagePoint.init(x: firstRowX, y: firstColY)
     let B = ImagePoint.init(x: firstRowX, y: middleColY)
     let C = ImagePoint.init(x: firstRowX, y: lastColY)
