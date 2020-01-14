@@ -40,9 +40,9 @@ class RootNavigationViewController: UINavigationController {
                 
                 switch navigationStackAction {
                 case .set(let viewModels, let animated):
-                    let viewControllers = viewModels.compactMap { viewController(forViewModel: $0) }
                     print("Setting View Controllers!")
                     DispatchQueue.main.async {
+                        let viewControllers = viewModels.compactMap { viewController(forViewModel: $0) }
                         self?.interactivePopGestureRecognizer?.isEnabled = viewModels.last!.isCancelable
                         self?.setViewControllers(viewControllers, animated: animated)
                         DispatchQueue.main.async {
@@ -51,8 +51,8 @@ class RootNavigationViewController: UINavigationController {
                     }
                     
                 case .push(let viewModel, let animated):
-                    guard let viewController = viewController(forViewModel: viewModel) else { return }
                     DispatchQueue.main.async { [weak self, weak viewModel] in
+                        guard let viewController = viewController(forViewModel: viewModel!) else { return }
                         self?.interactivePopGestureRecognizer?.isEnabled = viewModel!.isCancelable
                         self?.pushViewController(viewController, animated: animated)
                         DispatchQueue.main.async {
@@ -72,8 +72,8 @@ class RootNavigationViewController: UINavigationController {
                 case .swap(let viewModel, _):
                     //Maybe just:
                     //self?.popViewController(animated: animated)
-                    guard let viewController = viewController(forViewModel: viewModel) else { return }
                     DispatchQueue.main.async {
+                        guard let viewController = viewController(forViewModel: viewModel) else { return }
                         self?.interactivePopGestureRecognizer?.isEnabled = viewModel.isCancelable
                         self?.viewControllers[self!.viewControllers.count - 1] = viewController
                         DispatchQueue.main.async {

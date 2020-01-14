@@ -110,7 +110,8 @@ class PreviewViewController: ReactiveUIViewController {
         super.viewDidDisappear(animated)
         /*
         if let viewModel = self.viewModel {
-            viewModel.video.pauseProcessing()
+            //viewModel.video.pauseProcessing()
+            //viewModel.shouldProcessRealtime.onNext(.no)
         }
  */
     }

@@ -100,6 +100,7 @@ class RootNavigationViewModel {
         let sampleSkinToneViewModel: SampleSkinToneViewModel = SampleSkinToneViewModel(user: self.user!)
         
         sampleSkinToneViewModel.events
+            //.subscribeOn(MainScheduler.instance)
             .subscribe(onNext: { [weak self] event in //Reference createLoginViewModel for how to reference Self
                 print("EVENTS \(event)")
                 switch event {

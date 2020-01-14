@@ -8,6 +8,7 @@
 
 import Foundation
 import AVFoundation
+import CoreImage
 import Vision
 
 class Image {

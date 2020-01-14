@@ -25,7 +25,7 @@ class Camera: NSObject {
         print("Desroying Camera!")
     }
     
-    func capturePhoto(_ flashSettings: FlashSettings) -> Observable<(AVCapturePhoto, FlashSettings, NormalizedImagePoint)> {
+    func capturePhoto(_ flashSettings: FlashSettings, _ triggerExposure: BehaviorSubject<Bool>) -> Observable<(AVCapturePhoto, FlashSettings, NormalizedImagePoint)> {
        return Observable<FlashSettingsTask>.create { observer in
                 print("Beginning to capture photo!")
                 self.flashSettings = flashSettings
@@ -40,7 +40,31 @@ class Camera: NSObject {
             }
             .flatMap { flashTask in flashTask.isDone }
             .filter { $0 }
+            //Find Exposure Point
+            //End Video
             //.flatMap { _ in self.cameraState.setWhiteBalanceToD65() }
+        /*
+            .flatMap { passthrough in
+                if flashSettings.area == flashSettings.areas {
+                    triggerExposure.onNext(true) //Does this trigger two exposures? One in SampleSkintoneViewModel and one here?
+                    return realtimeDataStream //TODO: Define realtime data stream...
+                        .take(1)
+                        .map { realtimeData in
+                            cameraState.exposurePointStream.onNext(realtimeData.exposurePoint)
+                            return passthrough
+                        }
+                }
+                return Observable.just(passthrough)
+            }
+ */
+            .map { _ in flashSettings.area == flashSettings.areas ? 1.0 : 0.0 }
+            .flatMap { [unowned self] duration in self.cameraState.delay(duration) }
+            .do(onNext: { _ in
+                if flashSettings.area == flashSettings.areas {
+                    print("Triggering Exposure!")
+                    triggerExposure.onNext(true) //Does this trigger two exposures? One in SampleSkintoneViewModel and one here?
+                }
+            })
             .flatMap { _ in Observable.combineLatest(self.cameraState.getIsAdjustingExposure(), self.cameraState.getIsAdjustingWB()) { $0 || $1 } }
             .distinctUntilChanged()
             .do(onNext: { combined in print("(is Adjusting Ex) and (is Adjusting WB) :: \(combined)") })

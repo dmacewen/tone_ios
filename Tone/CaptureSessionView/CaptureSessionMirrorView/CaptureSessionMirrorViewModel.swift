@@ -25,7 +25,7 @@ class CaptureSessionMirrorViewModel: ViewModel {
     let videoPreviewLayerStream = BehaviorSubject<AVCaptureVideoPreviewLayer?>(value: nil)
     var videoSize = CGSize.init(width: 0, height: 0)
     lazy var cameraState: CameraState = CameraState(flashTaskStream: nil)
-    lazy var video: Video = Video(cameraState: self.cameraState, videoPreviewLayerStream: self.videoPreviewLayerStream, landmarkFace: false)
+    lazy var video: Video = Video(cameraState: self.cameraState, videoPreviewLayerStream: self.videoPreviewLayerStream, shouldProcessRealtime: BehaviorSubject<ProcessRealtime>(value: .no))
     
     var disposeBag = DisposeBag()
     
