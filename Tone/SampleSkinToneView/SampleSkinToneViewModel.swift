@@ -130,7 +130,7 @@ class SampleSkinToneViewModel: ViewModel {
     let exposeAndEndVideoOneShot = BehaviorSubject<Bool>(value: false)
 
     lazy var cameraState: CameraState = CameraState(flashTaskStream: self.flashSettingsTaskStream)
-    lazy var video: Video = Video(cameraState: self.cameraState, videoPreviewLayerStream: self.videoPreviewLayerStream, shouldProcessRealtime: self.shouldProcessRealtime)
+    lazy var video: Video = Video(cameraState: self.cameraState, shouldProcessRealtime: self.shouldProcessRealtime)
     
     var disposeBag = DisposeBag()
         

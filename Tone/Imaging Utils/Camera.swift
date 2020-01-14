@@ -24,10 +24,6 @@ class Camera: NSObject {
         self.cameraState = cameraState
     }
     
-    deinit {
-        print("Desroying Camera!")
-    }
-    
     func capturePhoto(_ flashSettings: FlashSettings, _ triggerExposure: BehaviorSubject<Bool>) -> Observable<(AVCapturePhoto, FlashSettings, NormalizedImagePoint)> {
        return Observable<FlashSettingsTask>.create { observer in
                 print("Beginning to capture photo!")

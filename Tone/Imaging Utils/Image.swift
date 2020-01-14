@@ -2,6 +2,9 @@
 //  Image.swift
 //  Tone
 //
+//  Wraps around CIImage and facial landmarks. Any image manipulation will be reflected in the landmarks and metadata
+//  Optionally initialize from a parent image by creating with a crop 
+//
 //  Created by Doug MacEwen on 4/12/19.
 //  Copyright © 2019 Doug MacEwen. All rights reserved.
 //
@@ -19,10 +22,6 @@ class Image {
     init(image: CIImage, landmarks: [CGPoint]) {
         self.image = image
         self.landmarks = landmarks
-    }
-    
-    deinit {
-        print("DESTORYING IMAGE!")
     }
     
     static func from(image: Image, crop: CGRect, landmarks: [CGPoint]) -> Image {

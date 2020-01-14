@@ -32,7 +32,6 @@ class CaptureSessionMirrorViewController: UIViewController {
         videoPreviewLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
         videoPreviewLayer.frame = self.view.layer.bounds
         self.viewModel!.videoSize = videoPreviewLayer.bounds.size
-        self.viewModel!.videoPreviewLayerStream.onNext(videoPreviewLayer)
         self.InteractionLayer.layer.insertSublayer(videoPreviewLayer, below: self.UILayer.layer)
         
         self.cancelButton.rx.tap

@@ -1,6 +1,13 @@
 //
 //  Video.swift
 //  Tone
+//  
+//  Handles video stream. Adds video stream to capture session automatically on initilization
+//  Optionally processes video stream in real time providing:
+//      Facial Landmarking
+//      Interpretation of user including lighting, position, device orientation
+//
+//  Allows consumer to stop and resume processing
 //
 //  Created by Doug MacEwen on 11/14/18.
 //  Copyright © 2018 Doug MacEwen. All rights reserved.
@@ -23,7 +30,7 @@ class Video:  NSObject {
     private let pixelBufferSubject = PublishSubject<CVPixelBuffer>()
     private let videoDataOutput: AVCaptureVideoDataOutput
     
-    init(cameraState: CameraState, videoPreviewLayerStream:  BehaviorSubject<AVCaptureVideoPreviewLayer?>, shouldProcessRealtime: BehaviorSubject<ProcessRealtime>) {
+    init(cameraState: CameraState, shouldProcessRealtime: BehaviorSubject<ProcessRealtime>) {
         self.cameraState = cameraState
         
         self.realtimeDataStream = pixelBufferSubject
@@ -38,7 +45,6 @@ class Video:  NSObject {
                     return true
                 }
             }
-            //.flatMap { getFacialLandmarks(cameraState: cameraState, pixelBuffer: $0) }
             .throttle(RxTimeInterval.milliseconds(100), scheduler: MainScheduler.asyncInstance) //No need to calculate the face location 60 times a second...
             .flatMap { pixelBuffer -> Observable<FaceCapture?> in
                 return FaceCapture.create(pixelBuffer: pixelBuffer, orientation: cameraState.exifOrientationForCurrentDeviceOrientation())
@@ -48,13 +54,30 @@ class Video:  NSObject {
                 guard let faceCapture = faceCaptureOptional else { return nil }
                 guard let allImagePoints = faceCapture.getAllImagePoints() else { return nil }
                 
-                guard let (exposurePointIndex, eyeExposurePoints) = getEyeExposurePoints(faceCapture: faceCapture) else { return nil }
+                guard let (exposurePointIndex, eyeExposurePoints) = getEyeExposurePoints(faceCapture) else { return nil }
                 
-                guard let (isTooBright, brightnessPoints) = isTooBright(faceCapture: faceCapture, cameraState: cameraState) else { return nil }
-                guard let (isLightingUnbalanced, balancePoints) = isLightingUnbalanced(faceCapture: faceCapture, cameraState: cameraState) else { return nil }
-                guard let (isNotHorizontallyAligned, isNotVerticallyAligned, isRotated, facingCameraPoints) = isFaceNotParallelToCamera(faceCapture: faceCapture, cameraState: cameraState) else { return nil }
+                guard let (isTooBright, brightnessPoints) = isTooBright(faceCapture, cameraState) 
+                else { return nil }
+
+                guard let (isLightingUnbalanced, balancePoints) = isLightingUnbalanced(faceCapture, cameraState) 
+                else { return nil }
+
+                guard let (isNotHorizontallyAligned, isNotVerticallyAligned, isRotated, facingCameraPoints) = isFaceNotParallelToCamera(faceCapture, cameraState)
+                else { return nil }
                 
-                return RealTimeFaceData(landmarks: allImagePoints, isLightingUnbalanced: isLightingUnbalanced, balancePoints: balancePoints, isTooBright: isTooBright, brightnessPoints: brightnessPoints, isNotHorizontallyAligned: isNotHorizontallyAligned, isNotVerticallyAligned: isNotVerticallyAligned, isRotated: isRotated, facingCameraPoints: facingCameraPoints, exposurePoint: /*brightnessPoints.first!*/ eyeExposurePoints[exposurePointIndex], eyeExposurePoints: eyeExposurePoints, size: faceCapture.imageSize)
+                return RealTimeFaceData(
+                    landmarks: allImagePoints,
+                    isLightingUnbalanced: isLightingUnbalanced,
+                    balancePoints: balancePoints,
+                    isTooBright: isTooBright,
+                    brightnessPoints: brightnessPoints,
+                    isNotHorizontallyAligned: isNotHorizontallyAligned,
+                    isNotVerticallyAligned: isNotVerticallyAligned,
+                    isRotated: isRotated,
+                    facingCameraPoints: facingCameraPoints,
+                    exposurePoint: eyeExposurePoints[exposurePointIndex],
+                    eyeExposurePoints: eyeExposurePoints,
+                    size: faceCapture.imageSize)
             }
             .asObservable()
 
@@ -82,10 +105,6 @@ class Video:  NSObject {
         }
     }
     
-    deinit {
-        print("*** VIDEO DESTROYED")
-    }
-    
     func pauseProcessing() {
         cameraState.captureSession.removeOutput(self.videoDataOutput)
     }
@@ -100,8 +119,6 @@ class Video:  NSObject {
 }
 
 extension Video: AVCaptureVideoDataOutputSampleBufferDelegate {
-    // MARK: AVCaptureVideoDataOutputSampleBufferDelegate
-    /// - Tag: PerformRequests
     // Handle delegate method callback on receiving a sample buffer.
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         

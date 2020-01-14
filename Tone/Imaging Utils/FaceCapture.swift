@@ -25,7 +25,6 @@ class FaceCapture {
     private var isLocked = false
     
     init(pixelBuffer: CVPixelBuffer, faceLandmarks: VNFaceLandmarks2D, orientation: CGImagePropertyOrientation, flashSettings: FlashSettings = FlashSettings(), rawMetadata: [String: Any], exposurePoint: NormalizedImagePoint?) {
-        //print("~~ Creating Face Capture!")
         self.pixelBuffer = pixelBuffer
         self.faceLandmarks = faceLandmarks
         self.orientation = orientation
@@ -34,11 +33,7 @@ class FaceCapture {
         self.rawMetadata = rawMetadata
         self.exposurePoint = exposurePoint
     }
-    /*
-    deinit {
-        print("## Destroying Face Capture!")
-    }
-    */
+
     static func create(pixelBuffer: CVPixelBuffer, orientation: CGImagePropertyOrientation, flashSettings: FlashSettings = FlashSettings(), metadata: [String: Any] = [:], exposurePoint: NormalizedImagePoint? = nil) -> Observable<FaceCapture?> {
         
         return FaceCapture.getFaceLandmarks(pixelBuffer, orientation)

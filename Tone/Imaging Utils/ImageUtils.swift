@@ -280,7 +280,7 @@ func sampleRect(faceCapture: FaceCapture, rect: CGRect) -> [(CGFloat, ImagePoint
     return results
 }
 
-func getEyeExposurePoints(faceCapture: FaceCapture) -> (Int, [ImagePoint])? {
+func getEyeExposurePoints(_ faceCapture: FaceCapture) -> (Int, [ImagePoint])? {
     faceCapture.lock()
     defer { faceCapture.unlock() }
     
@@ -321,7 +321,7 @@ func getExposureScore(intensity: CGFloat, exposureRatios: ExposureRatios) -> CGF
     return CGFloat(intensity) * inverseISO * inverseExposure * 100_000
 }
 
-func isLightingUnbalanced(faceCapture: FaceCapture, cameraState: CameraState) -> (Bool, [ImagePoint])? {
+func isLightingUnbalanced(_ faceCapture: FaceCapture, _ cameraState: CameraState) -> (Bool, [ImagePoint])? {
     faceCapture.lock()
     defer { faceCapture.unlock() }
     
@@ -391,7 +391,7 @@ func isLightingUnbalanced(faceCapture: FaceCapture, cameraState: CameraState) ->
     return (isBrightnessUnbalanced, balancePoints)
 }
 
-func isTooBright(faceCapture: FaceCapture, cameraState: CameraState) -> (Bool, [ImagePoint])? {
+func isTooBright(_ faceCapture: FaceCapture, _ cameraState: CameraState) -> (Bool, [ImagePoint])? {
     faceCapture.lock()
     defer { faceCapture.unlock() }
     
@@ -451,7 +451,7 @@ func isTooBright(faceCapture: FaceCapture, cameraState: CameraState) -> (Bool, [
 }
 
 
-func isFaceNotParallelToCamera(faceCapture: FaceCapture, cameraState: CameraState) -> (Bool, Bool, Bool, [ImagePoint])? {
+func isFaceNotParallelToCamera(_ faceCapture: FaceCapture, _ cameraState: CameraState) -> (Bool, Bool, Bool, [ImagePoint])? {
     guard let facePoints = faceCapture.getAllImagePoints() else { return nil }
     
     var isNotVerticallyAligned = true
