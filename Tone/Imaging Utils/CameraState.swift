@@ -2,6 +2,12 @@
 //  CaptureUtils.swift
 //  Tone
 //
+//  Camera State provides a reactive interface to the current state of the camera hardware
+//     It can be used to read state (isAdjustingExposure, isAdjustingWB)
+//     It can be used to set state (exposurePoint via exposurePointStream)
+//     It can be used to lock settings (Exposure, WB, etc)
+//     It is used as the interface to FlashSettings via flashTaskStream
+//
 //  Created by Doug MacEwen on 11/1/18.
 //  Copyright © 2018 Doug MacEwen. All rights reserved.
 //
@@ -33,24 +39,15 @@ struct ExposureRatios {
     let exposure: CGFloat
 }
 
-//Defining a Camera how we want it
 class CameraState {
     var capturePhotoOutput: AVCapturePhotoOutput
     var captureDevice: AVCaptureDevice
     var captureSession: AVCaptureSession
     
-    //var flashStream: PublishSubject<FlashSettings>
     weak var flashTaskStream: PublishSubject<FlashSettingsTask>?
     var isAvailable =  BehaviorSubject<Bool>(value: true)
     var photoSettingsIndex = 0
-    
-    //let isAdjustingExposure: ConnectableObservable<Bool>//Variable<Bool>
-    //let isAdjustingWB: ConnectableObservable<Bool>//Variable<Bool>
-    //let isExposureOffsetAboveThreshold: ConnectableObservable<Bool>
-    
-    //let isAdjustingExposure: Observable<Bool>
-    //let isAdjustingWB: Observable<Bool>
-    //let isExposureOffsetAboveThreshold: Observable<Bool>
+
     let disposeBag: DisposeBag = DisposeBag()
     
     private var areSettingsLocked = false
@@ -100,6 +97,7 @@ class CameraState {
         captureSession.commitConfiguration()
         print("Commited Capture Session")
         
+        //Provides a sampling rate for different camera settings like isAdjustingExposure and isAdjustingWB
         sampleSettingsClock = Observable.interval(DispatchTimeInterval.milliseconds(100), scheduler: ConcurrentMainScheduler.instance)
         
         exposurePointStream
@@ -175,9 +173,7 @@ class CameraState {
     
     //Minimizes ISO by Maximizing Exposure Duration while targeting the Metered Exposure
     private func calculateTargetExposure() -> (CMTime, Float) {
-        //return (self.captureDevice.exposureDuration, self.captureDevice.iso)
-        //var maxExposureDuration = self.captureDevice.activeFormat.maxExposureDuration
-        let maxExposureDuration = CMTime.init(value: 1, timescale: 10)//self.captureDevice.activeFormat.maxExposureDuration
+        let maxExposureDuration = CMTime.init(value: 1, timescale: 10) //Dont want exposures longer than 1/10 sec b/c motion blur
         let minISO = self.captureDevice.activeFormat.minISO
         
         var exposureRatio = CMTimeGetSeconds(maxExposureDuration) / CMTimeGetSeconds(self.captureDevice.exposureDuration)
@@ -211,32 +207,14 @@ class CameraState {
             .observeOn(MainScheduler.instance)
             .flatMap { [unowned self] _ in self.lockExposure() }
             .flatMap { [unowned self] _ in self.lockWhiteBalance() }
-            //.flatMap { _ in self.lockExposureBias() } //moved to capture in camera
-            //.flatMap { _ in self.delay() } // test....
             .do(onNext: { [unowned self] _ in self.areSettingsLocked = true })
-            //.do(onNext: { _ in print("OFFSET :: \(self.captureDevice.exposureTargetOffset)") })
             .do(onNext: { _ in print("DONE LOCKING CAMERA SETTINGS") })
-    }
-    
-    func setWhiteBalanceToD65() -> Observable<Bool> {
-        return Observable.create { [unowned self] observable in
-            DispatchQueue.main.async {
-                self.captureDevice.setWhiteBalanceModeLocked(with: self.captureDevice.deviceWhiteBalanceGains(for: AVCaptureDevice.WhiteBalanceChromaticityValues.init(x: 0.31271, y: 0.32902)), completionHandler: { time in
-                    observable.onNext(true)
-                    observable.onCompleted()
-                })
-            }
-            return Disposables.create()
-        }
     }
     
     private func lockWhiteBalance() -> Observable<Bool> {
         return Observable.create { [unowned self] observable in
             DispatchQueue.main.async {
                 self.captureDevice.setWhiteBalanceModeLocked(with: AVCaptureDevice.currentWhiteBalanceGains, completionHandler: { time in
-                //self.captureDevice.setWhiteBalanceModeLocked(with: self.captureDevice.grayWorldDeviceWhiteBalanceGains, completionHandler: { time in
-                //Just using d65
-                //self.captureDevice.setWhiteBalanceModeLocked(with: self.captureDevice.deviceWhiteBalanceGains(for: AVCaptureDevice.WhiteBalanceChromaticityValues.init(x: 0.31271, y: 0.32902)), completionHandler: { time in
                     observable.onNext(true)
                     observable.onCompleted()
                 })
@@ -262,22 +240,11 @@ class CameraState {
     func lockExposureBias() -> Observable<Bool> {
         return Observable.create { [unowned self] observable in
             DispatchQueue.main.async {
-                //self.captureDevice.setExposureTargetBias(-0.5, completionHandler: { time in
+                //Underexpose in order to avoid clipping highlights
                 self.captureDevice.setExposureTargetBias(-1.0, completionHandler: { time in
                     observable.onNext(true)
                     observable.onCompleted()
                 })
-            }
-            return Disposables.create()
-        }
-    }
-    
-    private func isDelay() -> Observable<Bool> {
-        return Observable.create { observer in
-            observer.onNext(true)
-            DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() +  1.1) {
-                observer.onNext(false)
-                //observer.onCompleted()
             }
             return Disposables.create()
         }
@@ -317,7 +284,6 @@ class CameraState {
         }     }
     
     func exifOrientationForCurrentDeviceOrientation() -> CGImagePropertyOrientation {
-        //return UIDeviceOrientation.landscapeLeft
         return exifOrientationForDeviceOrientation(UIDevice.current.orientation)
     }
     
@@ -330,17 +296,11 @@ class CameraState {
         
         return ExposureRatios(iso: isoRatio, exposure: exposureRatio)
     }
-    
-    func getStandardizedExposureScore() -> CGFloat {
-        let exposureData = self.getStandardizedExposureData()
-        return CGFloat(exposureData.iso * exposureData.exposure)
-    }
 }
 
 func getPhotoSettings() -> AVCapturePhotoSettings {
     print("GETTING NEW PHOTO SETTINGS")
     let photoSettings = AVCapturePhotoSettings.init(format: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
-    //photoSettings.processedFileType = AVFileType.tif
     photoSettings.isAutoStillImageStabilizationEnabled = false
     photoSettings.isHighResolutionPhotoEnabled = true
     photoSettings.flashMode = .off

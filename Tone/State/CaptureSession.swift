@@ -72,6 +72,5 @@ class CaptureSession: Codable {
         try container.encode(self.session_id, forKey: .session_id)
         try container.encode(self.skin_color_id, forKey: .skin_color_id)
         try container.encode(self.start_date, forKey: .start_date)
-        //try container.encode(self.now!, forKey: .now) //I dont think this is necissary. Just needed to check if the session has expired
     }
 }

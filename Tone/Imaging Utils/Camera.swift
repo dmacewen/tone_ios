@@ -2,6 +2,9 @@
 //  Camera.swift
 //  Tone
 //
+//  Each instance of camera is responsible for capturing a single photo with the current settings, guarenteeing that the flash settings passed to it are displayed when the photo is being captured
+//      capturePhoto returns an observable that does not complete until the photo is taken
+//
 //  Created by Doug MacEwen on 11/14/18.
 //  Copyright © 2018 Doug MacEwen. All rights reserved.
 //
@@ -40,25 +43,8 @@ class Camera: NSObject {
             }
             .flatMap { flashTask in flashTask.isDone }
             .filter { $0 }
-            //Find Exposure Point
-            //End Video
-            //.flatMap { _ in self.cameraState.setWhiteBalanceToD65() }
-        /*
-            .flatMap { passthrough in
-                if flashSettings.area == flashSettings.areas {
-                    triggerExposure.onNext(true) //Does this trigger two exposures? One in SampleSkintoneViewModel and one here?
-                    return realtimeDataStream //TODO: Define realtime data stream...
-                        .take(1)
-                        .map { realtimeData in
-                            cameraState.exposurePointStream.onNext(realtimeData.exposurePoint)
-                            return passthrough
-                        }
-                }
-                return Observable.just(passthrough)
-            }
- */
             .map { _ in flashSettings.area == flashSettings.areas ? 1.0 : 0.0 }
-            .flatMap { [unowned self] duration in self.cameraState.delay(duration) }
+            .flatMap { [unowned self] duration in self.cameraState.delay(duration) } //Sort of a hack, but actually hooking into the flash having finished drawing is very difficult
             .do(onNext: { _ in
                 if flashSettings.area == flashSettings.areas {
                     print("Triggering Exposure!")

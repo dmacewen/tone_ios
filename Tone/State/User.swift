@@ -15,8 +15,6 @@ class User {
     let user_id: Int32
     let token: Int32
     var captureSession: CaptureSession?
-    /*var acknowledgeUserAgreement: Bool?*/
-    //let disposeBag = DisposeBag()
     
     init(email: String, user_id: Int32, token: Int32, settings: Settings = Settings(), /*acknowledgeUserAgreement: Bool? = false, */captureSession: CaptureSession? = nil) {
         self.email = email
@@ -64,7 +62,6 @@ class User {
     }
     
     func updateCaptureSession(_ skinColorId: Int32) -> Single<User> {
-        //print("Updating Capture Session with skin color id :: \(skinColorId)")
         return getNewCaptureSession(user_id: self.user_id, token: self.token, skinColorId: skinColorId)
             .do(onSuccess: { self.captureSession = $0 })
             .flatMap { $0.isValid() ? Single.just(self) : Single.error(CaptureSessionError.invalid) }

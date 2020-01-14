@@ -77,11 +77,6 @@ extension CGRect {
         
         return CGRect(x: minX, y: minY, width: width, height: height)
     }
-    /*
-    static func from(point: CGPoint, size: CGSize) -> CGRect {
-        return CGRect.init(x: point.x, y: point.y, width: size.width, height: size.height)
-    }
- */
     
     static func * (left: CGRect, right: CGFloat) -> CGRect {
         return CGRect(x: left.minX * right, y: left.minY * right, width: left.width * right, height: left.height * right)

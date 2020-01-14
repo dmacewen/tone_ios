@@ -310,7 +310,6 @@ class SampleSkinToneViewModel: ViewModel {
             let setMetadata = SetMetadata.getFrom(faceImage: faceImage, leftEyeImage: leftEyeImage, rightEyeImage: rightEyeImage, flashSettings: faceCapture.flashSettings, cameraState: cameraState, rawMetadata: faceCapture.rawMetadata, exposurePoint: rotatedCroppedExposurePoint)
             
             return ImageData(faceData: pngDataFace, leftEyeData: pngDataLeftEye, rightEyeData: pngDataRightEye, setMetadata: setMetadata)
-            //DONT FORGET TO TRANSFER EYE WIDTH AS WELL!
         }
     }
     
@@ -321,10 +320,8 @@ class SampleSkinToneViewModel: ViewModel {
             .observeOn(MainScheduler.instance)
             .filter { $0 }
             .take(1)
-            .flatMap { [unowned cameraState] _ in cameraState.preparePhotoSettings(numPhotos: 8)}//self.screenFlashSettings.count) }
-            //.flatMap { [unowned cameraState] _ in cameraState.preparePhotoSettings(numPhotos: 14)}//self.screenFlashSettings.count) }
+            .flatMap { [unowned cameraState] _ in cameraState.preparePhotoSettings(numPhotos: 8)}
             .flatMap { [unowned self] _ in Observable.from(self.screenFlashSettings) }
-            //.take(8)//self.screenFlashSettings.count) //Need to issue that completed somewhere
             .map { [unowned cameraState] flashSetting in (Camera(cameraState: cameraState), flashSetting) }
             .concatMap {[unowned self] (camera, flashSetting) in camera.capturePhoto(flashSetting, self.exposeAndEndVideoOneShot) }
             .do(onCompleted: { [unowned events, unowned self] in
