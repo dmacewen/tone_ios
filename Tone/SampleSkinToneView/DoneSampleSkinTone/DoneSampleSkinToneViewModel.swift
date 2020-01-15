@@ -17,10 +17,6 @@ class DoneSampleSkinToneViewModel: ViewModel {
     
     let events = PublishSubject<Event>()
     
-    override func afterLoad() {
-        print("After Done Sample Skin Tone View Model Loads")
-    }
-    
     func ok() {
         self.events.onNext(.ok)
     }

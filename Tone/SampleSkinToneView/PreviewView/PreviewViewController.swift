@@ -71,12 +71,11 @@ class PreviewViewController: ReactiveUIViewController {
             .disposed(by: disposeBag)
 
         DispatchQueue.global(qos: .userInteractive).async {
- 
             
             self.viewModel!.drawPointsStream
                 .subscribe(onNext: { [weak self] points in
                     let size = 5
-                    let halfSize = 2 //floor size/2
+                    let halfSize = 2
                     
                     let img = self?.viewModel!.videoOverlayRenderer.image { ctx in
                         for point in points {
@@ -108,11 +107,5 @@ class PreviewViewController: ReactiveUIViewController {
     override func viewDidDisappear(_ animated: Bool) {
         print("VIEW DID DISAPEAR")
         super.viewDidDisappear(animated)
-        /*
-        if let viewModel = self.viewModel {
-            //viewModel.video.pauseProcessing()
-            //viewModel.shouldProcessRealtime.onNext(.no)
-        }
- */
     }
 }

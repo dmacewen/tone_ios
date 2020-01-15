@@ -26,10 +26,6 @@ class SampleSkinToneHelpViewModel: ViewModel {
         self.isCancelable = isCancelable
     }
     
-    override func afterLoad() {
-        print("After Sample Skin Tone Help View Model Loads")
-    }
-    
     func cancel() {
         self.events.onNext(.cancel)
     }

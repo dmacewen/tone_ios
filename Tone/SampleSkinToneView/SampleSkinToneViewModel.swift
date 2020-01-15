@@ -23,22 +23,6 @@ class SampleSkinToneViewModel: ViewModel {
         FlashSettings(area: 9, areas: 14),
         FlashSettings(area: 8, areas: 14),
         FlashSettings(area: 7, areas: 14),]
-    /*
-    let screenFlashSettings = [
-        FlashSettings(area: 28, areas: 28),
-        FlashSettings(area: 27, areas: 28),
-        FlashSettings(area: 26, areas: 28),
-        FlashSettings(area: 25, areas: 28),
-        FlashSettings(area: 24, areas: 28),
-        FlashSettings(area: 23, areas: 28),
-        FlashSettings(area: 22, areas: 28),
-        FlashSettings(area: 21, areas: 28),
-        FlashSettings(area: 20, areas: 28),
-        FlashSettings(area: 19, areas: 28),
-        FlashSettings(area: 18, areas: 28),
-        FlashSettings(area: 17, areas: 28),
-        FlashSettings(area: 16, areas: 28),
-        FlashSettings(area: 15, areas: 28),]*/
     
     enum Event {
         case cancel
@@ -91,10 +75,8 @@ class SampleSkinToneViewModel: ViewModel {
             case .faceTooFarUp:
                 return Message(message: "Your head is cropped!", tip: "Try moving the phone up")
             case .faceTooFarLeft:
-                //return Message(message: "Your left cheek is cropped!", tip: "Try moving the phone to your left")
                 return Message(message: "Center your face in the screen", tip: "Try moving the phone to your left")
             case .faceTooFarRight:
-                //return Message(message: "Your right cheek is cropped!", tip: "Try moving the phone to your right")
                 return Message(message: "Center your face in the screen", tip: "Try moving the phone to your left")
             case .faceTiltedVertically:
                 return Message(message: "You're taking the photo at an angle!", tip: "Try adjusting your head up or down")
@@ -107,25 +89,23 @@ class SampleSkinToneViewModel: ViewModel {
             }
         }
     }
+
+    var originalScreenBrightness: CGFloat = 0.0
+    var videoSize = CGSize.init(width: 0, height: 0)
     let user: User
-    //let sampleState = BehaviorSubject<SampleStates>(value: .setup)
+
+    let events = BehaviorSubject<Event>(value: .beginSetUp)
     let userFaceState = BehaviorSubject<UserFaceStates>(value: .noFaceFound)
     
-    //let referencePhotos = PublishSubject<AVCapturePhoto>()
     let samplePhotos = PublishSubject<AVCapturePhoto>()
-    
     let uploadProgress = BehaviorSubject<Float>(value: 0.0)
+
+    let didFlashViewLoad = PublishSubject<Bool>()
+    let flashSettingsTaskStream = PublishSubject<FlashSettingsTask>()
+
     let videoPreviewLayerStream = BehaviorSubject<AVCaptureVideoPreviewLayer?>(value: nil)
     let drawPointsStream = BehaviorSubject<[DisplayPoint]>(value: [])
     
-    let flashSettingsTaskStream = PublishSubject<FlashSettingsTask>()
-    let didFlashViewLoad = PublishSubject<Bool>()
-    
-    let events = BehaviorSubject<Event>(value: .beginSetUp)
-    
-    var originalScreenBrightness: CGFloat = 0.0
-    var videoSize = CGSize.init(width: 0, height: 0)
-
     let shouldProcessRealtime = BehaviorSubject<ProcessRealtime>(value: .yes)
     let exposeAndEndVideoOneShot = BehaviorSubject<Bool>(value: false)
 
@@ -141,26 +121,21 @@ class SampleSkinToneViewModel: ViewModel {
         self.user = user
         super.init()
         self.isCancelable = true
-        
-        flashSettingsTaskStream.subscribe(onNext: { _ in
-            print("IN MODEL: Recieved a flash task!")
-        }).disposed(by: disposeBag)
     }
+
     override func afterLoad() {
-        print("After Sample Skin Tone View Model Loads")
+
         DispatchQueue.global(qos: .userInitiated).async { [unowned video, unowned cameraState, unowned self] in
             self.exposeAndEndVideoOneShot
                 .filter { $0 }
                 .take(1)
                 .subscribe(onNext: { [unowned self] _ in
-                    print("SHOULD PROCESS REALTIME ONCE")
-                    //self.shouldProcessRealtime.onNext(.once)
                     self.video.pauseProcessing()
                 }).disposed(by: self.disposeBag)
 
             video.realtimeDataStream
-                //.filter { [unowned self] _ in shouldProcessRealtime }
                 .subscribe(onNext: { [weak self, unowned cameraState] realtimeDataOptional in
+
                     guard let localSelf = self else { return }
                     
                     guard let realtimeData = realtimeDataOptional else {
@@ -174,29 +149,45 @@ class SampleSkinToneViewModel: ViewModel {
                         cameraState.exposurePointStream.onNext(NormalizedImagePoint.init(x: 0.5, y: 0.5))
                         return
                     }
+
                     print("SETTING EXPOSURE POINT")
-                    print("Realtime Data Size :: \(realtimeData.size)")
                     cameraState.exposurePointStream.onNext(realtimeData.exposurePoint.toNormalizedImagePoint(size: realtimeData.size))
                     
                     let displayPoints = realtimeData.landmarks.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer) }
-                    //print("Real Time Size :: \(realtimeData.size) | Video Layer Size :: \(self.videoSize)")
-                    if try! localSelf.user.settings.showAllLandmarks.value() { localSelf.drawPointsStream.onNext(displayPoints) }
-                    if try! localSelf.user.settings.showExposureLandmarks.value() { localSelf.drawPointsStream.onNext([realtimeData.exposurePoint.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)]) }
-                    if try! localSelf.user.settings.showBalanceLandmarks.value() { localSelf.drawPointsStream.onNext(realtimeData.balancePoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)}) }
-                    if try! localSelf.user.settings.showBrightnessLandmarks.value() { localSelf.drawPointsStream.onNext(realtimeData.brightnessPoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)}) }
-                    if try! localSelf.user.settings.showFacingCameraLandmarks.value() { localSelf.drawPointsStream.onNext(realtimeData.facingCameraPoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)}) }
-                    if try! localSelf.user.settings.showEyeExposureLandmarks.value() {
-                        //localSelf.drawRectsStream.onNext(realtimeData.eyeExposure.rects.map { $0.toDisplayRect(size: realtimeData.size, videoLayer: videoLayer)})
-                        localSelf.drawPointsStream.onNext(realtimeData.eyeExposurePoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)})
+
+                    //Overlay points on image if the user selects the option
+                    if try! localSelf.user.settings.showAllLandmarks.value() {
+                        localSelf.drawPointsStream.onNext(displayPoints) 
                     }
 
+                    if try! localSelf.user.settings.showExposureLandmarks.value() {
+                        localSelf.drawPointsStream.onNext([realtimeData.exposurePoint.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)]) 
+                    }
+
+                    if try! localSelf.user.settings.showBalanceLandmarks.value() {
+                        localSelf.drawPointsStream.onNext(realtimeData.balancePoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)}) 
+                    }
+
+                    if try! localSelf.user.settings.showBrightnessLandmarks.value() {
+                        localSelf.drawPointsStream.onNext(realtimeData.brightnessPoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)}) 
+                    }
+
+                    if try! localSelf.user.settings.showFacingCameraLandmarks.value() {
+                        localSelf.drawPointsStream.onNext(realtimeData.facingCameraPoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)}) 
+                    }
+
+                    if try! localSelf.user.settings.showEyeExposureLandmarks.value() {
+                        localSelf.drawPointsStream.onNext(realtimeData.eyeExposurePoints.map { $0.toDisplayPoint(size: realtimeData.size, videoLayer: videoLayer)})
+                    }
                     
+                    //Calculate the size of the face
                     let xImageValues = realtimeData.landmarks.map { $0.point.x }
                     let yImageValues = realtimeData.landmarks.map { $0.point.y }
                     
                     let minImagePoint = ImagePoint.init(x: xImageValues.min()!, y: yImageValues.min()!)
                     let maxImagePoint = ImagePoint.init(x: xImageValues.max()!, y: yImageValues.max()!)
                     
+                    //Check that the user is lined up and properly lit for a good capture. Give feedback if not
                     let faceSizeState = localSelf.checkFaceSize(min: minImagePoint, max: maxImagePoint, imageSize: realtimeData.size)
                     if faceSizeState != .ok {
                         localSelf.userFaceState.onNext(faceSizeState)
@@ -255,16 +246,10 @@ class SampleSkinToneViewModel: ViewModel {
         let rightEyeSizes = faceCaptures.map { $0.getRightEyeImageSize()! }
         let rightEyeCropSize = SampleSkinToneViewModel.getEncapsulatingSize(sizes: rightEyeSizes) * 1.5 //Add a buffer of 25%
         
-        //We ultimately want a crop that crops from the right jaw to the left, top of the image to the bottom of the Image ~~chin~~ (want hair in image)
+        //We ultimately want a crop that crops from the right jaw to the left, top of the image to the bottom of the Image (want hair and neck in image)
         let faceSizes = faceCaptures.map { $0.getAllPointsSize()! }
         let faceCropSize = SampleSkinToneViewModel.getEncapsulatingSize(sizes: faceSizes) * 1.10
-        //let faceBBs = faceCaptures.map { $0.getAllPointsBB()! }
-        //let scaledFaceBBs = faceBBs.map { $0.scaleToSize(size: faceCropSize, imgSize: faceCaptures[0].imageSize.size) }
-        //let encapsulatingMaxX = scaledFaceBBs.map { $0.maxX }.max()!
-        //let faceCropWidth = encapsulatingMaxX
-        
         let fullFaceWidth = faceCaptures[0].imageSize.size.width
-        //let fullFaceHeight = faceCaptures[0].imageSize.size.height
 
         let context = CIContext() //For processing PNGs
 
@@ -272,9 +257,7 @@ class SampleSkinToneViewModel: ViewModel {
             let leftEyeCrop = faceCapture.getLeftEyeImageBB()!.scaleToSize(size: leftEyeCropSize, imgSize: faceCapture.imageSize.size)
             let rightEyeCrop = faceCapture.getRightEyeImageBB()!.scaleToSize(size: rightEyeCropSize, imgSize: faceCapture.imageSize.size)
             var faceCrop = faceCapture.getAllPointsBB()!.scaleToSize(size: faceCropSize, imgSize: faceCapture.imageSize.size)
-            //faceCrop = CGRect.init(x: faceCrop.minX, y: 0, width: faceCrop.width, height: faceCropHeight)
             faceCrop = CGRect.init(x: 0, y: faceCrop.minY, width: fullFaceWidth, height: faceCrop.height)
-            //faceCrop = CGRect.init(x: 0, y: 0, width: fullFaceWidth, height: fullFaceHeight)
 
             let exposurePoint = faceCapture.exposurePoint!.toImagePoint(size: faceCapture.imageSize)
             let croppedExposurePoint = ImagePoint.init(x: exposurePoint.x - faceCrop.minX, y: exposurePoint.y - faceCrop.minY).toNormalizedImagePoint(size: ImageSize.init(faceCrop.size))
@@ -289,9 +272,7 @@ class SampleSkinToneViewModel: ViewModel {
             
             let longSide = [faceCrop.width, faceCrop.height].max()!
             let scaleRatio = 1080 / longSide
-            faceImage.scale(scaleRatio) //Dont forget to scale BB to eventually let you crop after scaling!
-            //leftEyeImage.updateParentBB(parentScale: scaleRatio)
-            //rightEyeImage.updateParentBB(parentScale: scaleRatio)
+            faceImage.scale(scaleRatio) 
             
             faceImage.rotate()
             leftEyeImage.rotate()
@@ -307,7 +288,13 @@ class SampleSkinToneViewModel: ViewModel {
             
             let pngDataRightEye = context.pngRepresentation(of: rightEyeImage.image, format: CIFormat.BGRA8, colorSpace: CGColorSpace.init(name: CGColorSpace.sRGB)!, options: [:])!
 
-            let setMetadata = SetMetadata.getFrom(faceImage: faceImage, leftEyeImage: leftEyeImage, rightEyeImage: rightEyeImage, flashSettings: faceCapture.flashSettings, cameraState: cameraState, rawMetadata: faceCapture.rawMetadata, exposurePoint: rotatedCroppedExposurePoint)
+            let setMetadata = SetMetadata.getFrom(faceImage: faceImage,
+                                                  leftEyeImage: leftEyeImage,
+                                                  rightEyeImage: rightEyeImage,
+                                                  flashSettings: faceCapture.flashSettings,
+                                                  cameraState: cameraState,
+                                                  rawMetadata: faceCapture.rawMetadata,
+                                                  exposurePoint: rotatedCroppedExposurePoint)
             
             return ImageData(faceData: pngDataFace, leftEyeData: pngDataLeftEye, rightEyeData: pngDataRightEye, setMetadata: setMetadata)
         }
@@ -329,20 +316,21 @@ class SampleSkinToneViewModel: ViewModel {
                 events.onNext(.beginProcessing)
             })
             .flatMap { [unowned cameraState] capturePhoto, flashSettings, exposurePoint -> Observable<FaceCapture?> in
-                return FaceCapture.create(pixelBuffer: capturePhoto.pixelBuffer!, orientation: cameraState.exifOrientationForCurrentDeviceOrientation(), flashSettings: flashSettings, metadata: capturePhoto.metadata, exposurePoint: exposurePoint)
+                return FaceCapture.create(pixelBuffer: capturePhoto.pixelBuffer!,
+                                          orientation: cameraState.exifOrientationForCurrentDeviceOrientation(),
+                                          flashSettings: flashSettings,
+                                          metadata: capturePhoto.metadata,
+                                          exposurePoint: exposurePoint)
             }
             .compactMap { $0 }
             .toArray()
-            //.do(onSuccess: { [unowned self] _ in self.cameraState.resetCameraState() })
             .map { [unowned cameraState] faceCaptures in SampleSkinToneViewModel.processFaceCaptures(cameraState, faceCaptures) }
             .do(onSuccess: { [unowned events] _ in events.onNext(.beginUpload) })
             .asObservable()
             .flatMap { [unowned self] (imageData: [ImageData]) -> Observable<UploadStatus> in
                 self.uploadProgress.onNext(0.0)
-                print("Uploading Images!")
                 for photo in imageData { photo.setMetadata.prettyPrint() }
                 return self.user.uploadNewCapture(imageData: imageData, progressBar: self.uploadProgress)
-                //return uploadImageData(imageData: imageData, progressBar: self.uploadProgress, user: self.user)
             }
             .subscribe(onNext: { [unowned events] uploadStatus in
                 if uploadStatus.doneUpload && !uploadStatus.responseRecieved {
@@ -351,8 +339,6 @@ class SampleSkinToneViewModel: ViewModel {
             }, onError: { _ in
                 print("ERROR in taking and processing")
             }, onCompleted: { [unowned self] in
-                print("++ Completed Capture and Processing!" )
-                //self.cameraState.resetCameraState()
                 self.events.onNext(.doneSample)
             }, onDisposed: {
                 print("Disposing Capture and Processing")
@@ -371,12 +357,11 @@ class SampleSkinToneViewModel: ViewModel {
     
     private func checkFaceSize(min: ImagePoint, max: ImagePoint, imageSize: ImageSize) -> UserFaceStates {
         let width = max.point.x - min.point.x
-        let height = 1.5 * (max.point.y - min.point.y) //1.65 is just a ~random value approximate where the top of the head is since points only cover up to the eyebrows
+        let height = 1.5 * (max.point.y - min.point.y)
         
         let fractionWidth = width / imageSize.size.width
         let fractionHeight = height / imageSize.size.height
         
-        //Mostly to avoid picking up background faces
         if (fractionWidth < 0.20) || (fractionHeight < 0.20) {
             return .noFaceFound
         } else if (fractionWidth < 0.4) || (fractionHeight < 0.85) {
