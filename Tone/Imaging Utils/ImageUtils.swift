@@ -2,6 +2,14 @@
 //  ImageUtils.swift
 //  Tone
 //
+//  Set of functions for working with images and facial landmarks
+//  Primary used in the video stream to help the user line up a good capture
+//  Most important functions are:
+//    getEyeExposurePoints
+//    isTooBright
+//    isLightingUnbalanced
+//    isFaceNotParallelToCamera
+//
 //  Created by Doug MacEwen on 11/5/18.
 //  Copyright © 2018 Doug MacEwen. All rights reserved.
 //
@@ -60,6 +68,7 @@ enum UnbalanceDirection {
 
 let MAX_BRIGHTNESS_SCORE: CGFloat = 250
 
+//EXTRACT DIFFERENT REGIONS FROM FACIAL LANDMARKS
 func getRightCheekPoint(landmarks: [ImagePoint]) -> ImagePoint {
     let middleRightEye = landmarks[64]
     let middleNose = landmarks[58]
@@ -211,32 +220,39 @@ func getOuterEyeScleraPair(landmarks: [ImagePoint]) -> (ImagePoint, ImagePoint) 
     return (leftEyeLeftSclera, rightEyeRightSclera)
 }
 
+//Used to interpret where the user is looking
 func getFirstRow(landmarks: [ImagePoint]) -> CGFloat {
     return (1/3) * (landmarks[10].x + landmarks[60].x + landmarks[18].x)
 }
 
+//Used to interpret where the user is looking
 func getFirstCol(landmarks: [ImagePoint]) -> CGFloat {
     //Maybe dont include #63? -> its partially dependent on where the user is looking?
     return (1/3) * (landmarks[10].y + landmarks[63].y + landmarks[14].y)
 }
 
+//Used to interpret where the user is looking
 func getMiddleRow(landmarks: [ImagePoint]) -> CGFloat {
     return (1/5) * (landmarks[53].x + landmarks[54].x + landmarks[55].x + landmarks[56].x + landmarks[55].x)
 }
 
+//Used to interpret where the user is looking
 func getMiddleCol(landmarks: [ImagePoint]) -> CGFloat {
     return (1/4) * (landmarks[60].y + landmarks[61].y + landmarks[62].y + landmarks[55].y)
 }
 
+//Used to interpret where the user is looking
 func getLastRow(landmarks: [ImagePoint]) -> CGFloat {
     return landmarks[45].x
 }
 
+//Used to interpret where the user is looking
 func getLastCol(landmarks: [ImagePoint]) -> CGFloat {
     //Maybe dont include #64? -> its partially dependent on where the user is looking?
     return (1/3) * (landmarks[18].y + landmarks[64].y + landmarks[22].y)
 }
 
+//Samples two image points, left and right, and returns which one is brighter or if they are approximately balanced
 func isLightingUnequal(points: (ImagePoint, ImagePoint), faceCapture: FaceCapture, exposureRatios: ExposureRatios) -> UnbalanceDirection? {
     guard let left = faceCapture.sampleRegionIntensity(center: points.0) else {
         print("Cant Sample Left Region")
@@ -261,6 +277,7 @@ func isLightingUnequal(points: (ImagePoint, ImagePoint), faceCapture: FaceCaptur
     return .right
 }
 
+//Samples a region of the image defined by the rect
 func sampleRect(faceCapture: FaceCapture, rect: CGRect) -> [(CGFloat, ImagePoint)] {
     let sampleRatios: [CGFloat] = [0.3, 0.4, 0.5, 0.6, 0.7]
 
@@ -278,6 +295,7 @@ func sampleRect(faceCapture: FaceCapture, rect: CGRect) -> [(CGFloat, ImagePoint
     return results
 }
 
+//Returns a set of points in the users eyes that are used to expose the image to
 func getEyeExposurePoints(_ faceCapture: FaceCapture) -> (Int, [ImagePoint])? {
     faceCapture.lock()
     defer { faceCapture.unlock() }
@@ -313,12 +331,14 @@ func getEyeExposurePoints(_ faceCapture: FaceCapture) -> (Int, [ImagePoint])? {
     return (0, resultPoints.map { $0.1 })
 }
 
+//Generate a huristic exposure score to estimate the total brightness of the face
 func getExposureScore(intensity: CGFloat, exposureRatios: ExposureRatios) -> CGFloat {
     let inverseISO = CGFloat(1 / exposureRatios.iso)
     let inverseExposure = CGFloat(1 / exposureRatios.exposure)
     return CGFloat(intensity) * inverseISO * inverseExposure * 100_000
 }
 
+//Checks a number of point pairs across the face to see if the lighing is even (i.e. no extreme shadow on the face)
 func isLightingUnbalanced(_ faceCapture: FaceCapture, _ cameraState: CameraState) -> (Bool, [ImagePoint])? {
     faceCapture.lock()
     defer { faceCapture.unlock() }
@@ -389,6 +409,7 @@ func isLightingUnbalanced(_ faceCapture: FaceCapture, _ cameraState: CameraState
     return (isBrightnessUnbalanced, balancePoints)
 }
 
+//Checks whether the face is to bright for the app to work properly
 func isTooBright(_ faceCapture: FaceCapture, _ cameraState: CameraState) -> (Bool, [ImagePoint])? {
     faceCapture.lock()
     defer { faceCapture.unlock() }
@@ -442,6 +463,7 @@ func isTooBright(_ faceCapture: FaceCapture, _ cameraState: CameraState) -> (Boo
 }
 
 
+//Checks whether the user is square to the mobile device
 func isFaceNotParallelToCamera(_ faceCapture: FaceCapture, _ cameraState: CameraState) -> (Bool, Bool, Bool, [ImagePoint])? {
     guard let facePoints = faceCapture.getAllImagePoints() else { return nil }
     

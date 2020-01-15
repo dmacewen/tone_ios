@@ -250,7 +250,13 @@ func getNewCaptureSession(user_id: Int32, token: Int32, skinColorId: Int32) -> S
     }
 }
 
-func uploadImageData(user_id: Int32, token: Int32, session_id: Int32, app_version: String, device_info: DeviceInfo, imageData: [ImageData], progressBar: BehaviorSubject<Float>) -> Observable<UploadStatus> {
+func uploadImageData(user_id: Int32,
+                     token: Int32,
+                     session_id: Int32,
+                     app_version: String,
+                     device_info: DeviceInfo,
+                     imageData: [ImageData],
+                     progressBar: BehaviorSubject<Float>) -> Observable<UploadStatus> {
     
     return Observable.create { observable in
         guard var url = try? buildUserURL(user_id, token) else {

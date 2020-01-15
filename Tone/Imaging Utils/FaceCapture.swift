@@ -2,6 +2,10 @@
 //  FaceCapture.swift
 //  Tone
 //
+//  Wraps around an Image, its metadata, and the facial landmarks
+//  Can calculate facial landmarks with getFacialLandmarks. Automatically run in FaceCapture::Create
+//  Provides some helper methods for handling facial landmarks and sampling data from the image
+//
 //  Created by Doug MacEwen on 4/10/19.
 //  Copyright © 2019 Doug MacEwen. All rights reserved.
 //
@@ -24,7 +28,13 @@ class FaceCapture {
     private var faceLandmarks: VNFaceLandmarks2D
     private var isLocked = false
     
-    init(pixelBuffer: CVPixelBuffer, faceLandmarks: VNFaceLandmarks2D, orientation: CGImagePropertyOrientation, flashSettings: FlashSettings = FlashSettings(), rawMetadata: [String: Any], exposurePoint: NormalizedImagePoint?) {
+    init(pixelBuffer: CVPixelBuffer,
+         faceLandmarks: VNFaceLandmarks2D,
+         orientation: CGImagePropertyOrientation,
+         flashSettings: FlashSettings = FlashSettings(),
+         rawMetadata: [String: Any],
+         exposurePoint: NormalizedImagePoint?) {
+
         self.pixelBuffer = pixelBuffer
         self.faceLandmarks = faceLandmarks
         self.orientation = orientation
@@ -34,17 +44,27 @@ class FaceCapture {
         self.exposurePoint = exposurePoint
     }
 
-    static func create(pixelBuffer: CVPixelBuffer, orientation: CGImagePropertyOrientation, flashSettings: FlashSettings = FlashSettings(), metadata: [String: Any] = [:], exposurePoint: NormalizedImagePoint? = nil) -> Observable<FaceCapture?> {
+    static func create(pixelBuffer: CVPixelBuffer,
+                       orientation: CGImagePropertyOrientation,
+                       flashSettings: FlashSettings = FlashSettings(),
+                       metadata: [String: Any] = [:],
+                       exposurePoint: NormalizedImagePoint? = nil) -> Observable<FaceCapture?> {
         
         return FaceCapture.getFaceLandmarks(pixelBuffer, orientation)
-            .map {/* [unowned pixelBuffer] */faceLandmarks in
+            .map { faceLandmarks in
                 guard let foundFaceLandmarks = faceLandmarks else { return nil }
                 
-                return FaceCapture(pixelBuffer: pixelBuffer, faceLandmarks: foundFaceLandmarks, orientation: orientation, flashSettings: flashSettings, rawMetadata: metadata, exposurePoint: exposurePoint)
+                return FaceCapture(pixelBuffer: pixelBuffer,
+                                   faceLandmarks: foundFaceLandmarks,
+                                   orientation: orientation,
+                                   flashSettings: flashSettings,
+                                   rawMetadata: metadata,
+                                   exposurePoint: exposurePoint)
             }
     }
 
     private static func getFaceLandmarks(_ pixelBuffer: CVPixelBuffer, _ orientation: CGImagePropertyOrientation) -> Observable<VNFaceLandmarks2D?> {
+        //Wraps the facial landmarking async call as an observable
         return Observable<VNFaceLandmarks2D?>.create { [unowned pixelBuffer] observable in
             DispatchQueue.global(qos: .userInitiated).async {[unowned pixelBuffer] in
                 var requestHandlerOptions: [VNImageOption: AnyObject] = [:]
@@ -64,7 +84,6 @@ class FaceCapture {
                         print("FaceLandmarks error: \(String(describing: error)).")
                         observable.onNext(nil)
                         observable.onCompleted()
-                        //fatalError("Error Landmarking")
                     }
                     
                     guard let landmarksRequest = request as? VNDetectFaceLandmarksRequest,
@@ -82,15 +101,14 @@ class FaceCapture {
                         observable.onCompleted()
                     }
                 })
-                
-                faceLandmarksRequest.revision = VNDetectFaceLandmarksRequestRevision2 //3 is better but will need to rework things for the new landmarks. Also, New 76 point contellation could be nice in the future too
-                //faceLandmarksRequest.usesCPUOnly = true
+
+                //3 is better but will need to rework things for the new landmarks. Also, New 76 point contellation could be nice in the future too
+                faceLandmarksRequest.revision = VNDetectFaceLandmarksRequestRevision2 
                 
                 do {
                     try imageRequestHandler.perform([faceLandmarksRequest])
                 } catch {
                     print("Failed to perform FaceLandmarkRequest: \(error)")
-                    //fatalError("Error Landmarking")
                 }
             }
             
@@ -122,7 +140,6 @@ class FaceCapture {
         //One more grid/orientation to be aware of...
         let orientedCenter = CVImageBufferIsFlipped(self.pixelBuffer!) ? ImagePoint.init(x: center.x, y: self.imageSize.height - center.y) : center
         
-        //let sideLength = 15
         let halfSideLength = CGFloat(7)
         
         let start = ImagePoint.init(x: orientedCenter.x - halfSideLength, y: orientedCenter.y - halfSideLength)
@@ -162,7 +179,6 @@ class FaceCapture {
         guard let baseAddress = CVPixelBufferGetBaseAddress(self.pixelBuffer!) else { return nil }
         let byteBuffer = baseAddress.assumingMemoryBound(to: UInt8.self)
         
-        //let offsets = [-3, 0, 3]
         let offsets = [-1, 0, 1]
         var sum: UInt = 0
         
