@@ -23,10 +23,6 @@ class BetaAgreementViewModel: ViewModel {
         self.user = user
     }
     
-    override func afterLoad() {
-        print("After Beta Agreement View Model Loads")
-    }
-    
     func agree(_ didAgree: Bool) {
          user.agreeToAcknowledgement(didAgree)
             .subscribe(onSuccess: {[weak self] _ in

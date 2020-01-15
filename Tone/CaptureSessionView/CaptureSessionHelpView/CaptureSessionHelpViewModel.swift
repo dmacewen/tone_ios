@@ -25,11 +25,7 @@ class CaptureSessionHelpViewModel: ViewModel {
         self.user = user
         super.init()
     }
-    
-    override func afterLoad() {
-        print("After Capture Session Help View Model Loads")
-    }
-    
+
     func cancel() {
         self.events.onNext(.cancel)
     }

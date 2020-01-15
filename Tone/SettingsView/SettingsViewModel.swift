@@ -25,10 +25,6 @@ class SettingsViewModel: ViewModel {
         self.settings = user.settings
     }
     
-    override func afterLoad() {
-        print("After Settings Load!")
-    }
-    
     func back() {
         print("Going Back")
         events.onNext(.back)

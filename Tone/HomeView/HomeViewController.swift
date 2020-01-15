@@ -32,7 +32,6 @@ class HomeViewController: UIViewController {
         }
         
         sampleSkinToneButton.rx.tap
-            //.single()
             .subscribe(onNext: { [weak self] _ in self!.viewModel.sampleSkinTone() })
             .disposed(by: disposeBag)
         
@@ -42,12 +41,10 @@ class HomeViewController: UIViewController {
             .disposed(by: disposeBag)
         
         settingsButton.rx.tap
-            //.single()
             .subscribe(onNext: { [weak self] _ in self!.viewModel.openSettings() })
             .disposed(by: disposeBag)
         
         updateCaptureSession.rx.tap
-            //.single()
             .subscribe(onNext: { [weak self] _ in self!.viewModel.updateCaptureSession() })
             .disposed(by: disposeBag)
     }

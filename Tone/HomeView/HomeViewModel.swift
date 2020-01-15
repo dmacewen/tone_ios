@@ -50,8 +50,4 @@ class HomeViewModel: ViewModel {
         print("Opening Update Capture Session")
         events.onNext(.openNewCaptureSession(isCancelable: true))
     }
-    
-    deinit {
-        print("DESTROYING HOME CONTROLLER")
-    }
 }

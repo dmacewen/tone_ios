@@ -20,8 +20,6 @@ class CaptureSessionViewModel: ViewModel {
     
     let events = PublishSubject<Event>()
     let user: User
-    //let isCancelable: Bool
-    //let skinColorIdOptional = Variable<Int32?>(nil)
     let skinColorIdOptional = BehaviorRelay<Int32?>(value: nil)
     let disposeBag = DisposeBag()
     
@@ -29,10 +27,6 @@ class CaptureSessionViewModel: ViewModel {
         self.user = user
         super.init()
         super.isCancelable = isCancelable
-    }
-    
-    override func afterLoad() {
-        print("After Capture Session View Model Loads")
     }
     
     func updateSkinColorId() {
@@ -47,7 +41,6 @@ class CaptureSessionViewModel: ViewModel {
             }, onError: { error in
                 print("Error updating capture session :: \(error)")
             }).disposed(by: disposeBag)
-        
     }
     
     func cancel() {

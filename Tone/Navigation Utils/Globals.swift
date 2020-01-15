@@ -9,6 +9,7 @@
 import Foundation
 import UIKit
 
+//For any given view model, return the view controller
 func viewController(forViewModel viewModel: Any) -> UIViewController? {
     print("Get View Controller Called!")
     switch viewModel {
@@ -55,7 +56,8 @@ func viewController(forViewModel viewModel: Any) -> UIViewController? {
     case let viewModel as SampleSkinToneViewModel:
         let viewController: ReactiveUIViewController?
         print("VIEW MODEL STATE VALUE :: \(try! viewModel.events.value())")
-        //switch try! viewModel.sampleState.value() {
+
+        //Do not love having to reach into the view model. Is there a better way?
         switch try! viewModel.events.value() {
         case .cancel:
             viewController = nil

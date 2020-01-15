@@ -7,21 +7,9 @@
 //
 
 import Foundation
-//import RxSwift
 
-//protocol Event {}
-/*
-protocol ViewModel {
-    associatedtype Event
-    var events: PublishSubject<Event> { get }
-    func afterLoad()
-}
-*/
-
-//protocol Event {}
 class ViewModel {
-    //enum event: Event {}
-    //var events: PublishSubject<T>
+
     var alreadyLoaded = false
     var isCancelable = true
     

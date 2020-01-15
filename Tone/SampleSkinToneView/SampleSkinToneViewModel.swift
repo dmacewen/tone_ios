@@ -410,9 +410,4 @@ class SampleSkinToneViewModel: ViewModel {
         let maxHeight = sizes.map { $0.height }.max()!
         return CGSize.init(width: maxWidth, height: maxHeight)
     }
-    
-    deinit {
-        print("\nDESTROYING SAMPLE SKIN TONE VIEW MODEL\n")
-    }
 }
-

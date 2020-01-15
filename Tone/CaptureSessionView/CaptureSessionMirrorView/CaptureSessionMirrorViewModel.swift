@@ -31,10 +31,6 @@ class CaptureSessionMirrorViewModel: ViewModel {
     //Shared Between Flash and Draw Overlay
     let videoOverlayRenderer = UIGraphicsImageRenderer(size: UIScreen.main.bounds.size)
     
-    override func afterLoad() {
-        print("After Capture Session Mirror View Model Loads")
-    }
-    
     func cancel() {
         events.onNext(.cancel)
     }
@@ -45,9 +41,5 @@ class CaptureSessionMirrorViewModel: ViewModel {
     
     func showHelp() {
         events.onNext(.showHelp)
-    }
-    
-    deinit {
-        print("DESTROYING apture Session Mirror View Model")
     }
 }

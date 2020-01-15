@@ -11,7 +11,6 @@ import UIKit
 import RxSwift
 import RxRelay
 
-//Just extend UINavigationController? or the viewControllers variable
 class RootNavigationViewController: UINavigationController {
 
     var rootViewModel: RootNavigationViewModel!
@@ -21,7 +20,8 @@ class RootNavigationViewController: UINavigationController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        //Hate this current approach... super fragile
+        //Hate this current approach... Feels like a hack
+        //Try and determine if a gesture pop was actually executed and not cancelled
         self.interactivePopGestureRecognizer!.rx.event
             .filter { $0.state == UIGestureRecognizer.State.ended }
             .map { _ in self.viewControllers.last!.title ?? "" }

@@ -29,20 +29,15 @@ class RootNavigationViewModel {
             print("Got Navigation Action!")
             switch action {
             case .set(let viewModels, _):
-                print("SET")
                 while self.currentViewModelStack.count > 0 {
                     _ = self.currentViewModelStack.popLast()
                 }
                 viewModels.forEach { viewModel in self.currentViewModelStack.append(viewModel) }
-                //self.currentViewModelStack = viewModels
             case .push(let viewModel, _):
-                print("PUSH")
                 self.currentViewModelStack.append(viewModel)
             case .pop(_), .gesturePop(_):
-                print("POP")
                 _ = self.currentViewModelStack.popLast()
             case .swap(let viewModel, _):
-                print("SWAP")
                 _ = self.currentViewModelStack.popLast()
                 self.currentViewModelStack.append(viewModel)
             }
@@ -81,9 +76,6 @@ class RootNavigationViewModel {
                 case .sampleSkinTone:
                     print("Sample Skin Tone")
                     self!.navigationStackActions.onNext(.push(viewModel: self!.createSampleSkinToneHelpViewModel(isCancelable: false, isBeforeSampleSkinTone: true), animated: false))
-                    //self!.savedNavigationStack = self!.currentViewModelStack
-                    //self!.navigationStackActions.onNext(.push(viewModel: self!.createSampleSkinToneViewModel(), animated: false))
-                    //self!.navigationStackActions.onNext(.push(viewModel: self!.createSampleSkinToneHelpViewModel(isCancelable: false), animated: false))
                 case .openSample(let sample):
                     print("Open Sample :: \(sample)")
                 case .openSettings:
@@ -100,7 +92,6 @@ class RootNavigationViewModel {
         let sampleSkinToneViewModel: SampleSkinToneViewModel = SampleSkinToneViewModel(user: self.user!)
         
         sampleSkinToneViewModel.events
-            //.subscribeOn(MainScheduler.instance)
             .subscribe(onNext: { [weak self] event in //Reference createLoginViewModel for how to reference Self
                 print("EVENTS \(event)")
                 switch event {
@@ -177,7 +168,6 @@ class RootNavigationViewModel {
                 case .updated:
                     print("Loading Home!")
                     self!.loadHome()
-                //q self!.navigationStackActions.onNext(.pop(animated: false))
                 case .showHelp:
                     self!.navigationStackActions.onNext(.push(viewModel: self!.createCaptureSessionHelpViewModel(), animated: false))
                 case .cancel:

@@ -16,12 +16,11 @@ class User {
     let token: Int32
     var captureSession: CaptureSession?
     
-    init(email: String, user_id: Int32, token: Int32, settings: Settings = Settings(), /*acknowledgeUserAgreement: Bool? = false, */captureSession: CaptureSession? = nil) {
+    init(email: String, user_id: Int32, token: Int32, settings: Settings = Settings(), captureSession: CaptureSession? = nil) {
         self.email = email
         self.settings = settings
         self.user_id = user_id
         self.token = token
-        /*self.acknowledgeUserAgreement = acknowledgeUserAgreement*/
         self.captureSession = captureSession
     }
     
